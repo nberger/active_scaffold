@@ -8,47 +8,14 @@
 # This is in contrast to how Rails will normally bypass the controller if it sees
 # a partial.
 
-# if render_action exists, we can use our existing hooks.
-unless ActionController::Base.method_defined? :render_action
-
 class ActionController::Base
   class_inheritable_accessor :generic_view_paths
   self.generic_view_paths = []
 end
 
-# find_full_template_path is no longer around in edge rails. Replaced with the TemplateFinder class (leading
-# to much headache)
-if ActionView::Base.method_defined? :find_full_template_path
-  class ActionView::Base
-    private
-    def find_full_template_path_with_generic_paths(template_path, extension)
-      path = find_full_template_path_without_generic_paths(template_path, extension)
-      if path and not path.empty?
-        path
-      elsif search_generic_view_paths?
-        template_file = File.basename("#{template_path}.#{extension}")
-        path = find_generic_base_path_for(template_file)
-        path ? "#{path}/#{template_file}" : ""
-      else
-        ""
-      end
-    end
-    alias_method_chain :find_full_template_path, :generic_paths
-
-    # Returns the view path that contains the given relative template path.
-    def find_generic_base_path_for(template_file_name)
-      controller.generic_view_paths.find { |p| File.file?(File.join(p, template_file_name)) }
-    end
-
-    # We don't want to use generic_view_paths in ActionMailer, and we don't want
-    # to use them unless the controller action was explicitly defined.
-    def search_generic_view_paths?
-      controller.respond_to?(:generic_view_paths) and controller.class.action_methods.include?(controller.action_name)
-    end
-  end
-else
-  # This hooks into edge rails as of revision 8804 (desparately need the new polymorphic eagerloading from edge)
-  class ActionView::TemplateFinder
+# This hooks into edge rails as of revision 8804 (desparately need the new polymorphic eagerloading from edge)
+module ActionView
+  class TemplateFinder
     def pick_template_with_generic_paths(template_path, extension)
       path = pick_template_without_generic_paths(template_path, extension)
       if path && !path.empty?
@@ -77,10 +44,9 @@ else
       if t_ext && !t_ext.empty?
         t_ext
       else
-        'rhtml'
+        'html.erb'
       end
     end
     alias_method_chain :find_template_extension_from_handler, :generics
   end
-end
 end

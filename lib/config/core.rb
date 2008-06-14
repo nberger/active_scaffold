@@ -245,7 +245,6 @@ module ActiveScaffold::Config
       search_path = self.inherited_view_paths.clone
       search_path << 'active_scaffold_overrides'
       search_path << "#{frontends_path}/#{frontend}/views" if frontend.to_sym != :default
-      search_path << "#{frontends_path}/default/views/left_handed" if self.left_handed
       search_path << "#{frontends_path}/default/views"
       return search_path
     end

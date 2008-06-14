@@ -1,0 +1,7 @@
+<% active_scaffold_tools_list_columns.each do |column| %>
+  <% column_value = get_column_value(record, column) -%>
+
+  <td class="<%= column_class(column, column_value) %>" >
+    <%= render_list_column(column_value, column, record) %>
+  </td>
+<% end -%>

@@ -6,18 +6,10 @@ url_options = params_for(:action => :list, :id => record.id)
 -%>
 
 <tr class="record <%= tr_class %>" id="<%= element_row_id(:action => :list, :id => record.id) %>">
-  <% active_scaffold_config.list.columns.each do |column| %>
-    <% column_value = get_column_value(record, column) -%>
-
-    <td class="<%= column_class(column, column_value) %>" >
-      <%= render_list_column(column_value, column, record) %>
-    </td>
-  <% end -%>
-  <% if active_scaffold_config.action_links.any? {|link| link.type == :record } -%>
-  <td class="actions">
-    <%= render :partial => 'list_actions', :locals => {:record => record, :url_options => url_options} %>
-  </td>
-  <% end -%>
+  <%= render :partial => 'list_record_actions', :locals => {:record => record, :url_options => url_options} if active_scaffold_config.left_handed %>
+  <%= render :partial => 'list_record_columns', :locals => {:record => record, :url_options => url_options} if active_scaffold_config.left_handed %>
+  <%= render :partial => 'list_record_columns', :locals => {:record => record, :url_options => url_options} unless active_scaffold_config.left_handed %>
+  <%= render :partial => 'list_record_actions', :locals => {:record => record, :url_options => url_options} unless active_scaffold_config.left_handed %>
 </tr>
 
 <% target_id = element_row_id(:action => :list, :id => record.id) -%>
