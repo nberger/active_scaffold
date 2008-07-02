@@ -76,17 +76,35 @@ module ActiveScaffold
         output << form_tag(url_for_options, options)
       end
 
+      # Provides list of javascripts to include with +javascript_include_tag+
+      # You can use this with your javascripts like
+      #   <%= javascript_include_tag :defaults, 'your_own_cool_script', active_scaffold_javascripts, :cache => true %>
+      def active_scaffold_javascripts(frontend = :default)
+        ActiveScaffold::Config::Core.javascripts(frontend).collect do |name|
+          ActiveScaffold::Config::Core.asset_path(name, frontend)
+        end
+      end
+
+      # Provides stylesheets to include with +stylesheet_link_tag+
+      def active_scaffold_stylesheets(frontend = :default)
+        css = [ActiveScaffold::Config::Core.asset_path("stylesheet.css", frontend)]
+        css << ActiveScaffold::Config::Core.asset_path('tools-left-handed-stylesheet.css', frontend) if ActiveScaffold::Config::Core.left_handed
+        css
+      end
+
+      # Provides stylesheets for IE to include with +stylesheet_link_tag+ 
+      def active_scaffold_ie_stylesheets(frontend = :default)
+        css = [ActiveScaffold::Config::Core.asset_path("stylesheet-ie.css", frontend)]
+        css << ActiveScaffold::Config::Core.asset_path('tools-left-handed-stylesheet-ie.css', frontend) if ActiveScaffold::Config::Core.left_handed
+        css
+      end
+
       # easy way to include ActiveScaffold assets
       def active_scaffold_includes(frontend = :default)
-        js = ActiveScaffold::Config::Core.javascripts(frontend).collect do |name|
-          javascript_include_tag(ActiveScaffold::Config::Core.asset_path(name, frontend))
-        end.join('')
-        css = stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path("stylesheet.css", frontend))
-        css << stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path('tools-stylesheet.css', frontend))
-        css << stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path('tools-left-handed-stylesheet.css', frontend)) if ActiveScaffold::Config::Core.left_handed
-        ie_css = stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path("stylesheet-ie.css", frontend))
-        ie_css << stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path('tools-stylesheet-ie.css', frontend))
-        ie_css << stylesheet_link_tag(ActiveScaffold::Config::Core.asset_path('tools-left-handed-stylesheet-ie.css', frontend)) if ActiveScaffold::Config::Core.left_handed
+        js = javascript_include_tag(*active_scaffold_javascripts(frontend))
+
+        css = stylesheet_link_tag(*active_scaffold_stylesheets(frontend))
+        ie_css = stylesheet_link_tag(*active_scaffold_ie_stylesheets(frontend))
 
         js + "\n" + css + "\n<!--[if IE]>" + ie_css + "<![endif]-->\n"
       end
@@ -138,7 +156,10 @@ module ActiveScaffold
           if link.method != :get and respond_to?(:protect_against_forgery?) and protect_against_forgery?
             url_options[:authenticity_token] = form_authenticity_token
           end
-        else
+          
+          # robd: protect against submitting get links as forms, since this causes annoying 
+          # 'Do you wish to resubmit your form?' messages whenever you go back and forwards.
+        elsif link.method != :get
           # Needs to be in html_options to as the adding _method to the url is no longer supported by Rails
           html_options[:method] = link.method
         end

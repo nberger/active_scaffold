@@ -41,6 +41,222 @@ module ActiveScaffold
 
       alias form_column active_scaffold_input_for
 
+      # the standard active scaffold options used for textual inputs
+      def active_scaffold_input_text_options(options = {})
+        options[:autocomplete] = 'off'
+        options[:size] ||= 20
+        options[:class] = "#{options[:class]} text-input".strip
+        options
+      end
+
+      # the standard active scaffold options used for class, name and scope
+      def active_scaffold_input_options(column, scope = nil)
+        options = {}
+        if active_scaffold_config.upper_case_form_fields and column.column and [:text, :string].include?(column.column.type) and column.form_ui.nil? and (!column.options.has_key?(:upper_case_form_fields) or column.options[:upper_case_form_fields] != false)
+          options[:onchange] ||= ''
+          options.merge!(:onchange => options[:onchange] + "ToUpper(this);") 
+        end
+        name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
+        { :name => name, :class => "#{column.name}-input", :id => "record_#{column.name}_#{params[:eid] || params[:id]}"}.merge(options)
+      end
+
+      ##
+      ## Form input methods
+      ##
+
+      def active_scaffold_input_singular_association(column, options)
+        associated = @record.send(column.association.name)
+
+        select_options = [[as_('- select -'),nil]]
+        select_options += [[ associated.to_label, associated.id ]] unless associated.nil?
+        select_options += options_for_association(column.association)
+
+        selected = associated.nil? ? nil : associated.id
+
+        options[:name] += '[id]'
+        select(:record, column.name, select_options.uniq, { :selected => selected }, options)
+      end
+
+      def active_scaffold_input_plural_association(column, options)
+        associated_options = @record.send(column.association.name).collect {|r| [r.to_label, r.id]}
+        select_options = associated_options | options_for_association(column.association)
+        return 'no options' if select_options.empty?
+
+        html = '<ul class="checkbox-list">'
+
+        associated_ids = associated_options.collect {|a| a[1]}
+        select_options.each_with_index do |option, i|
+          label, id = option
+          this_name = "#{options[:name]}[#{i}][id]"
+          html << "<li>"
+          html << check_box_tag(this_name, id, associated_ids.include?(id))
+          html << "<label for='#{this_name}'>"
+          html << label
+          html << "</label>"
+          html << "</li>"
+        end
+
+        html << '</ul>'
+        html
+      end
+
+      def active_scaffold_input_select(column, options)
+        if column.singular_association?
+          active_scaffold_input_singular_association(column, options)
+        elsif column.plural_association?
+          active_scaffold_input_plural_association(column, options)
+        else
+          select(:record, column.name, column.options, { :selected => @record.send(column.name) }, options)
+        end
+      end
+
+      # only works for singular associations
+      # requires RecordSelect plugin to be installed and configured.
+      # ... maybe this should be provided in a bridge?
+      def active_scaffold_input_record_select(column, options)
+        unless column.association
+          raise ArgumentError, "record_select can only work against associations (and #{column.name} is not).  A common mistake is to specify the foreign key field (like :user_id), instead of the association (:user)."
+        end
+        remote_controller = active_scaffold_controller_for(column.association.klass).controller_path
+
+        params = {:parent_id => @record.id, :parent_model => @record.class}
+        
+        # if the opposite association is a :belongs_to, then only show records that have not been associated yet
+        # robd 2008-06-29: is this code doing the right thing? doesn't seem to check :belongs_to...
+        # in any case, could we encapsulate this code on column in a method like .singular_association?
+        if [:has_one, :has_many].include?(column.association.macro)
+          params.merge!(column.association.primary_key_name => '') 
+        end
+        
+        options = { :controller => remote_controller, :id => options[:id], :params => params }
+        options.merge!(active_scaffold_input_text_options)
+        options.merge!(column.options)
+        record_select_args = [options[:name], (@record.send(column.name) || column.association.klass.new), options]
+        
+        if column.singular_association?
+          record_select_field(*record_select_args)
+        elsif column.plural_association?
+          record_multi_select_field(*record_select_args)
+        end
+      end
+
+      def active_scaffold_input_checkbox(column, options)
+        check_box(:record, column.name, options)
+      end
+
+      def active_scaffold_input_country(column, options)
+        priority = ["United States"]
+        select_options = {:prompt => as_('- select -')}
+        select_options.merge!(options)
+        country_select(:record, column.name, column.options[:priority] || priority, select_options, column.options)
+      end
+
+      def active_scaffold_input_password(column, options)
+        password_field :record, column.name, active_scaffold_input_text_options(options)
+      end
+
+      def active_scaffold_input_textarea(column, options)
+        text_area(:record, column.name, options.merge(:cols => column.options[:cols], :rows => column.options[:rows]))
+      end
+
+      def active_scaffold_input_usa_state(column, options)
+        select_options = {:prompt => as_('- select -')}
+        select_options.merge!(options)
+        select_options.delete(:size)
+        options.delete(:prompt)
+        options.delete(:priority)
+        usa_state_select(:record, column.name, column.options[:priority], select_options, column.options.merge!(options))
+      end
+
+      def active_scaffold_input_virtual(column, options)
+        text_field :record, column.name, active_scaffold_input_text_options(options)
+      end
+
+      #
+      # Column.type-based inputs
+      #
+
+      def active_scaffold_input_boolean(column, options)
+        select_options = []
+        select_options << [as_('- select -'), nil] if column.column.null
+        select_options << [as_('True'), true]
+        select_options << [as_('False'), false]
+
+        select_tag(options[:name], options_for_select(select_options, @record.send(column.name)))
+      end
+
+      ##
+      ## Form column override signatures
+      ##
+
+      def override_form_field_partial?(column)
+        path, partial_name = partial_pieces(override_form_field_partial(column))
+        @finder.file_exists? File.join(path, "_#{partial_name}")
+      end
+
+      # the naming convention for overriding form fields with partials
+      def override_form_field_partial(column)
+        "#{column.name}_form_column"
+      end
+
+      def override_form_field?(column)
+        respond_to?(override_form_field(column))
+      end
+
+      # the naming convention for overriding form fields with helpers
+      def override_form_field(column)
+        "#{column.name}_form_column"
+      end
+
+      def override_input?(form_ui)
+        respond_to?(override_input(form_ui))
+      end
+
+      # the naming convention for overriding form input types with helpers
+      def override_input(form_ui)
+        "active_scaffold_input_#{form_ui}"
+      end
+
+      def form_partial_for_column(column)
+        if override_form_field_partial?(column)
+          override_form_field_partial(column)
+        elsif column_renders_as(column) == :field or override_form_field?(column)
+          "form_attribute"
+        elsif column_renders_as(column) == :subform
+          "form_association"
+        elsif column_renders_as(column) == :hidden
+          "form_hidden_attribute"
+        end
+      end
+
+      ##
+      ## Macro-level rendering decisions for columns
+      ##
+
+      def column_renders_as(column)
+        if column.is_a? ActiveScaffold::DataStructures::ActionColumns
+          return :subsection
+        elsif column.active_record_class.locking_column.to_s == column.name.to_s
+          return :hidden
+        elsif column.association.nil? or column.form_ui or !active_scaffold_config_for(column.association.klass).actions.include?(:subform)
+          return :field
+        else
+          return :subform
+        end
+      end
+
+      def is_subsection?(column)
+        column_renders_as(column) == :subsection
+      end
+
+      def is_subform?(column)
+        column_renders_as(column) == :subform
+      end
+      
+      # =======
+      # = AST =
+      # =======
+      
       def active_scaffold_input_for_search(column, options = {}, scope = nil)
         options[:name] ||= "search[#{column.name}]"
         options[:id] ||= "search_#{column.name}"
@@ -70,14 +286,7 @@ module ActiveScaffold
           end
         end
       end
-
-      def active_scaffold_input_text_options(options = {})
-        options[:autocomplete] ||= 'off'
-        options[:size] ||= 20
-        options[:class] = "#{options[:class]} text-input".strip
-        options
-      end
-
+      
       def active_scaffold_input_hidden(column, options)
     		input(:record, column.name, options.merge(:type => :hidden))
       end
@@ -140,216 +349,7 @@ module ActiveScaffold
         "#{column.name}_search_column"
       end
 
-      # the standard active scaffold options used for class, name and scope
-      def active_scaffold_input_options(column, scope = nil)
-        options = {}
-        if active_scaffold_config.upper_case_form_fields and column.column and [:text, :string].include?(column.column.type) and column.form_ui.nil? and (!column.options.has_key?(:upper_case_form_fields) or column.options[:upper_case_form_fields] != false)
-          options[:onchange] ||= ''
-          options.merge!(:onchange => options[:onchange] + "ToUpper(this);") 
-        end
-        name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
-        { :name => name, :class => "#{column.name}-input", :id => "record_#{column.name}_#{params[:eid] || params[:id]}"}.merge(options)
-      end
       
-      ##
-      ## Form input methods
-      ##
-
-      def active_scaffold_input_singular_association(column, options)
-        associated = @record.send(column.association.name)
-
-        select_options = [[as_('- select -'),nil]]
-        select_options += [[ associated.to_label, associated.id ]] unless associated.nil?
-        select_options += options_for_association(column.association)
-
-        selected = associated.nil? ? nil : associated.id
-
-        options[:name] += '[id]'
-        select(:record, column.name, select_options.uniq, { :selected => selected }, options)
-      end
-
-      def active_scaffold_input_plural_association(column, options)
-        associated_options = @record.send(column.association.name).collect {|r| [r.to_label, r.id]}
-        select_options = associated_options | options_for_association(column.association)
-        return 'no options' if select_options.empty?
-
-        html = '<ul class="checkbox-list">'
-
-        associated_ids = associated_options.collect {|a| a[1]}
-        select_options.each_with_index do |option, i|
-          label, id = option
-          this_name = "#{options[:name]}[#{i}][id]"
-          html << "<li>"
-          html << check_box_tag(this_name, id, associated_ids.include?(id))
-          html << "<label for='#{this_name}'>"
-          html << label
-          html << "</label>"
-          html << "</li>"
-        end
-
-        html << '</ul>'
-        html
-      end
-
-      def active_scaffold_input_select(column, options)
-        if column.singular_association?
-          active_scaffold_input_singular_association(column, options)
-        elsif column.plural_association?
-          active_scaffold_input_plural_association(column, options)
-        else
-          select(:record, column.name, column.options, { :selected => @record.send(column.name) }, options)
-        end
-      end
-
-      # only works for singular associations
-      # requires RecordSelect plugin to be installed and configured.
-      # ... maybe this should be provided in a bridge?
-      def active_scaffold_input_record_select(column, options)
-        remote_controller = active_scaffold_controller_for(column.association.klass).controller_path
-
-        # if the opposite association is a :belongs_to, then only show records that have not been associated yet
-        params = if column.association and [:has_one, :has_many].include?(column.association.macro)
-          {column.association.primary_key_name => ''}
-        else
-          {}
-        end
-
-        if column.singular_association?
-          record_select_field(
-            "#{options[:name]}",
-            @record.send(column.name) || column.association.klass.new,
-            {:controller => remote_controller, :id => options[:id], :params => params.merge(:parent_id => @record.id, :parent_model => @record.class)}.merge(active_scaffold_input_text_options).merge(column.options)
-          )
-        elsif column.plural_association?
-          record_multi_select_field(
-            options[:name],
-            @record.send(column.name),
-            {:controller => remote_controller, :id => options[:id], :params => params.merge(:parent_id => @record.id, :parent_model => @record.class)}.merge(active_scaffold_input_text_options).merge(column.options)
-          )
-        end
-      end
-
-      def active_scaffold_input_checkbox(column, options)
-        check_box(:record, column.name, options)
-      end
-
-      def active_scaffold_input_country(column, options)
-        priority = ["United States"]
-        select_options = {:prompt => as_('- select -')}
-        select_options.merge!(options)
-        country_select(:record, column.name, column.options[:priority] || priority, select_options, column.options)
-      end
-
-      def active_scaffold_input_password(column, options)
-        password_field :record, column.name, active_scaffold_input_text_options(options)
-      end
-
-      def active_scaffold_input_textarea(column, options)
-        text_area(:record, column.name, options.merge(:cols => column.options[:cols], :rows => column.options[:rows]))
-      end
-
-      def active_scaffold_input_usa_state(column, options)
-        select_options = {:prompt => as_('- select -')}
-        select_options.merge!(options)
-        select_options.delete(:size)
-        options.delete(:prompt)
-        options.delete(:priority)
-        usa_state_select(:record, column.name, column.options[:priority], select_options, column.options.merge!(options))
-      end
-
-      def active_scaffold_input_virtual(column, options)
-        text_field :record, column.name, active_scaffold_input_text_options(options)
-      end
-
-      #
-      # Column.type-based inputs
-      #
-
-      def active_scaffold_input_boolean(column, options)
-        select_options = []
-        select_options << [as_('- select -'), nil] if column.column.null
-        select_options << [as_('True'), true]
-        select_options << [as_('False'), false]
-
-        select_tag(options[:name], options_for_select(select_options, @record.send(column.name)))
-      end
-
-      ##
-      ## Form column override signatures
-      ##
-
-      # FIXME hack, this has been removed in edge rails
-      def active_scaffold_partial_pieces(partial_path) 
-        if partial_path.include?('/') 
-          return File.dirname(partial_path), File.basename(partial_path) 
-        else 
-          return controller.class.controller_path, partial_path 
-        end 
-      end
-            
-      def override_form_field_partial?(column)
-        path, partial_name = active_scaffold_partial_pieces(override_form_field_partial(column))
-        File.exists? File.join(path, "_#{partial_name}")
-      end
-
-      # the naming convention for overriding form fields with partials
-      def override_form_field_partial(column)
-        "#{column.name}_form_column"
-      end
-
-      def override_form_field?(column)
-        respond_to?(override_form_field(column))
-      end
-
-      # the naming convention for overriding form fields with helpers
-      def override_form_field(column)
-        "#{column.name}_form_column"
-      end
-
-      def override_input?(form_ui)
-        respond_to?(override_input(form_ui))
-      end
-
-      # the naming convention for overriding form input types with helpers
-      def override_input(form_ui)
-        "active_scaffold_input_#{form_ui}"
-      end
-
-      def form_partial_for_column(column)
-        if override_form_field_partial?(column)
-          override_form_field_partial(column)
-        elsif column_renders_as(column) == :field or override_form_field?(column)
-          "form_attribute"
-        elsif column_renders_as(column) == :subform
-          "form_association"
-        elsif column_renders_as(column) == :hidden
-          "form_hidden_attribute"
-        end
-      end
-
-      ##
-      ## Macro-level rendering decisions for columns
-      ##
-
-      def column_renders_as(column)
-        if column.is_a? ActiveScaffold::DataStructures::ActionColumns
-          return :subsection
-        elsif column.active_record_class.locking_column.to_s == column.name.to_s
-          return :hidden
-        elsif column.association.nil? or column.form_ui or !active_scaffold_config_for(column.association.klass).actions.include?(:subform)
-          return :field
-        else
-          return :subform
-        end
-      end
-
-      def is_subsection?(column)
-        column_renders_as(column) == :subsection
-      end
-
-      def is_subform?(column)
-        column_renders_as(column) == :subform
-      end
     end
   end
 end

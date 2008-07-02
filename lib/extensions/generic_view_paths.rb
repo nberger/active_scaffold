@@ -11,42 +11,62 @@
 class ActionController::Base
   class_inheritable_accessor :generic_view_paths
   self.generic_view_paths = []
+  
+  # Returns the view path that contains the given relative template path.
+  def find_generic_base_path_for(template_path, extension)
+    self.generic_view_paths.each do |generic_path| 
+      template_file_name = File.basename("#{template_path}.#{extension}")
+      generic_file_path = File.join(generic_path, template_file_name)
+      return generic_file_path if File.file?(generic_file_path)
+    end
+    nil
+  end
+
+  # We don't want to use generic_view_paths in ActionMailer, and we don't want
+  # to use them unless the controller action was explicitly defined.
+  def search_generic_view_paths?
+    self.respond_to?(:generic_view_paths) and self.class.action_methods.include?(self.action_name)
+  end
 end
 
 # This hooks into edge rails as of revision 8804 (desparately need the new polymorphic eagerloading from edge)
-module ActionView
-  class TemplateFinder
-    def pick_template_with_generic_paths(template_path, extension)
-      path = pick_template_without_generic_paths(template_path, extension)
-      if path && !path.empty?
-        path
-      else
-        template_file = File.basename(template_path)
-        template_path = find_generic_base_path_for(template_file, extension)
-        # ACC return absolute path to file
-        template_path
-      end
-    end
-    alias_method_chain :pick_template, :generic_paths
-    alias_method :template_exists?, :pick_template
+class ActionView::TemplateFinder
 
-    # Returns the view path that contains the relative template 
-    def find_generic_base_path_for(template_file_name, extension)
-      # ACC TODO use more robust method of setting this path
-      path = RAILS_ROOT + '/vendor/plugins/active_scaffold/frontends/default/views'
-      # Should be able to use a rails method here to do this directory search
-      file = Dir.entries(path).find {|f| f =~ /^_?#{template_file_name}\.?#{extension}/ }
-      file ? File.join(path, file) : nil
+  def pick_template_with_generic_paths(template_path, extension)
+    path = pick_template_without_generic_paths(template_path, extension)
+    if path.blank? and controller.search_generic_view_paths?
+      path = controller.find_generic_base_path_for(template_path, extension)
     end
-
-    def find_template_extension_from_handler_with_generics(template_path, template_format = @template.template_format)
-      t_ext = find_template_extension_from_handler_without_generics(template_path, template_format)
-      if t_ext && !t_ext.empty?
-        t_ext
-      else
-        'html.erb'
-      end
-    end
-    alias_method_chain :find_template_extension_from_handler, :generics
+    path
   end
+  alias_method_chain :pick_template, :generic_paths
+  alias_method :template_exists?, :pick_template # re-alias to the new pick_template
+  
+  def find_template_extension_from_handler_with_generic_paths(template_path, template_format = @template.template_format)
+    extension = find_template_extension_from_handler_without_generic_paths(template_path, template_format)
+    if extension.blank? and controller.search_generic_view_paths?
+      self.class.template_handler_extensions.each do |handler_extension|
+        return handler_extension if controller.find_generic_base_path_for(template_path, handler_extension)
+      end
+    end
+    extension
+  end
+  alias_method_chain :find_template_extension_from_handler, :generic_paths
+
+  def find_template_extension_from_handler_with_generics(template_path, template_format = @template.template_format)
+    t_ext = find_template_extension_from_handler_without_generics(template_path, template_format)
+    if t_ext && !t_ext.empty?
+      t_ext
+    else
+      'html.erb'
+    end
+  end
+  alias_method_chain :find_template_extension_from_handler, :generics
+  
+  private
+
+    def controller
+      @template.controller
+    end
+  
 end
