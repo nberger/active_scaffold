@@ -29,19 +29,19 @@
   # ===================
 
   def authorized_for_create?
-    current_user and current_user.permit?([:global, :super])
+    current_user and current_user.permit?([:root, :super])
   end
 
   def authorized_for_destroy?
-    current_user and current_user.permit?([:global, :super])
+    current_user and current_user.permit?([:root, :super])
   end
 
   def authorized_for_read?
-    current_user and current_user.permit?([:global, :super])
+    current_user and current_user.permit?([:root, :super])
   end
   
   def authorized_for_update?
-    current_user and current_user.permit?([:global, :super])
+    current_user and current_user.permit?([:root, :super])
   end
   
   # =================

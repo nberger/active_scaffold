@@ -10,23 +10,23 @@ class <%= controller_class_name %>Controller < ApplicationController
   # ===================
   
   def create_authorized?
-    permit? [:super]
+    permit?([:root, :super])
   end
   
   def delete_authorized?
-    permit? [:super]
+    permit?([:root, :super])
   end
   
   def list_authorized?
-    permit? [:super]
+    permit?([:root, :super])
   end
   
   def show_authorized?
-    permit? [:super]
+    permit?([:root, :super])
   end
   
   def update_authorized?
-    permit? [:super]
+    permit?([:root, :super])
   end
   
   # =================
