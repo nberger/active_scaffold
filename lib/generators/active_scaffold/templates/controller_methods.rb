@@ -1,7 +1,7 @@
 class <%= controller_class_name %>Controller < ApplicationController
 	before_filter  :authorize
   
-  <%= template_for_inclusion %>
+<%= template_for_inclusion %>
 
  	protected
 

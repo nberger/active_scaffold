@@ -32,9 +32,9 @@ module ActiveScaffold::Actions
           if params[:iframe]=='true' # was this an iframe post ?
             responds_to_parent do
               if successful?
-                render :action => 'create.rjs', :layout => false
+                render :action => 'create.js.rjs', :layout => false
               else
-                render :action => 'form_messages.rjs', :layout => false
+                render :action => 'form_messages.js.rjs', :layout => false
               end
             end
           else
@@ -47,7 +47,7 @@ module ActiveScaffold::Actions
           end
         end
         type.js do
-          render :action => 'create.rjs', :layout => false
+          render :action => 'create.js.rjs', :layout => false
         end
         type.xml { render :xml => response_object.to_xml, :content_type => Mime::XML, :status => response_status }
         type.json { render :text => response_object.to_json, :content_type => Mime::JSON, :status => response_status }
