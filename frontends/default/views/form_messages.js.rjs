@@ -1,1 +1,2 @@
+page << "$('#{loading_indicator_id(:action => params[:action], :id => params[:id])}').style.visibility = 'hidden'"
 page.replace_html element_messages_id, :partial => 'form_messages'
