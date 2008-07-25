@@ -349,7 +349,16 @@ module ActiveScaffold
         "#{column.name}_search_column"
       end
 
-      
+      def remote_image_submit_tag(source, options)
+        options[:with] ||= 'Form.serialize(this.form)'
+
+        options[:html] ||= {}
+        options[:html][:type] = 'image'
+        options[:html][:onclick] = "#{remote_function(options)}; return false;"
+        options[:html][:src] = image_path(source)
+
+        tag("input", options[:html], false)
+      end      
     end
   end
 end
