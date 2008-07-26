@@ -56,7 +56,7 @@ module ActionView #:nodoc:
       end
     end
     alias_method_chain :render, :active_scaffold
-
+    
     def partial_pieces(partial_path)
       if partial_path.include?('/')
         return File.dirname(partial_path), File.basename(partial_path)
@@ -64,7 +64,6 @@ module ActionView #:nodoc:
         return controller.class.controller_path, partial_path
       end
     end
-
   end
 end
 
@@ -77,7 +76,7 @@ module ActionView #:nodoc:
       initialize_without_active_scaffold(view, partial_path, object, locals)
     end
     alias_method_chain :initialize, :active_scaffold
-
+    
     private
       def rewrite_partial_path_for_active_scaffold(view, partial_path)
         path, partial_name = partial_pieces(view, partial_path)
