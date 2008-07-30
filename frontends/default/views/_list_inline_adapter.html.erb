@@ -2,7 +2,7 @@
 <tr class="inline-adapter" id="<%= nested_id  %>">
   <td colspan="99" class="inline-adapter-cell">
     <div class="<%= "#{params[:action]}-view" if params[:action] %> view">
-      <a href="" class="inline-adapter-close" title="close"><%= as_('Close') %></a>
+      <a href="" class="inline-adapter-close" title="<%= as_('Close') %>"></a>
       <%= payload -%>
     </div>
   </td>

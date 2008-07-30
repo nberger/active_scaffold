@@ -36,6 +36,9 @@ module ActiveScaffold::Config
     cattr_accessor :upper_case_form_fields
     @@upper_case_form_fields = false
 
+    cattr_accessor :use_column_name_in_class
+    @@use_column_name_in_class = false
+
     # lets you disable the DHTML history
     def self.dhtml_history=(val)
       @@dhtml_history = val

@@ -4,8 +4,8 @@ module ActiveScaffold
     module FormColumns
       # This method decides which input to use for the given column.
       # It does not do any rendering. It only decides which method is responsible for rendering.
-      def active_scaffold_input_for(column, scope = nil)
-        options = active_scaffold_input_options(column, scope)
+      def active_scaffold_input_for(column, scope = nil, options = {})
+        options = active_scaffold_input_options(column, scope, options)
 
         # first, check if the dev has created an override for this specific field
         if override_form_field?(column)
@@ -32,7 +32,6 @@ module ActiveScaffold
               # for textual fields we pass different options
               text_types = [:text, :string, :integer, :float, :decimal]
               options = active_scaffold_input_text_options(options) if text_types.include?(column.column.type)
-
               input(:record, column.name, options)
             end
           end
@@ -45,19 +44,19 @@ module ActiveScaffold
       def active_scaffold_input_text_options(options = {})
         options[:autocomplete] = 'off'
         options[:size] ||= 20
-        options[:class] = "#{options[:class]} text-input".strip
+        options[:class] ||= "#{options[:class]} text-input".strip
         options
       end
 
       # the standard active scaffold options used for class, name and scope
-      def active_scaffold_input_options(column, scope = nil)
-        options = {}
+      def active_scaffold_input_options(column, scope = nil, options = {})
         if active_scaffold_config.upper_case_form_fields and column.column and [:text, :string].include?(column.column.type) and column.form_ui.nil? and (!column.options.has_key?(:upper_case_form_fields) or column.options[:upper_case_form_fields] != false)
           options[:onchange] ||= ''
           options.merge!(:onchange => options[:onchange] + "ToUpper(this);") 
         end
+        options[:class] = "#{column.name}-input" if active_scaffold_config.use_column_name_in_class
         name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
-        { :name => name, :class => "#{column.name}-input", :id => "record_#{column.name}_#{params[:eid] || params[:id]}"}.merge(options)
+        { :name => name, :id => "record_#{column.name}_#{params[:eid] || params[:id]}"}.merge(options)
       end
 
       ##
@@ -292,9 +291,10 @@ module ActiveScaffold
 
       def active_scaffold_input_ssn(column, options)
         column.description ||= as_("Ex. 555-22-3333")
+        options = active_scaffold_input_text_options(options)
     		text_field :record, column.name, options.merge(
                       :value => usa_number_to_ssn(@record[column.name].to_s),
-                      :onblur => "SsnDashAdd(this);return true;").merge(active_scaffold_input_text_options)
+                      :onblur => "SsnDashAdd(this);return true;")
       end
       
       def active_scaffold_input_timezone(column, options)
@@ -304,8 +304,8 @@ module ActiveScaffold
       def active_scaffold_input_percentage(column, options)
         column.description ||= as_("Ex. 10%")
         options[:onblur] ||= "PercentageFormat(this);return true;"
-    		text_field :record, column.name, options.merge(
-                      :value => number_to_percentage(@record[column.name].to_s, :precision => 1)).merge(active_scaffold_input_text_options)
+        options = active_scaffold_input_text_options(options)
+    		text_field :record, column.name, options.merge(:value => number_to_percentage(@record[column.name].to_s, :precision => 1))
       end
 
       # :usa_money requires some type casting help like the following in your Model
@@ -321,22 +321,22 @@ module ActiveScaffold
         options[:onblur] ||= "UsaMoney(this);return true;"
         value = number_to_currency(@record[column.name].to_s) unless options[:blank_if_nil] == true
         value ||= "" 
-    		text_field :record, column.name, options.merge(
-                      :value => value).merge(active_scaffold_input_text_options)
+        options = active_scaffold_input_text_options(options)
+    		text_field :record, column.name, options.merge(:value => value)
       end
 
       def active_scaffold_input_usa_phone(column, options)
         column.description ||= as_("Ex. 111-333-4444")
         options[:onblur] ||= "UsaPhoneDashAdd(this);return true;"
-    		text_field :record, column.name, options.merge(
-                      :value => usa_number_to_phone(@record[column.name].to_s)).merge(active_scaffold_input_text_options)
+        options = active_scaffold_input_text_options(options)
+    		text_field :record, column.name, options.merge(:value => usa_number_to_phone(@record[column.name].to_s))
       end
 
       def active_scaffold_input_usa_zip(column, options)
         column.description ||= as_("Ex. 88888-3333")
         options[:onblur] ||= "UsaZipDashAdd(this);return true;"
-    		text_field :record, column.name, options.merge(
-                      :value => usa_number_to_zip(@record[column.name].to_s)).merge(active_scaffold_input_text_options)
+        options = active_scaffold_input_text_options(options)
+    		text_field :record, column.name, options.merge(:value => usa_number_to_zip(@record[column.name].to_s))
       end
 
       def override_search_field?(column)

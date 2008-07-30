@@ -57,6 +57,9 @@ margin-left: 13em;
 
 .active-scaffold a.inline-adapter-close {
 float: left;
+text-indent: 0px;
+margin-top: 3px;
+margin-right: 3px;
 }
 
 .left-handed-actions {
