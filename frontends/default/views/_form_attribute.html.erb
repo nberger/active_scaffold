@@ -6,7 +6,7 @@
   <dt>
     <label for="<%= "record_#{column.name}" %>"><%= column.label %></label>
   </dt>
-  <dd>
+  <dd id="<%= field_error_id(column) %>">
     <%= active_scaffold_input_for column, scope %>
     <% if column.description -%>
       <span class="description"><%= column.description %></span>

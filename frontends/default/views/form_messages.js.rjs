@@ -1,2 +1,11 @@
 page << "$('#{loading_indicator_id(:action => params[:action], :id => params[:id])}').style.visibility = 'hidden'"
-page.replace_html element_messages_id, :partial => 'form_messages'
+error_messages = render(:partial => 'form_messages')
+page.replace_html element_messages_id, error_messages
+page.replace_html("footer_#{element_messages_id}", error_messages)
+columns = active_scaffold_config.create.columns if params[:action] == 'create'
+columns = active_scaffold_config.update.columns if params[:action] == 'update'
+columns.each :for => @record do |column|
+  if column_renders_as(column) == :field and column.form_ui != :hidden
+    page[field_error_id(column)].className = @record.errors[column.name] ? 'fieldWithErrors' : ''
+  end
+end unless columns.nil?

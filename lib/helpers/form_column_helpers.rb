@@ -44,7 +44,7 @@ module ActiveScaffold
       def active_scaffold_input_text_options(options = {})
         options[:autocomplete] = 'off'
         options[:size] ||= 20
-        options[:class] ||= "#{options[:class]} text-input".strip
+        options[:class] = "#{options[:class]} text-input".strip
         options
       end
 
@@ -54,7 +54,7 @@ module ActiveScaffold
           options[:onchange] ||= ''
           options.merge!(:onchange => options[:onchange] + "ToUpper(this);") 
         end
-        options[:class] = "#{column.name}-input" if active_scaffold_config.use_column_name_in_class
+        options[:class] ||= "#{column.name}-input"
         name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
         { :name => name, :id => "record_#{column.name}_#{params[:eid] || params[:id]}"}.merge(options)
       end

@@ -35,6 +35,9 @@ end -%>
 
   <%= render :partial => 'form', :locals => { :columns => active_scaffold_config.create.columns } %>
 
+  <% if request.xhr? -%>
+    <div id="footer_<%= element_messages_id(:action => :create) %>" class="messages-container"></div>
+  <% end -%>
   <p class="form-footer">
     <%= submit_tag as_('Create'), submit_options.merge(:class => "submit") %>
     <%= link_to as_('Cancel'), params_for(:action => 'list'), :class => 'cancel' %>

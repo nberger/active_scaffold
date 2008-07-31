@@ -121,6 +121,10 @@ module ActiveScaffold
         "#{controller_id}-#{options[:action]}-#{options[:id]}-iframe"
       end
 
+      def field_error_id(column)
+        "field_error_#{column.name}_#{params[:eid] || params[:id]}"
+      end
+
       private
 
       # whitelists id-safe characters
