@@ -274,7 +274,8 @@ module ActiveScaffold
             if column.options[:field_search] == :select
               active_scaffold_input_select(column, options)
             else
-              if column.form_ui and override_input?(column.form_ui)
+              # No need to show a huge textarea field for searching.
+              if column.form_ui != :textarea and column.form_ui and override_input?(column.form_ui)
                 send(override_input(column.form_ui), column, options)
               else
                 options = active_scaffold_input_text_options(options)
