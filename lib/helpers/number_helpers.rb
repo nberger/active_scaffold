@@ -9,7 +9,6 @@ module ActionView
       #   usa_number_to_ssn(123551234)   => 123-55-1234
       def usa_number_to_ssn(number, options = {})
         return "" if number.nil?
-        options   = options.stringify_keys
         delimiter = options[:delimiter] || "-"
         begin
           str = number.to_s.gsub(/([0-9]{3})([0-9]{2})([0-9]{4})/,"\\1#{delimiter}\\2#{delimiter}\\3")
@@ -24,7 +23,6 @@ module ActionView
       #   usa_number_to_zip(123551234)   => 12355-1234
       def usa_number_to_zip(number, options = {})
         return "" if number.nil?
-        options   = options.stringify_keys
         delimiter = options[:delimiter] || "-"
         begin
           str = number.to_s.gsub(/([0-9]{5})([0-9]{4})/,"\\1#{delimiter}\\2")
@@ -43,7 +41,6 @@ module ActionView
       #   usa_number_to_phone(1235551234, {:area_code => true, :extension => 555})  => (123) 555-1234 x 555
       def usa_number_to_phone(number, options = {})
         return "" if number.nil?
-        options   = options.stringify_keys
         options[:area_code] ||= false
         options[:delimiter] ||= "-"
         options[:extension] ||= ""
@@ -66,7 +63,6 @@ module ActionView
       #    number_to_currency(1234567890.50, {:unit => "&pound;", :separator => ",", :delimiter => ""}) => &pound;1234567890,50
       def number_to_currency(number, options = {})
         return "" if number.nil?
-        options = options.stringify_keys
         options[:precision] ||= 2
         options[:unit] ||= "$"
         options[:separator] ||= "."
@@ -89,7 +85,6 @@ module ActionView
       #   number_to_percentage(302.0574, {:precision => 2})  => 302.06%
       def number_to_percentage(number, options = {})
         return "" if number.nil?
-        options = options.stringify_keys
         options[:precision] ||= 2
         options[:separator] ||= "."
         begin
