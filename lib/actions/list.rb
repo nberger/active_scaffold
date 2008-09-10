@@ -68,6 +68,52 @@ module ActiveScaffold::Actions
       @page, @records = page, page.items
     end
 
+    def do_list_by_sql(select_clause, from_clause, where_clause = nil, order_group_by_clause = nil)
+      includes_for_list_columns = active_scaffold_config.list.columns.collect{ |c| c.includes }.flatten.uniq.compact
+      self.active_scaffold_joins.concat includes_for_list_columns
+
+      options = {:sorting => active_scaffold_config.list.user.sorting,}
+      paginate = (params[:format].nil?) ? (accepts? :html, :js) : [:html, :js].include?(params[:format])
+      if paginate
+        options.merge!({
+          :per_page => active_scaffold_config.list.user.per_page,
+          :page => active_scaffold_config.list.user.page
+        })
+      end
+
+      options[:per_page] ||= 999999999
+      options[:page] ||= 1
+
+      klass = active_scaffold_config.model
+
+      if active_scaffold_conditions.length > 0
+        where_clause << " AND " if where_clause
+        where_clause ||= " Where "
+        where_clause << active_scaffold_conditions
+      end
+      count = klass.count_by_sql("Select count(*) #{from_clause} #{where_clause}" )
+
+      # we build the paginator differently for method- and sql-based sorting
+      if options[:sorting] and options[:sorting].sorts_by_method?
+        pager = ::Paginator.new(count, options[:per_page]) do |offset, per_page|
+          sorted_collection = sort_collection_by_column(klass.find_by_sql("#{select_clause} #{from_clause} #{where_clause} #{order_group_by_clause}"), *options[:sorting].first)
+          sorted_collection.slice(offset, per_page)
+        end
+      else
+        pager = ::Paginator.new(count, options[:per_page]) do |offset, per_page|
+          klass.find_by_sql("#{select_clause} #{from_clause} #{where_clause} #{order_group_by_clause} Limit #{offset}, #{per_page}")
+        end
+      end
+
+      page = pager.page(options[:page])
+
+      if page.items.empty?
+        page = page.pager.first
+        active_scaffold_config.list.user.page = 1
+      end
+      @page, @records = page, page.items
+    end
+    
     # The default security delegates to ActiveRecordPermissions.
     # You may override the method to customize.
     def list_authorized?
