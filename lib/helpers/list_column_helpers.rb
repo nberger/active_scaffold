@@ -43,6 +43,8 @@ module ActiveScaffold
       # TODO: move active_scaffold_inplace_edit in here?
       # TODO: we need to distinguish between the automatic links *we* create and the ones that the dev specified. some logic may not apply if the dev specified the link.
       def render_list_column(text, column, record)
+        make_available_method = "#{column.name}_make_available?"
+        return active_scaffold_config.list.empty_field_text if record.respond_to?(make_available_method) and !record.send(make_available_method)
         if column.link
           return "<a class='disabled'>#{text}</a>" unless record.authorized_for?(:action => column.link.crud_type)
           return text if column.singular_association? and column_empty?(text)
@@ -122,6 +124,10 @@ module ActiveScaffold
         "active_scaffold_column_#{list_ui}"
       end
 
+      def nested_label(association)
+        as_("%s for %s", active_scaffold_config_for(association.klass).label, format_column(@record.to_label))
+      end
+      
       ##
       ## Formatting
       ##

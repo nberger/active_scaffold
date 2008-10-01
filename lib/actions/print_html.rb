@@ -3,7 +3,7 @@ module ActiveScaffold::Actions
     include ActiveScaffold::Actions::PrintList
     def self.included(base)
       base.before_filter :print_html_authorized?, :only => [:print_html]
-      base.before_filter :store_search_session_info
+      base.before_filter :store_params_into_search_session_info
     end
 
     def print_html

@@ -11,7 +11,6 @@ module ActiveScaffold::Actions
       options = {:sorting => active_scaffold_config.list.user.sorting,
         :per_page => print_list_config.maximum_rows}
 
-      params[:search] = active_scaffold_session_storage[:search]
       do_search
       
       do_print_list_find(options)

@@ -21,9 +21,17 @@ module ActiveScaffold
 
   def active_scaffold_session_storage
     id = params[:eid] || params[:controller]
-    session_index = "as:#{id}"
-    session[session_index] ||= {}
-    session[session_index]
+    session_index = "#{id}"
+    as_session = session['active_scaffold'] ||= {}
+    as_session[session_index] ||= {}
+    as_session[session_index]
+  end
+
+  def reset_active_scaffold_session
+    id = params[:eid] || params[:controller]
+    session_index = "#{id}"
+    as_session = session['active_scaffold'] ||= {}
+    as_session.delete_if {|key, value| session_index != key}
   end
 
   # at some point we need to pass the session and params into config. we'll just take care of that before any particular action occurs by passing those hashes off to the UserSettings class of each action.

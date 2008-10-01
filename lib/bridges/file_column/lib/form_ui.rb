@@ -24,7 +24,7 @@ module ActiveScaffold
           )
         else
           # no, just display the file_column_field
-          file_column_field("record", column.name, options)
+          file_column_field("record", column.name, options.merge(active_scaffold_input_text_options(:class => "#{column.name}-input")))
         end
       end      
     end

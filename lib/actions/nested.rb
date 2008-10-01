@@ -91,12 +91,12 @@ module ActiveScaffold::Actions
     end
 
     def nested_association
-      return active_scaffold_constraints.keys.to_s.to_sym if nested?
+      return active_scaffold_constraints.keys.to_s.to_sym if nested? and active_scaffold_constraints.keys.length > 0
       nil
     end
 
     def nested_parent_id
-      return active_scaffold_constraints.values.to_s if nested?
+      return active_scaffold_constraints.values.to_s if nested? and active_scaffold_constraints.values.length > 0
       nil
     end
 

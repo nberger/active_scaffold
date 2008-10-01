@@ -123,7 +123,9 @@ module ActiveScaffold
         # if the opposite association is a :belongs_to, then only show records that have not been associated yet
         # robd 2008-06-29: is this code doing the right thing? doesn't seem to check :belongs_to...
         # in any case, could we encapsulate this code on column in a method like .singular_association?
-        if [:has_one, :has_many].include?(column.association.macro)
+        # Ed - why are we doing this? specifically why in has_one?
+        # params = if column.association and [:has_one, :has_many].include?(column.association.macro)
+        params = if column.association and [:has_many].include?(column.association.macro)
           params.merge!({column.association.primary_key_name => ''})
         end
         

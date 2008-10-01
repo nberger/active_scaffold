@@ -5,7 +5,9 @@ page.replace_html("footer_#{element_messages_id}", error_messages)
 columns = active_scaffold_config.create.columns if params[:action] == 'create'
 columns = active_scaffold_config.update.columns if params[:action] == 'update'
 columns.each :for => @record do |column|
-  if column_renders_as(column) == :field and column.form_ui != :hidden
+  make_available_method = "#{column.name}_make_available?"
+  made_available = @record.respond_to?(make_available_method) ? @record.send(make_available_method) : true
+  if column_renders_as(column) == :field and column.form_ui != :hidden and made_available
     page[field_error_id(column)].className = @record.errors[column.name] ? 'fieldWithErrors' : ''
   end
 end unless columns.nil?

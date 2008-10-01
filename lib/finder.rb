@@ -107,6 +107,38 @@ module ActiveScaffold
       pager.page(options[:page])
     end
 
+    def find_page_by_sql(options = {}, sql_options = {})
+      options.assert_valid_keys :sorting, :per_page, :page
+      sql_options.assert_valid_keys :select, :from, :where, :group_by, :order_by
+      options[:per_page] ||= 999999999
+      options[:page] ||= 1
+
+      klass = active_scaffold_config.model
+
+      if active_scaffold_conditions.length > 0
+        sql_options[:where] << " AND " if sql_options[:where]
+        sql_options[:where] ||= " Where "
+        sql_options[:where] << active_scaffold_conditions
+      end
+      count_clause = "Select count(*) #{sql_options[:from]} #{sql_options[:where]}"
+      count_clause = "Select count(*) From (Select count(*) #{sql_options[:from]} #{sql_options[:where]} #{sql_options[:group_by]}) as T" if sql_options[:group_by]
+      count = klass.count_by_sql(count_clause)
+
+      # we build the paginator differently for method- and sql-based sorting
+      if options[:sorting] and options[:sorting].sorts_by_method?
+        pager = ::Paginator.new(count, options[:per_page]) do |offset, per_page|
+          sorted_collection = sort_collection_by_column(klass.find_by_sql("#{sql_options[:select]} #{sql_options[:from]} #{sql_options[:where]} #{sql_options[:group_by]} #{sql_options[:order_by]}"), *options[:sorting].first)
+          sorted_collection.slice(offset, per_page)
+        end
+      else
+        pager = ::Paginator.new(count, options[:per_page]) do |offset, per_page|
+          klass.find_by_sql("#{sql_options[:select]} #{sql_options[:from]} #{sql_options[:where]} #{sql_options[:group_by]} #{sql_options[:order_by]} Limit #{offset}, #{per_page}")
+        end
+      end
+
+      page = pager.page(options[:page])
+    end
+
     # TODO: this should reside on the model, not the controller
     def merge_conditions(*conditions)
       c = conditions.find_all {|c| not c.nil? and not c.empty? }

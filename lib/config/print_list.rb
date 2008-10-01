@@ -16,7 +16,7 @@ module ActiveScaffold::Config
     # the ActionLink for this action
     
     cattr_accessor :empty_field_text
-    @@empty_field_text = '-'
+    @@empty_field_text = ''
     
     cattr_accessor :maximum_rows
     @@maximum_rows = 10000

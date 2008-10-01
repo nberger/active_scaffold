@@ -3,14 +3,13 @@ module ActiveScaffold::Actions
     include ActiveScaffold::Search
     def self.included(base)
       base.before_filter :field_search_authorized?, :only => :show_search
-      base.before_filter :store_search_session_info
+      base.before_filter :reset_search_session_info
       base.before_filter :do_search
     end
 
     # FieldSearch uses params[:search] and not @record because search conditions do not always pass the Model's validations.
     # This facilitates for example, textual searches against associations via .search_sql
     def show_search
-      params[:search] = active_scaffold_session_storage[:search] || {}
       do_show_search
       
       respond_to do |type|
@@ -26,17 +25,17 @@ module ActiveScaffold::Actions
     end
 
     def reset_search
-      reset_search_session_info
       update_table      
     end
     
     protected
 
     def do_search
-      unless params[:search].nil?
+      store_params_into_search_session_info
+      unless search_session_info.empty?
         like_pattern = active_scaffold_config.field_search.full_text_search? ? '%?%' : '?%'
         conditions = self.active_scaffold_conditions
-        params[:search].each do |key, value|
+        search_session_info.each do |key, value|
           next unless active_scaffold_config.field_search.columns.include?(key)
           column = active_scaffold_config.columns[key]
           conditions = merge_conditions(conditions, condition_for_search_column(column, value, like_pattern))
@@ -53,20 +52,19 @@ module ActiveScaffold::Actions
 
     def do_show_search
       init_params = {}
-      params[:search].each do |key, value|
+      search_session_info.each do |key, value|
         next unless active_scaffold_config.field_search.columns.include?(key)
         column = active_scaffold_config.columns[key]
         column_type, search_type = type_for_search_column(column, value)
         next if column_type.nil? or search_type == :range or column_type == :set
         value = value[:id] if column_type == :id_hash
-        #TODO 2008-01-04 (EJM) Level=0 - Support virtual columns and associations that are not tied to RecordSelect ie. there values may be strings.
         if column.association and value
-          lookup_value = value.to_i if value.kind_of?(Numeric) and value.to_i > 0
+          lookup_value = value.to_i if (value.kind_of?(Numeric) or column_type == :integer) and value.to_i > 0
           lookup_value ||= value unless value.kind_of?(String)
           init_params[key] = column.association.klass.find(lookup_value) if lookup_value
         end
         init_params[key] ||= value unless column.association
-      end
+      end unless search_session_info.nil?
       @record = active_scaffold_config.model.new(init_params)
     end
     
@@ -99,9 +97,9 @@ module ActiveScaffold::Actions
               time_from = " 00:00:00"
               time_to = " 23:59:59"
             end
-            return ["#{column.search_sql} >= ? and #{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_from]) + time_from, tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_from].nil? or value[:range_from].empty? or value[:range_to].nil? or value[:range_to].empty?
-            return ["#{column.search_sql} >= ?", tmp_model.cast_to_date(value[:range_from]) + time_from] unless value[:range_from].nil? or value[:range_from].empty?
-            return ["#{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_to].nil? or value[:range_to].empty?
+            return ["#{column.search_sql} >= ? and #{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_from]) + time_from, tmp_model.cast_to_date(value[:range_to]) + time_to] if value[:range_from] and value[:range_to]
+            return ["#{column.search_sql} >= ?", tmp_model.cast_to_date(value[:range_from]) + time_from] if value[:range_from]
+            return ["#{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_to]) + time_to] if value[:range_to]
           when :exact
             ["#{column.search_sql} = ?", value]
           else
@@ -114,7 +112,7 @@ module ActiveScaffold::Actions
       return(nil) unless column and column.search_sql and value
       column_type = column.form_ui || column.column.type
       # Support :options => {:field_search => :select}, the value as [:id => ?].
-      if value.is_a?(Hash) and value.has_key?(:id) 
+      if value.is_a?(Hash) and value.has_key?(:id)
         column_type = :id_hash 
       end
       if column_type == :record_select

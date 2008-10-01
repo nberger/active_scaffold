@@ -917,3 +917,14 @@ font: bold 16px arial;
 letter-spacing: -1px;
 border: solid 1px #1F7F00;
 }
+/* AS messages within a form */
+.active-scaffold .view .warning-message {
+  border-left: solid 1px #ff6;
+  background-color: #ffb;
+  margin: 0;
+}
+.active-scaffold .view .info-message {
+  border: solid 1px #66f;
+  background-color: #bbf;
+  margin: 0;
+}

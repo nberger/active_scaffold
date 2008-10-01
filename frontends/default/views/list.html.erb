@@ -1,25 +1,36 @@
 <div id="<%= active_scaffold_id -%>" class="active-scaffold active-scaffold-<%= controller_id %> <%= active_scaffold_config.theme %>-theme">
   <div class="active-scaffold-header">
-    <%= render :partial => 'list_header' %>
+    <%= render :partial => 'list_header' unless params[:wizard_controller] %>
   </div>
   <table cellpadding="0" cellspacing="0">
-    <tbody class="before-header" id="<%= before_header_id -%>"></tbody>
+    <tbody class="before-header" id="<%= before_header_id -%>">
+      <% if params[:wizard_controller] %>
+      <tr class="inline-adapter" id="applicant__applicant_employments-nested--row">
+        <td class="inline-adapter-cell" colspan="99" style="background-image: none; background-color: transparent;">
+          <div class="active-scaffold">
+            <div class="create-view view">
+              <%= render :partial => 'create_form' -%>
+              <% flash[:error] = flash[:warning] = flash[:info] = nil %>
+              <% parent_id = @controller.active_scaffold_session_storage[:constraints].each_key {|id| id}.to_a.flatten[1] %>
+              <%= button_to as_('Previous'), :controller => params[:wizard_controller], :action => "previous", :id => parent_id, :class => "submit" %>
+              <%= button_to as_('Continue'), :controller => params[:wizard_controller], :action => "next", :id => parent_id, :class => "submit" %>&nbsp;
+            </div>
+          </div>
+        </td>
+      </tr>
+      <% end %>
+    </tbody>
   </table>
   <div id="<%= active_scaffold_content_id -%>">
     <%= render :partial => 'list' %>
   </div>
-</div>
-
 <script type="text/javascript">
-<% if active_scaffold_config.theme != :default %>
-Rico.Corner.round($$('#<%= active_scaffold_id %> div.active-scaffold-header').first(), {color: 'fromElement', bgColor: 'fromParent', corners: 'top', compact: true});
-Rico.Corner.round($$('#<%= active_scaffold_id %> div.active-scaffold-footer').first(), {color: 'fromElement', bgColor: 'fromParent', corners: 'bottom', compact: true});
-<% end %>
-new ActiveScaffold.Actions.Table($$('#<%= active_scaffold_id -%> div.active-scaffold-header a.action'), $('<%= before_header_id -%>'), $('<%= loading_indicator_id(:action => :table) -%>'))
-ActiveScaffold.server_error_response = '<p class="error-message message">'
-  + <%= as_('Request Failed (code 500, Internal Error)').to_json %>
-  + '<a href="#" onclick="Element.remove(this.parentNode); return false;">'
-  + <%= as_('Close').to_json %>
-  + '</a>'
-  + '</p>';
+	new ActiveScaffold.Actions.Table($$('#<%= active_scaffold_id -%> div.active-scaffold-header a.action'), $('<%= before_header_id -%>'), $('<%= loading_indicator_id(:action => :table) -%>'))
+	ActiveScaffold.server_error_response = '<p class="error-message message">'
+	  + <%= as_('Request Failed (code 500, Internal Error)').to_json %>
+	  + '<a href="#" onclick="Element.remove(this.parentNode); return false;">'
+	  + <%= as_('Close').to_json %>
+	  + '</a>'
+	  + '</p>';
 </script>
+</div>

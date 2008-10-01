@@ -72,7 +72,8 @@ module ActiveRecordPermissions
     # options[:action] should be a CRUD verb (:create, :read, :update, :destroy)
     # options[:column] should be the name of a model attribute
     def authorized_for?(options = {})
-      raise ArgumentError, "unknown action #{options[:action]}" if options[:action] and ![:create, :read, :update, :destroy].include?(options[:action])
+      # Ed - Let's try opening this up to allow for more than just CRUD
+      # raise ArgumentError, "unknown action #{options[:action]}" if options[:action] and ![:create, :read, :update, :destroy].include?(options[:action])
 
       # collect the possibly-related methods that actually exist
       methods = [

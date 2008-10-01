@@ -5,10 +5,11 @@
     </td>
 
     <% active_scaffold_config.action_links.each :record do |link| -%>
-      <% next if controller.respond_to? link.security_method and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, link))) -%>
+      <% next if controller.respond_to?(link.security_method) and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, link))) -%>
+      <% next unless record.authorized_for?(:action => link.crud_type) %>
       <td>
-        <%= record.authorized_for?(:action => link.crud_type) ? render_action_link(link, url_options) : "<a class='disabled'>#{link.label}</a>" -%>
-      </td>    
+			  <%= render_action_link(link, url_options) -%>
+	    </td>      
     <% end -%>
   </tr>
 </table>
