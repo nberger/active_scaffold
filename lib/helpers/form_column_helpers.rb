@@ -63,6 +63,11 @@ module ActiveScaffold
       ## Form input methods
       ##
 
+      def active_scaffold_add_existing_input(options)
+        select_options = options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
+        select_options.empty? ? '' : select_tag(options[:name], '<option value="">' + as_('- select -') + '</option>' + select_options)
+      end
+
       def active_scaffold_input_singular_association(column, options)
         associated = @record.send(column.association.name)
 

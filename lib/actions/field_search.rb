@@ -97,9 +97,9 @@ module ActiveScaffold::Actions
               time_from = " 00:00:00"
               time_to = " 23:59:59"
             end
-            return ["#{column.search_sql} >= ? and #{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_from]) + time_from, tmp_model.cast_to_date(value[:range_to]) + time_to] if value[:range_from] and value[:range_to]
-            return ["#{column.search_sql} >= ?", tmp_model.cast_to_date(value[:range_from]) + time_from] if value[:range_from]
-            return ["#{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_to]) + time_to] if value[:range_to]
+            return ["#{column.search_sql} >= ? and #{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_from]) + time_from, tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_from].nil? or value[:range_from].empty? or value[:range_to].nil? or value[:range_to].empty?
+            return ["#{column.search_sql} >= ?", tmp_model.cast_to_date(value[:range_from]) + time_from] unless value[:range_from].nil? or value[:range_from].empty?
+            return ["#{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_to].nil? or value[:range_to].empty?
           when :exact
             ["#{column.search_sql} = ?", value]
           else
