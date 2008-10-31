@@ -12,8 +12,8 @@
               <%= render :partial => 'create_form' -%>
               <% flash[:error] = flash[:warning] = flash[:info] = nil %>
               <% parent_id = @controller.active_scaffold_session_storage[:constraints].each_key {|id| id}.to_a.flatten[1] %>
-              <%= button_to as_('Previous'), :controller => params[:wizard_controller], :action => "previous", :id => parent_id, :class => "submit" %>
-              <%= button_to as_('Continue'), :controller => params[:wizard_controller], :action => "next", :id => parent_id, :class => "submit" %>&nbsp;
+              <%= button_to as_('Previous'), :controller => params[:wizard_controller], :action => "previous_wizard", :id => parent_id, :class => "submit" %>
+              <%= button_to as_('Continue'), :controller => params[:wizard_controller], :action => "next_wizard", :id => parent_id, :class => "submit" %>&nbsp;
             </div>
           </div>
         </td>

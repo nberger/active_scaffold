@@ -928,3 +928,61 @@ border: solid 1px #1F7F00;
   background-color: #bbf;
   margin: 0;
 }
+/* Revisions */
+.active-scaffold td.header_compare_cell {
+  font: bold 12px verdana, sans-serif;
+  text-transform: uppercase;
+  border: 10px;
+  color: #460000;
+  padding: 0;
+  text-align: center;
+  width: auto;
+}
+
+.active-scaffold td.left_compare_cell {
+  font: normal 11px verdana, sans-serif;
+  border: 10px;
+  color: #460000;
+  padding: 0;
+  text-align: right;
+  width: auto;
+}
+
+.active-scaffold td.current_compare_cell {
+  font: bold 11px verdana, sans-serif;
+  border: solid 1px #6C6A52;
+  border-bottom: 1;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  color: #460000;
+  padding: 0;
+  text-align: left;
+  width: auto;
+}
+
+.active-scaffold td.right_compare_cell {
+  font: normal 11px verdana, sans-serif;
+  border: solid 1px #6C6A52;
+  border-bottom: 1;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  color: #460000;
+  padding: 0;
+  text-align: left;
+  width: auto;
+}
+
+.active-scaffold td.right_compare_cell_changed {
+  font: normal 11px verdana, sans-serif;
+  border: solid 1px #6C6A52;
+	border-bottom: 1;
+	border-top: 0;
+	border-left: 0;
+	border-right: 0;
+  color: #f00;
+	padding: 0;
+	text-align: left;
+  width: auto;
+}

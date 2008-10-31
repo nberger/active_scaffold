@@ -13,32 +13,46 @@ module ActiveScaffold
 
         # second, check if the dev has specified a valid form_ui for this column
         elsif column.form_ui and override_input?(column.form_ui)
-          send(override_input(column.form_ui), column, options)
-
+          html = send(override_input(column.form_ui), column, options)
+          html << active_scaffold_observe(column, options[:id])
+          html
         # fallback: we get to make the decision
         else
           if column.association
             # if we get here, it's because the column has a form_ui but not one ActiveScaffold knows about.
             raise "Unknown form_ui `#{column.form_ui}' for column `#{column.name}'"
           elsif column.virtual?
-            active_scaffold_input_virtual(column, options)
+            html = active_scaffold_input_virtual(column, options)
 
           else # regular model attribute column
             # if we (or someone else) have created a custom render option for the column type, use that
             if override_input?(column.column.type)
-              send(override_input(column.column.type), column, options)
+              html = send(override_input(column.column.type), column, options)
             # final ultimate fallback: use rails' generic input method
             else
               # for textual fields we pass different options
               text_types = [:text, :string, :integer, :float, :decimal]
               options = active_scaffold_input_text_options(options) if text_types.include?(column.column.type)
-              input(:record, column.name, options)
+              html = input(:record, column.name, options)
             end
           end
+          html << active_scaffold_observe(column, options[:id])
+          html
         end
       end
 
       alias form_column active_scaffold_input_for
+
+      def active_scaffold_observe(column, id_name)
+        if column.options[:observe_method]
+          action = @record.id ? :update : :create
+          return observe_field(id_name,
+                      :frequency => 0.2,
+                      :url => {:action => column.options[:observe_method], :parent_id => @record.id}, 
+                      :with => "Form.serialize('#{element_form_id(:action => action)}')+'&='" ) unless !column.options[:observe_restrict_actions].nil? and column.options[:observe_restrict_actions].include?(action)
+        end
+        ''
+      end
 
       # the standard active scaffold options used for textual inputs
       def active_scaffold_input_text_options(options = {})
@@ -66,6 +80,10 @@ module ActiveScaffold
       def active_scaffold_add_existing_input(options)
         select_options = options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
         select_options.empty? ? '' : select_tag(options[:name], '<option value="">' + as_('- select -') + '</option>' + select_options)
+      end
+
+      def active_scaffold_add_existing_label
+        active_scaffold_config.model.to_s.underscore.humanize
       end
 
       def active_scaffold_input_singular_association(column, options)

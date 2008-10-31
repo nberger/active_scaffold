@@ -100,6 +100,8 @@ module ActiveScaffold::Actions
             return ["#{column.search_sql} >= ? and #{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_from]) + time_from, tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_from].nil? or value[:range_from].empty? or value[:range_to].nil? or value[:range_to].empty?
             return ["#{column.search_sql} >= ?", tmp_model.cast_to_date(value[:range_from]) + time_from] unless value[:range_from].nil? or value[:range_from].empty?
             return ["#{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_to].nil? or value[:range_to].empty?
+          when :set
+            ["#{column.search_sql} IN (#{value.collect{|c| "'#{c}'"}.join(',')})"]
           when :exact
             ["#{column.search_sql} = ?", value]
           else
@@ -123,6 +125,7 @@ module ActiveScaffold::Actions
         end
       end
       search_type = :exact if [:exact, :select].include?(column.options[:field_search]) or [:usa_state].include?(column_type)
+      search_type = :set if [:multiple].include?(column.options[:field_search])
       # Support :options => {:field_search => :range}, the value as [:range_from => ?, :range_to => ?].
       search_type = :range if value.is_a?(Hash) and value.has_key?(:range_from)
       search_type ||= column_type

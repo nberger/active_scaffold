@@ -35,7 +35,7 @@ module ActiveScaffold::Actions
 
       respond_to do |type|
         type.html {
-          reset_active_scaffold_session
+          reset_active_scaffold_session unless params[:wizard_controller]
           render :action => 'list', :layout => true
         }
         type.xml { render :xml => response_object.to_xml, :content_type => Mime::XML, :status => response_status }
