@@ -33,7 +33,7 @@ module ActiveScaffold
               # for textual fields we pass different options
               text_types = [:text, :string, :integer, :float, :decimal]
               options = active_scaffold_input_text_options(options) if text_types.include?(column.column.type)
-              html = input(:record, column.name, options)
+              html = input(:record, column.name, options.merge(column.options))
             end
           end
           html << active_scaffold_observe(column, options[:id])
@@ -70,7 +70,7 @@ module ActiveScaffold
         end
         options[:class] ||= "#{column.name}-input"
         name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
-        { :name => name, :id => "record_#{column.name}_#{params[:eid] || params[:id]}"}.merge(options)
+        { :name => name, :id => "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"}
       end
 
       ##
@@ -78,8 +78,14 @@ module ActiveScaffold
       ##
 
       def active_scaffold_add_existing_input(options)
-        select_options = options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
-        select_options.empty? ? '' : select_tag(options[:name], '<option value="">' + as_('- select -') + '</option>' + select_options)
+        # select_options = options_for_select(options_for_association(nested_association)) unless column.through_association?
+        select_options ||= options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
+        unless select_options.empty?
+          select_tag 'associated_id', '<option value="">' + as_('- select -') + '</option>' + select_options
+        end  
+        # Old way...
+        # select_options = options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
+        # select_options.empty? ? '' : select_tag(options[:name], '<option value="">' + as_('- select -') + '</option>' + select_options)
       end
 
       def active_scaffold_add_existing_label
@@ -89,14 +95,11 @@ module ActiveScaffold
       def active_scaffold_input_singular_association(column, options)
         associated = @record.send(column.association.name)
 
-        select_options = [[as_('- select -'),nil]]
-        select_options += [[ associated.to_label, associated.id ]] unless associated.nil?
-        select_options += options_for_association(column.association)
-
-        selected = associated.nil? ? nil : associated.id
+        select_options = options_for_association(column.association)
+        select_options.unshift([ associated.to_label, associated.id ]) unless associated.nil? or select_options.find {|label, id| id == associated.id}
 
         options[:name] += '[id]'
-        select(:record, column.name, select_options.uniq, { :selected => selected }, options)
+        select(:record, "#{column.name}_id", select_options.uniq, {:include_blank => as_('- select -')}, options)
       end
 
       def active_scaffold_input_plural_association(column, options)
@@ -141,14 +144,13 @@ module ActiveScaffold
         end
         remote_controller = active_scaffold_controller_for(column.association.klass).controller_path
 
+        # if the opposite association is a :belongs_to, then only show records that have not been associated yet
         params = {:parent_id => @record.id, :parent_model => @record.class}
         
         # if the opposite association is a :belongs_to, then only show records that have not been associated yet
         # robd 2008-06-29: is this code doing the right thing? doesn't seem to check :belongs_to...
         # in any case, could we encapsulate this code on column in a method like .singular_association?
-        # Ed - why are we doing this? specifically why in has_one?
-        # params = if column.association and [:has_one, :has_many].include?(column.association.macro)
-        params = if column.association and [:has_many].include?(column.association.macro)
+        if [:has_one, :has_many].include?(column.association.macro)
           params.merge!({column.association.primary_key_name => ''})
         end
         
@@ -208,9 +210,22 @@ module ActiveScaffold
         select_tag(options[:name], options_for_select(select_options, @record.send(column.name)))
       end
 
+      def onsubmit
+      end
+
       ##
       ## Form column override signatures
       ##
+
+      # add functionality for overriding subform partials from association class path
+      def override_subform_partial?(column)
+        path, partial_name = partial_pieces(override_subform_partial(column))
+        @finder.file_exists? File.join(path, "_#{partial_name}")
+      end
+
+      def override_subform_partial(column)
+        File.join(active_scaffold_controller_for(column.association.klass).controller_path, "subform") if column_renders_as(column) == :subform
+      end
 
       def override_form_field_partial?(column)
         path, partial_name = partial_pieces(override_form_field_partial(column))
@@ -252,6 +267,14 @@ module ActiveScaffold
         end
       end
 
+      def subform_partial_for_column(column)
+        if override_subform_partial?(column)
+          override_subform_partial(column)
+        else
+          "horizontal_subform"
+        end
+      end
+
       ##
       ## Macro-level rendering decisions for columns
       ##
@@ -275,6 +298,7 @@ module ActiveScaffold
       def is_subform?(column)
         column_renders_as(column) == :subform
       end
+<<<<<<< HEAD:lib/helpers/form_column_helpers.rb
       
       # =======
       # = AST =
@@ -384,6 +408,14 @@ module ActiveScaffold
 
         tag("input", options[:html], false)
       end      
+
+      def column_scope(column)
+        if column.plural_association?
+          "[#{column.name}][#{@record.id || generate_temporary_id}]"
+        else
+          "[#{column.name}]"
+        end
+      end
     end
   end
 end

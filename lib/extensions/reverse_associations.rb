@@ -1,15 +1,4 @@
 module ActiveRecord
-
-  module Associations # :nodoc:
-    module ClassMethods
-      private
-      # Ed - I added :has_and_belongs_to_many to prevent add_limited_ids_condition! from being called inside construct_finder_sql_with_included_associations, because construct_finder_sql_for_association_limiting builds a Select with a column in the where clause that belongs to a join table and ignores :include directive.
-      def using_limitable_reflections?(reflections)
-        reflections.reject { |r| [ :belongs_to, :has_one, :has_and_belongs_to_many ].include?(r.macro) }.length.zero?
-      end
-    end
-  end
-
   module Reflection
     class AssociationReflection #:nodoc:
       def reverse_for?(klass)
