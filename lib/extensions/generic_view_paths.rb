@@ -46,16 +46,6 @@ class ActionView::TemplateFinder
   end
   alias_method_chain :find_template_extension_from_handler, :generic_paths
 
-  def find_template_extension_from_handler_with_generics(template_path, template_format = @template.template_format)
-    t_ext = find_template_extension_from_handler_without_generics(template_path, template_format)
-    if t_ext && !t_ext.empty?
-      t_ext
-    else
-      'html.erb'
-    end
-  end
-  alias_method_chain :find_template_extension_from_handler, :generics
-
 protected
 
   # We don't want to use generic_view_paths in ActionMailer, and we don't want

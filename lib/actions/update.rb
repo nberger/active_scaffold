@@ -55,10 +55,10 @@ module ActiveScaffold::Actions
       end
     end
 
+    # for inline (inlist) editing
     def update_column
       do_update_column
-      #TODO 2008-01-19 (EJM) Level=0 - How to trap for 500 errors
-      render :action => 'refresh_record.js.rjs', :layout => false
+      render :action => 'update_column.js.rjs', :layout => false
     end
 
     protected

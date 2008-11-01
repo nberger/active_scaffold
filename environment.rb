@@ -84,3 +84,6 @@ ActionController::Base.send(:include, RespondsToParent)
 ActionController::Base.send(:include, ActiveScaffold::Helpers::ControllerHelpers)
 ActionView::Base.send(:include, ActiveScaffold::Helpers::ViewHelpers)
 
+# Make find_template_extension_from_handler_with_generic_paths see AS templates with Rails 2.x compliant extensions
+ActionView::Template::register_template_handler 'html.erb', ActionView::TemplateHandlers::ERB
+ActionView::Template::register_template_handler 'js.rjs', ActionView::TemplateHandlers::RJS
