@@ -117,6 +117,17 @@ module ActiveScaffold
       pager.page(options[:page])
     end
 
+    def joins_for_finder
+      case joins_for_collection.class
+      when String
+        [ joins_for_collection ]
+      when Array
+        joins_for_collection
+      else
+        []
+      end + active_scaffold_habtm_joins
+    end
+
     def find_page_by_sql(options = {}, sql_options = {})
       options.assert_valid_keys :sorting, :per_page, :page
       sql_options.assert_valid_keys :select, :from, :where, :group_by, :order_by

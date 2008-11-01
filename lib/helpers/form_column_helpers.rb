@@ -298,7 +298,14 @@ module ActiveScaffold
       def is_subform?(column)
         column_renders_as(column) == :subform
       end
-<<<<<<< HEAD:lib/helpers/form_column_helpers.rb
+      
+      def column_scope(column)
+        if column.plural_association?
+          "[#{column.name}][#{@record.id || generate_temporary_id}]"
+        else
+          "[#{column.name}]"
+        end
+      end
       
       # =======
       # = AST =
@@ -409,13 +416,6 @@ module ActiveScaffold
         tag("input", options[:html], false)
       end      
 
-      def column_scope(column)
-        if column.plural_association?
-          "[#{column.name}][#{@record.id || generate_temporary_id}]"
-        else
-          "[#{column.name}]"
-        end
-      end
     end
   end
 end
