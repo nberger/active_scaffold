@@ -2,6 +2,8 @@ module ActiveScaffold
   module Helpers
     # Helpers that assist with the rendering of a List Column
     module ListColumns
+      include ActionView::Helpers::JavaScriptMacrosHelper
+      
       def get_column_value(record, column)
         # check for an override helper
         value = if column_override? column
@@ -173,34 +175,6 @@ module ActiveScaffold
       def format_date(date)
         format = ActiveSupport::CoreExtensions::Date::Conversions::DATE_FORMATS[:default] || "%m/%d/%Y"
         date.strftime(format)
-      end
-
-      # ==========
-      # = Inline Edit =
-      # ==========
-      def format_inplace_edit_column(record,column)
-        value = record.send(column.name)
-        if column.list_ui == :checkbox
-          active_scaffold_column_checkbox(column, record)
-        else
-          clean_column_value(format_column(value))
-        end
-      end
-      
-      def active_scaffold_inplace_edit(record, column)
-        formatted_column = format_inplace_edit_column(record,column)
-        id_options = {:id => record.id.to_s, :action => 'update_column', :name => column.name.to_s}
-        tag_options = {:tag => "span", :id => element_cell_id(id_options), :class => "in_place_editor_field"}
-        in_place_editor_options = {:url => {:controller => params_for[:controller], :action => "update_column", :column => column.name, :id => record.id.to_s},
-         :with => params[:eid] ? "Form.serialize(form) + '&eid=#{params[:eid]}'" : nil,
-         :click_to_edit_text => as_("Click to edit"),
-         :cancel_text => as_("Cancel"),
-         :loading_text => as_("Loading…"),
-         :save_text => as_("Update"),
-         :saving_text => as_("Saving…"),
-         :options => "{method: 'post'}",
-         :script => true}.merge(column.options)
-        content_tag(:span, formatted_column, tag_options) + in_place_editor(tag_options[:id], in_place_editor_options)
       end
 
     end

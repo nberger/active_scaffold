@@ -1,8 +1,8 @@
 module ActiveScaffold::Config
   class Core < Base
 
-    def initialize_with_calendar_date_select(model_id)
-      initialize_without_calendar_date_select(model_id)
+    def initialize_with_calendar_date_select(config_options)
+      initialize_without_calendar_date_select(config_options)
       
       calendar_date_select_fields = self.model.columns.collect{|c| c.name.to_sym if [:date, :datetime].include?(c.type) }.compact
       # check to see if file column was used on the model

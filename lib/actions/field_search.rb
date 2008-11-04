@@ -38,7 +38,7 @@ module ActiveScaffold::Actions
         search_session_info.each do |key, value|
           next unless active_scaffold_config.field_search.columns.include?(key)
           column = active_scaffold_config.columns[key]
-          conditions = merge_conditions(conditions, ActiveScaffold::Finder.condition_for_search_column(column, value, like_pattern))
+          conditions = merge_conditions(conditions, condition_for_search_column(column, value, like_pattern))
         end
         self.active_scaffold_conditions = conditions
 
@@ -52,19 +52,20 @@ module ActiveScaffold::Actions
 
     def do_show_search
       init_params = {}
-      search_session_info.each do |key, value|
-        next unless active_scaffold_config.field_search.columns.include?(key)
-        column = active_scaffold_config.columns[key]
+      active_scaffold_config.field_search.columns.each do |column|
+        init_params[column.name] = nil unless column.association # Default all searchable columns to nil except associations
+        next if search_session_info.nil?
+        value = search_session_info[column.name]
         column_type, search_type = type_for_search_column(column, value)
         next if column_type.nil? or search_type == :range or column_type == :set
         value = value[:id] if column_type == :id_hash
         if column.association and value
           lookup_value = value.to_i if (value.kind_of?(Numeric) or column_type == :integer) and value.to_i > 0
           lookup_value ||= value unless value.kind_of?(String)
-          init_params[key] = column.association.klass.find(lookup_value) if lookup_value
+          init_params[column.name] = column.association.klass.find(lookup_value) if lookup_value
         end
-        init_params[key] ||= value unless column.association
-      end unless search_session_info.nil?
+        init_params[column.name] ||= value unless column.association
+      end
       @record = active_scaffold_config.model.new(init_params)
     end
     
@@ -101,7 +102,8 @@ module ActiveScaffold::Actions
             return ["#{column.search_sql} >= ?", tmp_model.cast_to_date(value[:range_from]) + time_from] unless value[:range_from].nil? or value[:range_from].empty?
             return ["#{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_to].nil? or value[:range_to].empty?
           when :set
-            ["#{column.search_sql} IN (#{value.collect{|c| "'#{c}'"}.join(',')})"]
+            value.compact! unless value.nil?
+            ["#{column.search_sql} IN (#{value.collect{|c| "'#{c}'"}.join(',')})"] unless value.nil? or value.empty?
           when :exact
             ["#{column.search_sql} = ?", value]
           else

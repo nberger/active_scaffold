@@ -1,8 +1,8 @@
 module ActiveScaffold::Config
   class Core < Base
 
-    def initialize_with_dhtml_calendar(model_id)
-      initialize_without_dhtml_calendar(model_id)
+    def initialize_with_dhtml_calendar(config_options)
+      initialize_without_dhtml_calendar(config_options)
       
       dhtml_calendar_fields = self.model.columns.collect{|c| c.name.to_sym if [:date, :datetime].include?(c.type) }.compact
       # check to see if file column was used on the model

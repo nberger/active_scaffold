@@ -170,6 +170,6 @@ class ConstraintsTest < Test::Unit::TestCase
   end
 
   def config_for(klass)
-    ActiveScaffold::Config::Core.new("model_stubs/#{klass.to_s.underscore.downcase}")
+    ActiveScaffold::Config::Core.new(:model_id => "model_stubs/#{klass.to_s.underscore.downcase}")
   end
 end

@@ -38,11 +38,12 @@ module ActionView
       def to_usa_state_select_tag(priority_states, options, html_options)
         html_options = html_options.stringify_keys
         add_default_name_and_id(html_options)
+        value = value(object) if method(:value).arity > 0
         if html_options[:name.to_s].include?('search') and (html_options[:multiple.to_s] or html_options[:field_search.to_s] == :multiple)
           html_options[:name.to_s] << '[]' 
           html_options[:multiple] = true
+          options[:prompt] = ''
         end
-        value = value(object) if method(:value).arity > 0
         content_tag("select", add_options(usa_state_options_for_select(value, priority_states), options, value), html_options)
       end
     end

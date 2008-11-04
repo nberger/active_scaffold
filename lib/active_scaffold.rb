@@ -55,7 +55,7 @@ module ActiveScaffold
       model_id = self.to_s.split('::').last.sub(/Controller$/, '').pluralize.singularize.underscore unless model_id
 
       # run the configuration
-      @active_scaffold_config = ActiveScaffold::Config::Core.new(model_id)
+      @active_scaffold_config = ActiveScaffold::Config::Core.new(:model_id => model_id, :controller => self)
       self.active_scaffold_config.configure &block if block_given?
       self.active_scaffold_config._load_action_columns
 
@@ -72,7 +72,8 @@ module ActiveScaffold
       end
       paths << File.join(frontends_path, active_scaffold_config.frontend, 'views') if active_scaffold_config.frontend.to_sym != :default
       paths << File.join(frontends_path, 'default', 'views')
-      self.generic_view_paths = paths
+      self.generic_view_paths << paths
+      self.generic_view_paths.flatten!
 
       # include the rest of the code into the controller: the action core and the included actions
       module_eval do
@@ -100,7 +101,7 @@ module ActiveScaffold
       begin
         controller = active_scaffold_controller_for(klass)
       rescue ActiveScaffold::ControllerNotFound
-        config = ActiveScaffold::Config::Core.new(klass)
+        config = ActiveScaffold::Config::Core.new(:model_id => klass)
         config._load_action_columns
         config
       else

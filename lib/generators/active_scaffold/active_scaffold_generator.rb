@@ -215,26 +215,26 @@ class ActiveScaffoldGenerator < Rails::Generator::NamedBase
 
       m.complex_template 'model.rb',
         File.join('app/models', "#{singular_name}.rb"),
-        :insert => 'model_scaffolding.html.erb',
+        :insert => 'model_scaffolding.rhtml',
         :sandbox => lambda { create_sandbox }
 
-      m.complex_template('form.html.erb',
+      m.complex_template('form.rhtml',
         File.join('app/views',
                   controller_class_path,
                   controller_file_name,
-                  '_form.html.erb'),
-        :insert => 'form_scaffolding.html.erb',
+                  '_form.rhtml'),
+        :insert => 'form_scaffolding.rhtml',
         :sandbox => lambda { create_sandbox },
         :begin_mark => 'form',
         :end_mark => 'eoform',
         :mark_id => singular_name) if less_dry_partial?
 
-      m.complex_template('show.html.erb',
+      m.complex_template('show.rhtml',
         File.join('app/views',
                   controller_class_path,
                   controller_file_name,
-                  '_show.html.erb'),
-        :insert => 'show_scaffolding.html.erb',
+                  '_show.rhtml'),
+        :insert => 'show_scaffolding.rhtml',
         :sandbox => lambda { create_sandbox },
         :begin_mark => 'show',
         :end_mark => 'eoshow',
@@ -246,7 +246,7 @@ class ActiveScaffoldGenerator < Rails::Generator::NamedBase
         File.join('app/controllers',
                 controller_class_path,
                 "#{controller_file_name}_controller.rb"),
-        :insert => 'controller_scaffolding.html.erb',
+        :insert => 'controller_scaffolding.rhtml',
         :sandbox => lambda { create_sandbox }
       m.template 'helper.rb',
         File.join('app/helpers',
