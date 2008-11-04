@@ -55,7 +55,7 @@ module ActiveScaffold
       model_id = self.to_s.split('::').last.sub(/Controller$/, '').pluralize.singularize.underscore unless model_id
 
       # run the configuration
-      @active_scaffold_config = ActiveScaffold::Config::Core.new(:model_id => model_id, :controller => self)
+      @active_scaffold_config = ActiveScaffold::Config::Core.new(model_id)
       self.active_scaffold_config.configure &block if block_given?
       self.active_scaffold_config._load_action_columns
 
@@ -101,7 +101,7 @@ module ActiveScaffold
       begin
         controller = active_scaffold_controller_for(klass)
       rescue ActiveScaffold::ControllerNotFound
-        config = ActiveScaffold::Config::Core.new(:model_id => klass)
+        config = ActiveScaffold::Config::Core.new(klass)
         config._load_action_columns
         config
       else
