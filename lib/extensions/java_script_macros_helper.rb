@@ -137,19 +137,13 @@ module ActionView
         htm_opts = {:class => options[:class] }
         case input_type
         when :textarea
-          text_area(:record, column.name, options )
+          text_area_tag('value', record.send(column.name), options )
         when :select
-          select(:record, column.name,  options[:choices], {:selected => record.send(column.name)}.merge(options), htm_opts )
-        when :checkbox
-          options[:label_class] = "inplace_#{input_type}_label"
-          checkbox_collection(:record, column.name, record,  options[:choices], options )
-        when :radio
-          options[:label_class] = "inplace_#{input_type}_label"
-          radio_collection(:record, column.name, record,  options[:choices], options )
+          select_tag('value', record.send(column.name), options[:choices], {:selected => record.send(column.name)}.merge(options), htm_opts )
         # when :date_select
         #   calendar_date_select( :record, column.name, options)
         else
-          text_field(:record, column.name, options )
+          text_field_tag('value', record.send(column.name), options)
         end
       end
       

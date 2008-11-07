@@ -38,7 +38,7 @@
           :constraints => constraints,
           :conditions => association.options[:conditions],
           :label => h(label),
-          :params => {:wizard_controller => params[:wizard_controller], :nested => true, :parent_column => column_name, :parent_model => association.active_record}
+          :params => {:wizard_controller => params[:wizard_controller], :nested => true, :parent_column => column_name, :parent_model => association.active_record.name}
         ), binding
       end
     end

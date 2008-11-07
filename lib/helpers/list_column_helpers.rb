@@ -43,6 +43,9 @@ module ActiveScaffold
         return value
       end
 
+      def list_action_authorized?(link, record)
+       !(controller.respond_to?(link.security_method) and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, link)))) and record.authorized_for?(:action => link.crud_type)
+      end
       # TODO: move empty_field_text and &nbsp; logic in here?
       # TODO: move active_scaffold_inplace_edit in here?
       # TODO: we need to distinguish between the automatic links *we* create and the ones that the dev specified. some logic may not apply if the dev specified the link.
@@ -54,7 +57,7 @@ module ActiveScaffold
           if column.singular_association? and column_empty?(text)
             column_model = column.association.klass
             controller_actions = active_scaffold_config_for(column_model).actions
-            if controller_actions.include?(:create) and column_model.authorized_for?(:action => :create)
+            if controller_actions.include?(:create) and column_model.authorized_for?(:action => :create) and column.options[:show_create_link_if_empty]
               link.action = 'new'
               link.crud_type = :create
               text = as_('Create New')

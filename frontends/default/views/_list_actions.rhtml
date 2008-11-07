@@ -4,12 +4,21 @@
       <%= loading_indicator_tag(:action => :record, :id => record.id) %>
     </td>
 
+		<% html_actions = [] %>
     <% active_scaffold_config.action_links.each :record do |link| -%>
-      <% next if controller.respond_to?(link.security_method) and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, link))) -%>
-      <% next unless record.authorized_for?(:action => link.crud_type) %>
-      <td>
-			  <%= render_action_link(link, url_options) -%>
-	    </td>      
+      <% next unless list_action_authorized?(link, record) %>
+			<% if [:destroy, :show, :edit].include?(link.action.to_sym) %>
+	      <td>
+				  <%= render_action_link(link, url_options) -%>
+		    </td>      
+			<% else %>
+				<% html_actions << render_action_link(link, url_options) %>
+			<% end %>
     <% end -%>
+		<% unless html_actions.empty?  %>
+    	<td>
+				<%= html_actions.join('<br>') %>
+      </td>
+		<% end %>
   </tr>
 </table>

@@ -77,9 +77,9 @@ module ActiveScaffold::Actions
           ["#{column.search_sql} = ?", (value.to_i == 1)]
         when :integer
           if search_type == :range
-            return ["#{column.search_sql} >= ? and #{column.search_sql} <= ?", value[:range_from], value[:range_to]] if value[:range_from] and value[:range_to]
-            return ["#{column.search_sql} >= ?", value[:range_from]] if value[:range_from]
-            return ["#{column.search_sql} <= ?", value[:range_to]] if value[:range_to]
+            return ["#{column.search_sql} >= ? and #{column.search_sql} <= ?", value[:range_from], value[:range_to]] if value[:range_from] and value[:range_from].length > 0 and value[:range_to] and value[:range_to].length > 0
+            return ["#{column.search_sql} >= ?", value[:range_from]] if value[:range_from] and value[:range_from].length > 0
+            return ["#{column.search_sql} <= ?", value[:range_to]] if value[:range_to] and value[:range_to].length > 0
           else
             ["#{column.search_sql} = ?", value.to_i]
           end
@@ -98,9 +98,9 @@ module ActiveScaffold::Actions
               time_from = " 00:00:00"
               time_to = " 23:59:59"
             end
-            return ["#{column.search_sql} >= ? and #{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_from]) + time_from, tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_from].nil? or value[:range_from].empty? or value[:range_to].nil? or value[:range_to].empty?
-            return ["#{column.search_sql} >= ?", tmp_model.cast_to_date(value[:range_from]) + time_from] unless value[:range_from].nil? or value[:range_from].empty?
-            return ["#{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_to].nil? or value[:range_to].empty?
+            return ["#{column.search_sql} >= ? and #{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_from]) + time_from, tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_from].nil? or value[:range_from].length == 0 or value[:range_to].nil? or value[:range_to].length == 0
+            return ["#{column.search_sql} >= ?", tmp_model.cast_to_date(value[:range_from]) + time_from] unless value[:range_from].nil? or value[:range_from].length == 0
+            return ["#{column.search_sql} <= ?", tmp_model.cast_to_date(value[:range_to]) + time_to] unless value[:range_to].nil? or value[:range_to].length == 0
           when :set
             value.compact! unless value.nil?
             ["#{column.search_sql} IN (#{value.collect{|c| "'#{c}'"}.join(',')})"] unless value.nil? or value.empty?

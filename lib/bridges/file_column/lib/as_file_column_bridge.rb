@@ -7,8 +7,8 @@ end
 module ActiveScaffold::Config
   class Core < Base
     attr_accessor :file_column_fields
-    def initialize_with_file_column(config_options)
-      initialize_without_file_column(config_options)
+    def initialize_with_file_column(model_id)
+      initialize_without_file_column(model_id)
       
       return unless FileColumnHelpers.klass_has_file_column_fields?(self.model)
       

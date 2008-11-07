@@ -84,23 +84,25 @@ module ActiveScaffold
     def find_page(options = {})
       options.assert_valid_keys :sorting, :per_page, :page, :count_includes
 
-      full_includes = (active_scaffold_joins.empty? ? nil : active_scaffold_joins)
+      full_includes = (active_scaffold_joins.empty? ? nil : active_scaffold_joins)      
       options[:per_page] ||= 999999999
       options[:page] ||= 1
       options[:count_includes] ||= full_includes
+      joins = joins_for_finder
+      options[:count_includes].reject!{|k,v| joins.include? k} if options[:count_includes] and joins
+      full_includes.reject!{|k,v| joins.include? k} if full_includes and joins
 
       klass = active_scaffold_config.model
 
       # create a general-use options array that's compatible with Rails finders
       finder_options = { :order => build_order_clause(options[:sorting]),
                          :conditions => all_conditions,
-                         :joins => joins_for_finder,
+                         :joins => joins,
                          :include => options[:count_includes]}
-
       # NOTE: we must use :include in the count query, because some conditions may reference other tables
       count = klass.count(finder_options.reject{|k,v| [:order].include? k})
-
-      finder_options.merge! :include => full_includes
+      
+      finder_options.merge!(:include => full_includes)
 
       # we build the paginator differently for method- and sql-based sorting
       if options[:sorting] and options[:sorting].sorts_by_method?
@@ -118,20 +120,21 @@ module ActiveScaffold
     end
 
     def joins_for_finder
-      case joins_for_collection.class
+      case joins_for_collection
       when String
-        [ joins_for_collection ]
-      when Array
+        #TODO 2008-11-07 (EJM) Level=0 - Not sure what to do about this condition. If it is a string and a join clause what do we do? Or do we assume it is just the association in string form 'branches' instead of :branches and not support 'LEFT OUTER JOIN ssss ON'. find_page_by_sql may be good enough for that.
         joins_for_collection
+      when Array
+        joins_for_collection + active_scaffold_habtm_joins
       else
-        []
-      end + active_scaffold_habtm_joins
+        [] + active_scaffold_habtm_joins
+      end
     end
 
     def find_page_by_sql(options = {}, sql_options = {})
       options.assert_valid_keys :sorting, :per_page, :page
       sql_options.assert_valid_keys :select, :from, :where, :group_by, :order_by
-      options[:per_page] ||= 999999999
+        options[:per_page] ||= 999999999
       options[:page] ||= 1
 
       klass = active_scaffold_config.model
@@ -152,8 +155,12 @@ module ActiveScaffold
           sorted_collection.slice(offset, per_page)
         end
       else
-        []
-      end + active_scaffold_habtm_joins
+        pager = ::Paginator.new(count, options[:per_page]) do |offset, per_page|
+          klass.find_by_sql("#{sql_options[:select]} #{sql_options[:from]} #{sql_options[:where]} #{sql_options[:group_by]} #{sql_options[:order_by]} Limit #{offset}, #{per_page}")
+        end
+      end
+
+      page = pager.page(options[:page])
     end
     
     # TODO: this should reside on the model, not the controller
