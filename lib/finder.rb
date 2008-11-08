@@ -84,10 +84,12 @@ module ActiveScaffold
     def find_page(options = {})
       options.assert_valid_keys :sorting, :per_page, :page, :count_includes
 
+      # The order of these local assignments is critical. all_conditions must come before joins_for_finder
       full_includes = (active_scaffold_joins.empty? ? nil : active_scaffold_joins)      
       options[:per_page] ||= 999999999
       options[:page] ||= 1
       options[:count_includes] ||= full_includes
+      finder_conditions = all_conditions
       joins = joins_for_finder
       options[:count_includes].reject!{|k,v| joins.include? k} if options[:count_includes] and joins
       full_includes.reject!{|k,v| joins.include? k} if full_includes and joins
@@ -96,7 +98,7 @@ module ActiveScaffold
 
       # create a general-use options array that's compatible with Rails finders
       finder_options = { :order => build_order_clause(options[:sorting]),
-                         :conditions => all_conditions,
+                         :conditions => finder_conditions,
                          :joins => joins,
                          :include => options[:count_includes]}
       # NOTE: we must use :include in the count query, because some conditions may reference other tables
@@ -122,13 +124,12 @@ module ActiveScaffold
     def joins_for_finder
       case joins_for_collection
       when String
-        #TODO 2008-11-07 (EJM) Level=0 - Not sure what to do about this condition. If it is a string and a join clause what do we do? Or do we assume it is just the association in string form 'branches' instead of :branches and not support 'LEFT OUTER JOIN ssss ON'. find_page_by_sql may be good enough for that.
         joins_for_collection
       when Array
-        joins_for_collection + active_scaffold_habtm_joins
+        joins_for_collection
       else
-        [] + active_scaffold_habtm_joins
-      end
+        []
+      end + active_scaffold_habtm_joins
     end
 
     def find_page_by_sql(options = {}, sql_options = {})
