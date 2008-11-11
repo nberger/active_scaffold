@@ -95,15 +95,18 @@ module ActiveScaffold
       full_includes.reject!{|k,v| joins.include? k} if full_includes and joins
 
       klass = active_scaffold_config.model
+      table_name = active_scaffold_config.model.quoted_table_name
 
       # create a general-use options array that's compatible with Rails finders
       finder_options = { :order => build_order_clause(options[:sorting]),
                          :conditions => finder_conditions,
                          :joins => joins,
                          :include => options[:count_includes]}
+      finder_options[:select] = klass.connection.distinct("#{table_name}.#{klass.primary_key}", '') if !joins.empty?
       # NOTE: we must use :include in the count query, because some conditions may reference other tables
       count = klass.count(finder_options.reject{|k,v| [:order].include? k})
       
+      finder_options[:select] = "#{klass.connection.distinct("#{table_name}.#{klass.primary_key}", '')}, #{table_name}.*" if !joins.empty?
       finder_options.merge!(:include => full_includes)
 
       # we build the paginator differently for method- and sql-based sorting

@@ -78,18 +78,27 @@ module ActiveScaffold
       ##
 
       def active_scaffold_add_existing_input(options)
-        # select_options = options_for_select(options_for_association(nested_association)) unless column.through_association?
-        select_options ||= options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
-        unless select_options.empty?
-          select_tag 'associated_id', '<option value="">' + as_('- select -') + '</option>' + select_options
-        end  
-        # Old way...
-        # select_options = options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
-        # select_options.empty? ? '' : select_tag(options[:name], '<option value="">' + as_('- select -') + '</option>' + select_options)
+        if controller.respond_to?(:record_select_config)
+          remote_controller = active_scaffold_controller_for(record_select_config.model).controller_path
+          record_select_field(
+            "#{options[:name]}",
+            active_scaffold_config.model.new,
+            {:controller => remote_controller, :params => options[:url_options].merge(:parent_model => record_select_config.model)}.merge(active_scaffold_input_text_options))
+        else
+          # select_options = options_for_select(options_for_association(nested_association)) unless column.through_association?
+          select_options ||= options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
+          unless select_options.empty?
+            select_tag 'associated_id', '<option value="">' + as_('- select -') + '</option>' + select_options
+          end  
+        end
       end
 
       def active_scaffold_add_existing_label
-        active_scaffold_config.model.to_s.underscore.humanize
+        if controller.respond_to?(:record_select_config)
+          record_select_config.model.to_s.underscore.humanize
+        else
+          active_scaffold_config.model.to_s.underscore.humanize
+        end
       end
 
       def active_scaffold_input_singular_association(column, options)
