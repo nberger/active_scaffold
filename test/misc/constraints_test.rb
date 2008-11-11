@@ -75,7 +75,6 @@ class ConstraintsTestObject
   # stub out what the mixin expects to find ...
   def self.before_filter(*args); end
   attr_accessor :active_scaffold_joins
-  attr_accessor :active_scaffold_habtm_joins
   attr_accessor :active_scaffold_config
   attr_accessor :params
   def merge_conditions(old, new)
@@ -90,7 +89,6 @@ class ConstraintsTestObject
 
   def initialize
     @active_scaffold_joins = []
-    @active_scaffold_habtm_joins = []
     @params = {}
   end
 end
@@ -172,6 +170,6 @@ class ConstraintsTest < Test::Unit::TestCase
   end
 
   def config_for(klass)
-    ActiveScaffold::Config::Core.new("model_stubs/#{klass.to_s.underscore.downcase}")
+    ActiveScaffold::Config::Core.new(:model_id => "model_stubs/#{klass.to_s.underscore.downcase}")
   end
 end

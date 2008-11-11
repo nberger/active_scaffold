@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), '../test_helper.rb')
 
 class Config::UpdateTest < Test::Unit::TestCase
   def setup
-    @config = ActiveScaffold::Config::Core.new :model_stub
+    @config = ActiveScaffold::Config::Core.new :model_id => :model_stub
     @update = @config.update
     
     @config._load_action_columns

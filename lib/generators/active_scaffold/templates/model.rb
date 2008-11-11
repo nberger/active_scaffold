@@ -24,5 +24,5 @@ end
 %>#
 
 class <%= class_name %> < ActiveRecord::Base
-	<%= template_for_inclusion %>
+<%= template_for_inclusion %>
 end

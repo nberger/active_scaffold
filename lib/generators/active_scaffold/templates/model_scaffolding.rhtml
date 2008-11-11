@@ -11,18 +11,25 @@
       association_reverse_column = elements[3].gsub(/[,"\"\[\]]/, '')
       # add_foreign_key "assets", ["site_id"], "sites", ["id"], :name => "assets_ibfk_1"
       if association == @model_instance.class.table_name
-        %>belongs_to :<%= association_reverse.singularize %>
+        %>	belongs_to :<%= association_column[0..-4] %>, :class_name => "<%= association_reverse.singularize.camelize %>", :foreign_key => "<%= association_column %>"
 <%
       end
       if association_reverse == @model_instance.class.table_name 
-        %>has_many :<%= association %>
+      	if association.include?(association_reverse)
+				%>	has_and_belongs_to_many :<%= association.gsub(association_reverse, '').gsub(/^\_/, "").gsub(/\_/, "") %>
 <%
+				else
+				%>	has_many :<%= association %>
+<%
+				end
       end
     end
   end
-  if !(@model_instance.class.content_columns & [:name, :label, :title]).length -%>  def to_label
-    # Put the Model's label coloumn(s) here for example: first_name + " " + last_name
-  end<% end -%>
+  if (@model_instance.class.content_columns & [:name, :label, :title]).length == 0 -%>  
+	def to_label
+    "#{}" # :name, :label, :title columns not found. Put the Model's label column(s) here for example: first_name + " " + last_name
+  end
+<% end -%>
 
   # ===================
   # = Authorize BEGIN =

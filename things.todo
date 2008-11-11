@@ -2,10 +2,7 @@ Check In:
 ========:
 = HIGH =:
 ========:
-- Get generator working
-
 - Export is requiring fastercsv, I thought that was optional?
-
 - Support virtual columns and associations that are not tied to RecordSelect ie. there values may be strings. (Actions::FieldSearch#do_show_search)
 
 ==========:
