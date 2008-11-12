@@ -13,13 +13,7 @@ module ActiveScaffold::Actions
       do_show_search
       
       respond_to do |type|
-        type.html do
-          if successful?
-            render(:partial => "field_search", :layout => true)
-          else
-            return_to_main
-          end
-        end
+        type.html { render(:action => "field_search") }
         type.js { render(:partial => "field_search", :layout => false) }
       end
     end
@@ -40,9 +34,10 @@ module ActiveScaffold::Actions
           column = active_scaffold_config.columns[key]
           conditions = merge_conditions(conditions, condition_for_search_column(column, value, like_pattern))
         end
-        self.active_scaffold_conditions = conditions
+        search_conditions.compact!
+        self.active_scaffold_conditions = merge_conditions(self.active_scaffold_conditions, *search_conditions)
+        @filtered = !search_conditions.blank?
 
-        columns = active_scaffold_config.field_search.columns
         includes_for_search_columns = columns.collect{ |column| column.includes}.flatten.uniq.compact
         self.active_scaffold_joins.concat includes_for_search_columns
 
