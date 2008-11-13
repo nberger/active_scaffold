@@ -26,7 +26,8 @@ module ActiveScaffold
     # TODO: this should reside on the column, not the controller
     def self.condition_for_column(column, value, like_pattern = '%?%')
       # we must check false or not blank because we want to search for false but false is blank
-      return unless column and column.search_sql and not value.blank?
+      return unless column and column.search_sql and (not value.blank?)
+      return if (value.is_a?(Array) and value.join.blank?)
       search_ui = column.search_ui || column.column.type
       if self.respond_to?("condition_for_#{search_ui}_column")
         self.send("condition_for_#{search_ui}_column", column, value, like_pattern)
@@ -36,8 +37,6 @@ module ActiveScaffold
           ["#{column.search_sql} = ?", value.to_i]
           when :select
           ["#{column.search_sql} = ?", value[:id]] unless value[:id].blank?
-          when :multi_select
-          ["#{column.search_sql} in (?)", value.values.collect{|hash| hash[:id]}]
           else
           ["LOWER(#{column.search_sql}) LIKE ?", like_pattern.sub('?', value.downcase)]
         end
@@ -66,6 +65,7 @@ module ActiveScaffold
     class << self
       alias_method :condition_for_decimal_column, :condition_for_integer_column
       alias_method :condition_for_float_column, :condition_for_integer_column
+      alias_method :condition_for_usa_money_column, :condition_for_integer_column
     end
 
     def self.condition_for_datetime_column(column, value, like_pattern)
@@ -88,6 +88,41 @@ module ActiveScaffold
       alias_method :condition_for_date_column, :condition_for_datetime_column
       alias_method :condition_for_time_column, :condition_for_datetime_column
       alias_method :condition_for_timestamp_column, :condition_for_datetime_column
+    end
+
+    def self.condition_for_dhtml_calendar_column(column, value, like_pattern)
+      return nil if value['from'].blank? or not NumericComparators.include?(value['opt'])
+      tmp_model = column.active_record_class.new
+      time_from = time_to = ""
+      if column.column.type == :datetime
+        time_from = " 00:00:00"
+        time_to = " 23:59:59"
+      end
+      if value['opt'] == 'BETWEEN'
+        ["#{column.search_sql} BETWEEN ? AND ?", tmp_model.cast_to_date(value[:from]) + time_from, tmp_model.cast_to_date(value[:to]) + time_to]
+      else
+        ["#{column.search_sql} #{value['opt']} ?", tmp_model.cast_to_date(value[:from]) + time_from]
+      end
+    end
+
+    def self.condition_for_exact_column(column, value, like_pattern)
+      ["#{column.search_sql} = ?", value]
+    end
+    class << self
+      alias_method :condition_for_record_select_column, :condition_for_exact_column
+    end
+
+    def self.condition_for_multi_select_column(column, value, like_pattern)
+      case value
+      when Hash
+        values = value.values
+      else
+        values = value
+      end
+      ["#{column.search_sql} in (?)", values]
+    end
+    class << self
+      alias_method :condition_for_usa_state_column, :condition_for_multi_select_column
     end
 
     protected

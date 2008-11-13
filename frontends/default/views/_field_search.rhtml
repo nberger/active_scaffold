@@ -1,6 +1,5 @@
 <%
 # We have to remove search form params before the url_for method call, otherwise it throughs it on
-search_params = params[:search]
 params.merge!(:search => nil)
 href = url_for(params_for(:action => :update_table, :escape => false).delete_if{|k,v| k == 'search'})
 -%>
@@ -15,32 +14,14 @@ href = url_for(params_for(:action => :update_table, :escape => false).delete_if{
 
   <ol class="form">
     <% active_scaffold_config.field_search.columns.each do |column| -%>
-      <% next unless column.search_sql -%>
+      <% next unless column.search_sql or column.virtual? -%>
       <li class="form-element">
         <dl>
           <dt>
             <label for="<%= "search_#{column.name}" %>"><%= column.label %></label>
           </dt>
         <dd>
-          <% if column.options[:field_search] == :range
-                #FIXME 2007-11-10 (EJM) Level=0 - For now :help_string => "", to make turn off TextFieldWithExample which is not happy with these range fields on the search form. The hidden field being the same name as the input is messing things up.
-                options = {:name => "search[#{column.name}][range_from]", :id => "search_#{column.name}_range_from", :help_string => "", :class => "range-input"}
-                options[:value] = nil
-                options[:value] = search_params[column.name][:range_from] if search_params and search_params[column.name]
-                html = active_scaffold_input_for_search(column, options)
-                html << content_tag("span", as_(" to "), {:class => "description"})
-                options[:value] = nil
-                options[:value] = search_params[column.name][:range_to] if search_params and search_params[column.name]
-                options[:name] = "search[#{column.name}][range_to]"
-                options[:id] = "search_#{column.name}_range_to"
-                html << active_scaffold_input_for_search(column, options)
-              else
-                #FIXME 2007-11-10 (EJM) Level=0 - For now :help_string => "", to make turn off TextFieldWithExample which is not happy with these range fields on the search form. The hidden field being the same name as the input is messing things up.
-        				# active_scaffold_search_for(column)
-                html = active_scaffold_input_for_search(column, {:blank_if_nil => true, :help_string => ""})
-              end
-        %>
-        <%= html -%>
+        	<%= active_scaffold_search_for(column) -%>
         </dd>
       </dl>
     </li>

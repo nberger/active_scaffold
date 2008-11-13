@@ -1,5 +1,3 @@
-require(File.join(File.dirname(__FILE__), 'exceptions'))
-
 module ActiveScaffold
   def self.included(base)
     base.extend(ClassMethods)

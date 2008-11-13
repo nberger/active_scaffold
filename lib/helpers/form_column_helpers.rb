@@ -5,39 +5,44 @@ module ActiveScaffold
       # This method decides which input to use for the given column.
       # It does not do any rendering. It only decides which method is responsible for rendering.
       def active_scaffold_input_for(column, scope = nil, options = {})
-        options = active_scaffold_input_options(column, scope, options)
+        begin
+          options = active_scaffold_input_options(column, scope, options)
 
-        # first, check if the dev has created an override for this specific field
-        if override_form_field?(column)
-          send(override_form_field(column), @record, options[:name])
+          # first, check if the dev has created an override for this specific field
+          if override_form_field?(column)
+            send(override_form_field(column), @record, column, options)
 
-        # second, check if the dev has specified a valid form_ui for this column
-        elsif column.form_ui and override_input?(column.form_ui)
-          html = send(override_input(column.form_ui), column, options)
-          html << active_scaffold_observe(column, options[:id])
-          html
-        # fallback: we get to make the decision
-        else
-          if column.association
-            # if we get here, it's because the column has a form_ui but not one ActiveScaffold knows about.
-            raise "Unknown form_ui `#{column.form_ui}' for column `#{column.name}'"
-          elsif column.virtual?
-            html = active_scaffold_input_virtual(column, options)
+          # second, check if the dev has specified a valid form_ui for this column
+          elsif column.form_ui and override_input?(column.form_ui)
+            html = send(override_input(column.form_ui), column, options)
+            html << active_scaffold_observe(column, options[:id])
+            html
+          # fallback: we get to make the decision
+          else
+            if column.association
+              # if we get here, it's because the column has a form_ui but not one ActiveScaffold knows about.
+              raise "Unknown form_ui `#{column.form_ui}' for column `#{column.name}'"
+            elsif column.virtual?
+              html = active_scaffold_input_virtual(column, options)
 
-          else # regular model attribute column
-            # if we (or someone else) have created a custom render option for the column type, use that
-            if override_input?(column.column.type)
-              html = send(override_input(column.column.type), column, options)
-            # final ultimate fallback: use rails' generic input method
-            else
-              # for textual fields we pass different options
-              text_types = [:text, :string, :integer, :float, :decimal]
-              options = active_scaffold_input_text_options(options) if text_types.include?(column.column.type)
-              html = input(:record, column.name, options.merge(column.options))
+            else # regular model attribute column
+              # if we (or someone else) have created a custom render option for the column type, use that
+              if override_input?(column.column.type)
+                html = send(override_input(column.column.type), column, options)
+              # final ultimate fallback: use rails' generic input method
+              else
+                # for textual fields we pass different options
+                text_types = [:text, :string, :integer, :float, :decimal]
+                options = active_scaffold_input_text_options(options) if text_types.include?(column.column.type)
+                html = input(:record, column.name, options.merge(column.options))
+              end
             end
+            html << active_scaffold_observe(column, options[:id])
+            html
           end
-          html << active_scaffold_observe(column, options[:id])
-          html
+        rescue Exception => e
+          logger.error Time.now.to_s + "#{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
+          raise e
         end
       end
 
@@ -153,7 +158,7 @@ module ActiveScaffold
         unless column.association
           raise ArgumentError, "record_select can only work against associations (and #{column.name} is not).  A common mistake is to specify the foreign key field (like :user_id), instead of the association (:user)."
         end
-        remote_controller = active_scaffold_controller_for(column.association.klass).controller_path
+        remote_controller = File.join('/', active_scaffold_controller_for(column.association.klass).controller_path)
 
         # if the opposite association is a :belongs_to, then only show records that have not been associated yet
         params = {:parent_id => @record.id, :parent_model => @record.class}
@@ -322,37 +327,6 @@ module ActiveScaffold
       # = AST =
       # =======
       
-      def active_scaffold_input_for_search(column, options = {}, scope = nil)
-        options[:name] ||= "search[#{column.name}]"
-        options[:id] ||= "search_#{column.name}"
-        if override_search_field?(column)
-          options[:column] = column
-          send(override_search_field(column), @record, options)
-        else
-          case column.column.type
-          when :boolean
-            select_options = [
-              ['', ''],
-              [as_('True'), 1],
-              [as_('False'), 0]
-            ]
-            select_tag options[:name], options_for_select(select_options, options[:value])
-          else
-            if column.options[:field_search] == :select
-              active_scaffold_input_select(column, options)
-            else
-              # No need to show a huge textarea field for searching.
-              if column.form_ui != :textarea and column.form_ui and override_input?(column.form_ui)
-                send(override_input(column.form_ui), column, options)
-              else
-                options = active_scaffold_input_text_options(options)
-                input(:record, column.name, options) || text_field_tag(column.name, options[:value], options)
-              end
-            end
-          end
-        end
-      end
-      
       def active_scaffold_input_hidden(column, options)
     		input(:record, column.name, options.merge(:type => :hidden))
       end
@@ -405,15 +379,6 @@ module ActiveScaffold
         options[:onblur] ||= "UsaZipDashAdd(this);return true;"
         options = active_scaffold_input_text_options(options)
     		text_field :record, column.name, options.merge(:value => usa_number_to_zip(@record[column.name].to_s))
-      end
-
-      def override_search_field?(column)
-        respond_to?(override_search_field(column))
-      end
-
-      # the naming convention for overriding form fields with helpers
-      def override_search_field(column)
-        "#{column.name}_search_column"
       end
 
       def remote_image_submit_tag(source, options)
