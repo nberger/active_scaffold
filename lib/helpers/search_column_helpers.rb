@@ -197,7 +197,12 @@ module ActiveScaffold
         search_ui = column.search_ui || column.column.type
         return if @search_session_info.nil? or search_ui.nil?
         value = @search_session_info[column.name]
-        return if value.blank? or (value.is_a?(Hash) and !value[:opt.to_s].blank?)
+        return if value.blank?
+        if value.is_a?(Hash) 
+          return unless value[:opt.to_s].blank? # need to call search_session_column_range_values
+          value = value[:id] if value.has_key?(:id)
+        end
+        return if value.blank?
         if column.association
           value = Float(value) rescue nil ? value.to_i : value
           value = column.association.klass.find(value)

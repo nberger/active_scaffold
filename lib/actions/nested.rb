@@ -50,7 +50,7 @@ module ActiveScaffold::Actions
             elsif actions.include? :show and model.authorized_for? :action => :read
               action = 'show'
             end
-            column.set_link(action, :controller => controller.controller_path, :parameters => {:parent_controller => params[:controller]}) if action
+            column.set_link(action, :controller => File.join('/', controller.controller_path), :parameters => {:parent_controller => params[:controller]}) if action
           end
         end
       end

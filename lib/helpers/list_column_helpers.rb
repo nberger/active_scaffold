@@ -53,6 +53,7 @@ module ActiveScaffold
       def list_action_authorized?(link, record)
        !(controller.respond_to?(link.security_method) and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, link)))) and record.authorized_for?(:action => link.crud_type)
       end
+      
       # TODO: move empty_field_text and &nbsp; logic in here?
       # TODO: move active_scaffold_inplace_edit in here?
       # TODO: we need to distinguish between the automatic links *we* create and the ones that the dev specified. some logic may not apply if the dev specified the link.
@@ -61,13 +62,17 @@ module ActiveScaffold
         return active_scaffold_config.list.empty_field_text if record.respond_to?(make_available_method) and !record.send(make_available_method)
         if column.link
           link = column.link.clone
-          if column.singular_association? and column_empty?(text)
-            column_model = column.association.klass
-            controller_actions = active_scaffold_config_for(column_model).actions
-            if controller_actions.include?(:create) and column_model.authorized_for?(:action => :create) and column.options[:show_create_link_if_empty]
-              link.action = 'new'
-              link.crud_type = :create
-              text = as_('Create New')
+          if column.singular_association? and column_empty?(text) 
+            if column.options[:show_create_link_if_empty].blank?
+              return "<a class='disabled'>#{text}</a>"
+            else
+              column_model = column.association.klass
+              controller_actions = active_scaffold_config_for(column_model).actions
+              if controller_actions.include?(:create) and column_model.authorized_for?(:action => :create)
+                link.action = 'new'
+                link.crud_type = :create
+                text = as_('Create New')
+              end
             end
           end
           return "<a class='disabled'>#{text}</a>" unless record.authorized_for?(:action => column.link.crud_type)
