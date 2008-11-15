@@ -70,8 +70,6 @@ module ActiveScaffold::Actions
     end
     def joins_for_collection
     end
-    def joins_for_collection_by_sql
-    end
 
     # Builds search conditions by search params for column names. This allows urls like "contacts/list?company_id=5".
     def conditions_from_params

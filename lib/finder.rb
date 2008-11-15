@@ -240,12 +240,13 @@ module ActiveScaffold
     def joins_for_finder
       case joins_for_collection
       when String
+        # If it is a string then the :joins_for_collection needs to include everything find_page needs including what may be in active_scaffold_habtm_joins
         joins_for_collection
       when Array
-        joins_for_collection
+        joins_for_collection + active_scaffold_habtm_joins
       else
-        []
-      end + active_scaffold_habtm_joins
+        active_scaffold_habtm_joins
+      end
     end
 
     def find_page_by_sql(options = {}, sql_options = {})
