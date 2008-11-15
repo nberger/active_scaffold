@@ -22,3 +22,4 @@ else
   page.replace element_form_id(:action => :create), :partial => 'create_form'
   page << "l.register_cancel_hooks();"
 end
+page.replace_html active_scaffold_messages_id, :partial => 'messages'

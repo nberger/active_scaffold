@@ -75,7 +75,7 @@ module ActiveScaffold
         end
         options[:class] ||= "#{column.name}-input"
         name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
-        { :name => name, :id => "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"}
+        { :name => name, :id => "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"}.merge(options)
       end
 
       ##
@@ -379,6 +379,14 @@ module ActiveScaffold
         options[:onblur] ||= "UsaZipDashAdd(this);return true;"
         options = active_scaffold_input_text_options(options)
     		text_field :record, column.name, options.merge(:value => usa_number_to_zip(@record[column.name].to_s))
+      end
+
+      def active_scaffold_input_yes_no_radio(column, options)
+        render :partial => '/yes_no_radio', :locals => {:column_name => column.name, :options => options}
+      end
+
+      def active_scaffold_input_true_false_radio(column, options)
+        render :partial => '/true_false_radio', :locals => {:column_name => column.name, :options => options, :question_text => column.description, :question_type => :yes_or_no}
       end
 
       def remote_image_submit_tag(source, options)

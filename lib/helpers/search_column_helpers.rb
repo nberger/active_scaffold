@@ -122,11 +122,13 @@ module ActiveScaffold
       # to decide whether search for this field or not
       def active_scaffold_search_boolean(column, options)
         select_options = []
-        select_options << [as_('- select -'), nil]
+        select_options << [as_(''), nil]
         select_options << [as_('True'), 1]
         select_options << [as_('False'), 0]
 
-        select_tag(options[:name], options_for_select(select_options, @record.send(column.name) ? @record.send(column.name).to_i : nil))
+        value = @record.send(column.name)
+        value = value.blank? ? nil : (value ? 1 : 0)
+        select_tag(options[:name], options_for_select(select_options, value))
       end
       # we can't use checkbox ui because it's not possible to decide whether search for this field or not
       alias_method :active_scaffold_search_checkbox, :active_scaffold_search_boolean
@@ -194,20 +196,24 @@ module ActiveScaffold
       end
 
       def restore_column_value_from_search_session(column)
-        search_ui = column.search_ui || column.column.type
-        return if @search_session_info.nil? or search_ui.nil?
-        value = @search_session_info[column.name]
-        return if value.blank?
-        if value.is_a?(Hash) 
-          return unless value[:opt.to_s].blank? # need to call search_session_column_range_values
-          value = value[:id] if value.has_key?(:id)
+        begin
+          search_ui = column.search_ui || column.column.type
+          return if @search_session_info.nil? or search_ui.nil?
+          value = @search_session_info[column.name]
+          return if value.blank?
+          if value.is_a?(Hash) 
+            return unless value[:opt.to_s].blank? # need to call search_session_column_range_values
+            value = value[:id] if value.has_key?(:id)
+          end
+          return if value.blank?
+          if column.association
+            value = Float(value) rescue nil ? value.to_i : value
+            value = column.association.klass.find(value)
+          end
+          @record.send("#{column.name}=", value)
+        rescue   Exception => e
+          logger.error Time.now.to_s + "Sorry, we are not that smart yet. Attempted to restore search values to search fields but instead got -- #{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
         end
-        return if value.blank?
-        if column.association
-          value = Float(value) rescue nil ? value.to_i : value
-          value = column.association.klass.find(value)
-        end
-        @record.send("#{column.name}=", value)
       end
 
       def search_session_column_range_values(column)
