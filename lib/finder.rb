@@ -34,11 +34,11 @@ module ActiveScaffold
       else
         case search_ui
           when :boolean, :checkbox
-          ["#{column.search_sql} = ?", value.to_i]
+            ["#{column.search_sql} = ?", value.to_i]
           when :select
-          ["#{column.search_sql} = ?", value[:id]] unless value[:id].blank?
+            ["#{column.search_sql} = ?", value[:id]] unless value[:id].blank?
           else
-          ["LOWER(#{column.search_sql}) LIKE ?", like_pattern.sub('?', value.downcase)]
+            self.condition_for_string_column(column, value, like_pattern)
         end
       end
     end
@@ -51,6 +51,15 @@ module ActiveScaffold
       '<',
       '!=',
       'BETWEEN'
+    ]
+
+    StringComparators = [
+      ['=', '='],
+      ['Like', '%?%'],
+      ['Beginning of', '%?'],
+      ['Ending of', '?%'],
+      ['!=', '!='],
+      ['Between', 'BETWEEN']
     ]
 
     def self.condition_for_integer_column(column, value, like_pattern)
@@ -66,6 +75,23 @@ module ActiveScaffold
       alias_method :condition_for_decimal_column, :condition_for_integer_column
       alias_method :condition_for_float_column, :condition_for_integer_column
       alias_method :condition_for_usa_money_column, :condition_for_integer_column
+    end
+
+    def self.condition_for_string_column(column, value, like_pattern)
+      if !value.is_a?(Hash)
+        ["LOWER(#{column.search_sql}) LIKE ?", like_pattern.sub('?', value.downcase)]
+      elsif value['from'].blank? or not StringComparators.flatten.include?(value['opt'])
+        nil
+      elsif value['opt'] == 'BETWEEN'
+        ["#{column.search_sql} BETWEEN ? AND ?", value['from'], value['to']]
+      elsif value['opt'].include?('?')
+        ["#{column.search_sql} LIKE ?", value['opt'].sub('?', value['from'].downcase)]
+      else
+        ["#{column.search_sql} #{value['opt']} ?", value['from']]
+      end
+    end
+    class << self
+      alias_method :condition_for_text_column, :condition_for_string_column
     end
 
     def self.condition_for_datetime_column(column, value, like_pattern)
