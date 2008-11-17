@@ -56,8 +56,8 @@ module ActiveScaffold
     StringComparators = [
       ['=', '='],
       ['Like', '%?%'],
-      ['Beginning of', '%?'],
-      ['Ending of', '?%'],
+      ['Begins with', '?%'],
+      ['Ends with', '%?'],
       ['!=', '!='],
       ['Between', 'BETWEEN']
     ]
