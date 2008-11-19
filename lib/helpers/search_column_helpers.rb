@@ -202,18 +202,20 @@ module ActiveScaffold
       def restore_column_value_from_search_session(column)
         begin
           search_ui = column.search_ui || column.column.type
-          return if @search_session_info.nil? or search_ui.nil?
-          value = @search_session_info[column.name]
-          return if value.blank?
-          if value.is_a?(Hash) 
-            return unless value[:opt.to_s].blank? # need to call search_session_column_range_values
-            value = value[:id] if value.has_key?(:id)
+          return if search_ui.nil?
+          value = @search_session_info[column.name] unless @search_session_info.nil?
+          unless value.blank?
+            if value.is_a?(Hash) 
+              return unless value[:opt.to_s].blank? # need to call search_session_column_range_values
+              value = value[:id] if value.has_key?(:id)
+            end
+            return if value.blank?
+            if column.association
+              value = Float(value) rescue nil ? value.to_i : value
+              value = column.association.klass.find(value)
+            end
           end
-          return if value.blank?
-          if column.association
-            value = Float(value) rescue nil ? value.to_i : value
-            value = column.association.klass.find(value)
-          end
+          # To avoid column defaults in model we try to do an assignment to the column regardless
           @record.send("#{column.name}=", value)
         rescue   Exception => e
           logger.error Time.now.to_s + "Sorry, we are not that smart yet. Attempted to restore search values to search fields but instead got -- #{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
