@@ -134,8 +134,13 @@ module ActiveScaffold
     def self.condition_for_exact_column(column, value, like_pattern)
       ["#{column.search_sql} = ?", value]
     end
-    class << self
-      alias_method :condition_for_record_select_column, :condition_for_exact_column
+
+    def self.condition_for_record_select_column(column, value, like_pattern)
+      if value.is_a?(Array)
+        ["#{column.search_sql} IN (?)", value]
+      else
+        ["#{column.search_sql} = ?", value]
+      end
     end
 
     def self.condition_for_multi_select_column(column, value, like_pattern)

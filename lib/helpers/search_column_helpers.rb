@@ -189,14 +189,24 @@ module ActiveScaffold
       end
 
       def active_scaffold_search_record_select(column, options)
-        value = @search_session_info[column.name] unless @search_session_info.nil?
-        if value.blank?
-          value = nil
-        else
-          value = Float(value) rescue nil ? value.to_i : value
-          value = column.association.klass.find(value)
+        begin
+          value = @search_session_info[column.name] unless @search_session_info.nil?
+          if column.plural_association?
+            value.collect! {|id|  Float(id) rescue nil ? id.to_i : id}.flatten if value
+            @record.send("#{column.name}=", column.association.klass.find(value)) if value
+          else
+            if value.blank?
+              value = nil
+            else
+              value = Float(value) rescue nil ? value.to_i : value
+              value = column.association.klass.find(value)
+            end
+            @record.send("#{column.name}=", value)
+          end
+        rescue   Exception => e
+          logger.error Time.now.to_s + "Sorry, we are not that smart yet. Attempted to restore search values to search fields but instead got -- #{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
+          raise e
         end
-        @record.send("#{column.name}=", value)
         active_scaffold_input_record_select(column, options)
       end
       
