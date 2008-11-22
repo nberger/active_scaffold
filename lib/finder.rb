@@ -54,12 +54,12 @@ module ActiveScaffold
     ]
 
     StringComparators = [
+      ['is like', '%?%'],
+      ['begins with', '?%'],
+      ['ends with', '%?'],
       ['=', '='],
-      ['Like', '%?%'],
-      ['Begins with', '?%'],
-      ['Ends with', '%?'],
       ['!=', '!='],
-      ['Between', 'BETWEEN']
+      ['is between', 'BETWEEN']
     ]
 
     def self.condition_for_integer_column(column, value, like_pattern)

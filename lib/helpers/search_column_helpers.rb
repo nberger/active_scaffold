@@ -15,11 +15,6 @@ module ActiveScaffold
           if override_search_field?(column)
             send(override_search_field(column), @record, column, options)
           
-          # Why would the dev want to use the same input for searching?
-          #  - If this is a select for example then it may or may not have :blank as an option
-          # if override_form_field?(column)
-          #   send(override_form_field(column), @record, options[:name])
-
           # second, check if the dev has specified a valid search_ui for this column, using specific ui for searches
           elsif column.search_ui and override_search?(column.search_ui)
             send(override_search(column.search_ui), column, options)
@@ -94,21 +89,14 @@ module ActiveScaffold
       end
 
       def active_scaffold_search_select(column, options, select_options = nil)
+        selected_ids = search_session_column_multi_select_values(column)
         if column.association
-          associated = @record.send(column.association.name)
-          associated = associated.first if associated.is_a?(Array) # for columns with plural association
-
           select_options ||= options_for_association(column.association, true)
-          select_options.unshift([ associated.to_label, associated.id ]) unless associated.nil? or select_options.find {|label, id| id == associated.id}
-
-          selected = associated.nil? ? nil : associated.id
           method = column.association.macro == :belongs_to ? column.association.primary_key_name : column.name
           options[:name] += options[:multiple] == true ? '[]' : '[id]'
-          include_blank = options[:multiple] == true ? true : as_('- select -')
-          select(:record, method, select_options.uniq, {:selected => selected, :include_blank => include_blank}, options)
+          include_blank = options[:multiple] == true ? true : ''
+          select(:record, method, select_options.uniq, {:selected => selected_ids, :include_blank => include_blank}, options)
         else
-          selected_ids = @record.send(column.name) if @record and @record.send(column.name)
-          selected_ids = @record.send(column.name).collect {|id|  Float(id) rescue nil ? id.to_i : id}.flatten if @record and @record.send(column.name) and options[:multiple] == true
           options[:name] += '[]' if options[:multiple] == true
           select(:record, column.name, select_options, { :selected => selected_ids, :include_blank => true },  options)
         end
@@ -193,32 +181,37 @@ module ActiveScaffold
       end
 
       def active_scaffold_search_usa_state(column, options)
+        @record.send("#{column.name}=", search_session_column_multi_select_values(column))
         select_options = options
         select_options.delete(:size)
         options.delete([:prompt, :priority])
         usa_state_select(:record, column.name, column.options[:priority], select_options, column.options.merge!(options))
       end
 
+      def active_scaffold_search_record_select(column, options)
+        value = @search_session_info[column.name] unless @search_session_info.nil?
+        if value.blank?
+          value = nil
+        else
+          value = Float(value) rescue nil ? value.to_i : value
+          value = column.association.klass.find(value)
+        end
+        @record.send("#{column.name}=", value)
+        active_scaffold_input_record_select(column, options)
+      end
+      
       def restore_column_value_from_search_session(column)
         begin
           search_ui = column.search_ui || column.column.type
           return if search_ui.nil?
           value = @search_session_info[column.name] unless @search_session_info.nil?
-          unless value.blank?
-            if value.is_a?(Hash) 
-              return unless value[:opt.to_s].blank? # need to call search_session_column_range_values
-              value = value[:id] if value.has_key?(:id)
-            end
-            return if value.blank?
-            if column.association
-              value = Float(value) rescue nil ? value.to_i : value
-              value = column.association.klass.find(value)
-            end
-          end
+          # ActiveRecord is tooooo painful to make complex values work so we do it inside the html helper methods
+          return if column.association or value.is_a?(Hash) or value.is_a?(Array)
           # To avoid column defaults in model we try to do an assignment to the column regardless
           @record.send("#{column.name}=", value)
         rescue   Exception => e
           logger.error Time.now.to_s + "Sorry, we are not that smart yet. Attempted to restore search values to search fields but instead got -- #{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
+          # raise e
         end
       end
 
@@ -230,6 +223,20 @@ module ActiveScaffold
         return values[:opt], values[:from], values[:to]
       end
 
+      def search_session_column_multi_select_values(column)
+        begin
+          value = @search_session_info[column.name] unless @search_session_info.nil?
+          if value.is_a?(Hash)
+            value = Float(value[:id]) rescue nil ? value[:id].to_i : value[:id] if value.has_key?(:id)
+          else
+            value.collect! {|id|  Float(id) rescue nil ? id.to_i : id}.flatten if value
+          end
+          value
+        rescue   Exception => e
+          logger.error Time.now.to_s + "Sorry, we are not that smart yet. Attempted to restore search values to search fields but instead got -- #{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
+          # raise e
+        end
+      end
 
       ##
       ## Search column override signatures
