@@ -207,7 +207,24 @@ module ActiveScaffold
           logger.error Time.now.to_s + "Sorry, we are not that smart yet. Attempted to restore search values to search fields but instead got -- #{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
           raise e
         end
-        active_scaffold_input_record_select(column, options)
+
+        unless column.association
+          raise ArgumentError, "record_select can only work against associations (and #{column.name} is not).  A common mistake is to specify the foreign key field (like :user_id), instead of the association (:user)."
+        end
+        remote_controller = File.join('/', active_scaffold_controller_for(column.association.klass).controller_path)
+
+        # if the opposite association is a :belongs_to, then only show records that have not been associated yet
+        params = {:parent_model => @record.class}
+
+        record_select_options = {:controller => remote_controller, :id => options[:id], :params => params}
+        record_select_options.merge!(active_scaffold_input_text_options)
+        record_select_options.merge!(column.options)
+
+        if column.singular_association?
+          record_select_field(options[:name], (@record.send(column.name) || column.association.klass.new), record_select_options)
+        elsif column.plural_association?
+          record_multi_select_field(options[:name], @record.send(column.name), record_select_options)
+        end   
       end
       
       def restore_column_value_from_search_session(column)
