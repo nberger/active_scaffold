@@ -1,5 +1,5 @@
 class <%= controller_class_name %>Controller < ApplicationController
-	before_filter  :authorize
+	before_filter  :require_user
   
 <%= template_for_inclusion %>
 

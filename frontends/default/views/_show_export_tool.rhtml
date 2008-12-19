@@ -1,8 +1,5 @@
-<%
-  url_options = params_for(:action => :export_tool)
--%>
-
-<%= form_tag url_for(url_options)%>
+<% url_options = params_for(:action => :export_tool) -%>
+<%= form_tag url_options %>
 <h3><%=as_('Options')%></h3>
 <div class="options checkbox-list">
   <div class="option checkbox-wrapper">

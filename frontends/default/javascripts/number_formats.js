@@ -1,3 +1,19 @@
+function ToUpper(textElement)
+{
+	var strTemp = textElement.value; 
+   textElement.value = strTemp.toUpperCase(); 
+}
+
+function SsnDashAdd(textElement)
+{
+	var strTemp = textElement.value; 
+	if ((strTemp.length > 0) && 
+		 ((strTemp.charAt(3) >= '0') && (strTemp.charAt(3) <= '9')))
+	{
+		textElement.value = strTemp.substr(0,3) + '-' + strTemp.substr(3,2) + '-' + strTemp.substr(5); 
+ }
+}
+
 function NukeBadChars(textElement)
 {
  var strTemp = textElement.value;

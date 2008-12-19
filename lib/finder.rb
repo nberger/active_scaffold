@@ -62,7 +62,7 @@ module ActiveScaffold
       ['is between', 'BETWEEN']
     ]
 
-    def self.condition_for_integer_column(column, value, like_pattern)
+    def self.condition_for_integer_column(column, value, like_pattern = nil)
       if value['from'].blank? or not NumericComparators.include?(value['opt'])
         nil
       elsif value['opt'] == 'BETWEEN'
@@ -77,7 +77,7 @@ module ActiveScaffold
       alias_method :condition_for_usa_money_column, :condition_for_integer_column
     end
 
-    def self.condition_for_string_column(column, value, like_pattern)
+    def self.condition_for_string_column(column, value, like_pattern = '%?%')
       if !value.is_a?(Hash)
         ["LOWER(#{column.search_sql}) LIKE ?", like_pattern.sub('?', value.downcase)]
       elsif value['from'].blank? or not StringComparators.flatten.include?(value['opt'])
@@ -94,7 +94,7 @@ module ActiveScaffold
       alias_method :condition_for_text_column, :condition_for_string_column
     end
 
-    def self.condition_for_datetime_column(column, value, like_pattern)
+    def self.condition_for_datetime_column(column, value, like_pattern = nil)
       conversion = value['from']['hour'].blank? && value['to']['hour'].blank? ? 'to_date' : 'to_time'
       from_value, to_value = ['from', 'to'].collect do |field|
         Time.zone.local(*['year', 'month', 'day', 'hour', 'minutes', 'seconds'].collect {|part| value[field][part].to_i}) rescue nil
@@ -116,7 +116,7 @@ module ActiveScaffold
       alias_method :condition_for_timestamp_column, :condition_for_datetime_column
     end
 
-    def self.condition_for_dhtml_calendar_column(column, value, like_pattern)
+    def self.condition_for_dhtml_calendar_column(column, value, like_pattern = nil)
       return nil if value['from'].blank? or not NumericComparators.include?(value['opt'])
       tmp_model = column.active_record_class.new
       time_from = time_to = ""
@@ -131,11 +131,11 @@ module ActiveScaffold
       end
     end
 
-    def self.condition_for_exact_column(column, value, like_pattern)
+    def self.condition_for_exact_column(column, value, like_pattern = nil)
       ["#{column.search_sql} = ?", value]
     end
 
-    def self.condition_for_record_select_column(column, value, like_pattern)
+    def self.condition_for_record_select_column(column, value, like_pattern = nil)
       if value.is_a?(Array)
         ["#{column.search_sql} IN (?)", value]
       else
@@ -143,7 +143,7 @@ module ActiveScaffold
       end
     end
 
-    def self.condition_for_multi_select_column(column, value, like_pattern)
+    def self.condition_for_multi_select_column(column, value, like_pattern = nil)
       case value
       when Hash
         values = value.values

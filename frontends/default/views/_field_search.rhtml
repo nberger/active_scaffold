@@ -2,13 +2,12 @@
 # We have to remove search form params before the url_for method call, otherwise it throughs it on
 params.merge!(:search => nil)
 href = url_for(params_for(:action => :update_table, :escape => false).delete_if{|k,v| k == 'search'})
-loading_indicator = loading_indicator_id(:action => :search, :id => params[:id])
 -%>
 <%= form_remote_tag :url => href,
                     :method => :get,
                     :before => "addActiveScaffoldPageToHistory('#{href}', '#{params[:controller]}')",
-                    :after => "$('#{loading_indicator}').style.visibility = 'visible'; Form.disable('#{search_form_id}');",
-                    :complete => "$('#{loading_indicator}').style.visibility = 'hidden'; Form.enable('#{search_form_id}');",
+                    :after => "$('#{loading_indicator_id(:action => :search, :id => params[:id])}').style.visibility = 'visible'; Form.disable('#{search_form_id}');",
+                    :complete => "$('#{loading_indicator_id(:action => :search, :id => params[:id])}').style.visibility = 'hidden'; Form.enable('#{search_form_id}');",
                     :failure => "ActiveScaffold.report_500_response('#{active_scaffold_id}')",
                     :update => active_scaffold_content_id,
                     :html => { :href => href, :id => search_form_id, :class => 'search' } %>
@@ -36,7 +35,7 @@ loading_indicator = loading_indicator_id(:action => :search, :id => params[:id])
                               :method => :get,
                               :failure => "ActiveScaffold.report_500_response('#{active_scaffold_id}')",
                               :update => active_scaffold_content_id}, {:class => "cancel"} %>
-    <%= loading_indicator_tag(:action => :search, :id => params[:id]) %>
+    <%= loading_indicator_tag(loading_indicator) %>
   </p>
 </form>
 
