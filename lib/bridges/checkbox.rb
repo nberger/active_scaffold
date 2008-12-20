@@ -1,3 +1,4 @@
+require 'active_scaffold/config/core'
 module ActiveScaffold::Config
   class Core < Base
 
@@ -14,7 +15,7 @@ module ActiveScaffold::Config
       }
     end
     
-    alias_method_chain :initialize, :checkbox
+    alias_method_chain :initialize, :checkbox unless self.instance_methods.include?("initialize_without_checkbox")
     
   end
 end

@@ -1,3 +1,4 @@
+require 'active_scaffold/config/core'
 module ActiveScaffold::Config
   class Core < Base
 

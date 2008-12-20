@@ -13,3 +13,5 @@ ActiveRecord::Base.class_eval     {include ActiveRecordPermissions::ModelUserAcc
 ActiveRecord::Base.class_eval     {include ActiveRecordPermissions::Permissions}
 
 require 'bridges/bridge.rb'
+require 'bridges/checkbox'
+require 'bridges/dhtml_calendar'

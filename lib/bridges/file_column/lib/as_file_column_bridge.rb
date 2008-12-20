@@ -1,10 +1,9 @@
-# Is this accessed anymore?
-# This does not work in Rails 2.2 version of AS - it is causing a ArgumentError (wrong number of arguments (2 for 0)): on Column#initialize
-# module ActiveScaffold::DataStructures
-#   class Column
-#     attr_accessor :file_column_display
-#   end
-# end
+require 'active_scaffold/data_structures/column'
+module ActiveScaffold::DataStructures
+  class Column
+    attr_accessor :file_column_display
+  end
+end
 
 module ActiveScaffold::Config
   class Core < Base
