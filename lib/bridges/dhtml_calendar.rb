@@ -23,7 +23,7 @@ end
 module ActiveScaffold
   module Helpers
     # Helpers that assist with the rendering of a Form Column
-    module FormColumns
+    module FormColumnHelpers
       def active_scaffold_input_dhtml_calendar(column, options)
         active_scaffold_input_calendar(column, options)
       end      

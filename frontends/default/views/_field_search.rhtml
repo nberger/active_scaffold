@@ -35,7 +35,7 @@ href = url_for(params_for(:action => :update_table, :escape => false).delete_if{
                               :method => :get,
                               :failure => "ActiveScaffold.report_500_response('#{active_scaffold_id}')",
                               :update => active_scaffold_content_id}, {:class => "cancel"} %>
-    <%= loading_indicator_tag(loading_indicator) %>
+    <%= loading_indicator_tag(:action => :search, :id => params[:id]) %>
   </p>
 </form>
 
