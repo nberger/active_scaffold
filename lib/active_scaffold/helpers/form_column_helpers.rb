@@ -94,7 +94,7 @@ module ActiveScaffold
           # select_options = options_for_select(options_for_association(nested_association)) unless column.through_association?
           select_options ||= options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
           unless select_options.empty?
-            select_tag 'associated_id', '<option value="">' + as_('- select -') + '</option>' + select_options
+            select_tag 'associated_id', '<option value="">' + as_(:_select_) + '</option>' + select_options
           end  
         end
       end
@@ -116,7 +116,7 @@ module ActiveScaffold
         selected = associated.nil? ? nil : associated.id
         method = column.association.macro == :belongs_to ? column.association.primary_key_name : column.name
         options[:name] += '[id]'
-        select(:record, method, select_options.uniq, {:selected => selected, :include_blank => as_('- select -')}, options)
+        select(:record, method, select_options.uniq, {:selected => selected, :include_blank => as_(:_select_)}, options)
       end
 
       def active_scaffold_input_plural_association(column, options)
@@ -188,28 +188,12 @@ module ActiveScaffold
         check_box(:record, column.name, options)
       end
 
-      def active_scaffold_input_country(column, options)
-        priority = ["United States"]
-        select_options = {:prompt => as_('- select -')}
-        select_options.merge!(options)
-        country_select(:record, column.name, column.options[:priority] || priority, select_options, column.options)
-      end
-
       def active_scaffold_input_password(column, options)
         password_field :record, column.name, active_scaffold_input_text_options(options)
       end
 
       def active_scaffold_input_textarea(column, options)
         text_area(:record, column.name, options.merge(:cols => column.options[:cols], :rows => column.options[:rows]))
-      end
-
-      def active_scaffold_input_usa_state(column, options)
-        select_options = {:prompt => as_('- select -')}
-        select_options.merge!(options)
-        select_options.delete(:size)
-        options.delete(:prompt)
-        options.delete(:priority)
-        usa_state_select(:record, column.name, column.options[:priority], select_options, column.options.merge!(options))
       end
 
       def active_scaffold_input_virtual(column, options)
@@ -222,9 +206,9 @@ module ActiveScaffold
 
       def active_scaffold_input_boolean(column, options)
         select_options = []
-        select_options << [as_('- select -'), nil] if column.column.null
-        select_options << [as_('True'), true]
-        select_options << [as_('False'), false]
+        select_options << [as_(:_select_), nil] if column.column.null
+        select_options << [as_(:true), true]
+        select_options << [as_(:false), false]
 
         select_tag(options[:name], options_for_select(select_options, @record.send(column.name)))
       end
@@ -335,7 +319,7 @@ module ActiveScaffold
       end
 
       def active_scaffold_input_ssn(column, options)
-        column.description ||= as_("Ex. 555-22-3333")
+        column.description ||= as_(:ssn_example)
         options = active_scaffold_input_text_options(options)
     		text_field :record, column.name, options.merge(
                       :value => usa_number_to_ssn(@record[column.name].to_s),
@@ -347,7 +331,7 @@ module ActiveScaffold
       end
 
       def active_scaffold_input_percentage(column, options)
-        column.description ||= as_("Ex. 10%")
+        column.description ||= as_(:percentage_example)
         options[:onblur] ||= "PercentageFormat(this);return true;"
         options = active_scaffold_input_text_options(options)
     		text_field :record, column.name, options.merge(:value => number_to_percentage(@record[column.name].to_s, :precision => 1))
@@ -362,7 +346,7 @@ module ActiveScaffold
       #   super
       # end
       def active_scaffold_input_usa_money(column, options)
-        column.description ||= as_("Ex. 1,333")
+        column.description ||= as_(:usa_money_example)
         options[:onblur] ||= "UsaMoney(this);return true;"
         value = number_to_currency(@record[column.name].to_s) unless options[:blank_if_nil] == true
         value ||= "" 
@@ -371,14 +355,14 @@ module ActiveScaffold
       end
 
       def active_scaffold_input_usa_phone(column, options)
-        column.description ||= as_("Ex. 111-333-4444")
+        column.description ||= as_(:usa_phone_example)
         options[:onblur] ||= "UsaPhoneDashAdd(this);return true;"
         options = active_scaffold_input_text_options(options)
     		text_field :record, column.name, options.merge(:value => usa_number_to_phone(@record[column.name].to_s))
       end
 
       def active_scaffold_input_usa_zip(column, options)
-        column.description ||= as_("Ex. 88888-3333")
+        column.description ||= as_(:usa_zip_example)
         options[:onblur] ||= "UsaZipDashAdd(this);return true;"
         options = active_scaffold_input_text_options(options)
     		text_field :record, column.name, options.merge(:value => usa_number_to_zip(@record[column.name].to_s))
@@ -402,123 +386,6 @@ module ActiveScaffold
 
         tag("input", options[:html], false)
       end      
-
-      # Return select and option tags for the given object and method, using country_options_for_select to generate the list of option tags.
-      def country_select(object, method, priority_countries = nil, options = {}, html_options = {})
-        ActionView::Helpers::InstanceTag.new(object, method, self, options.delete(:object)).to_country_select_tag(priority_countries, options, html_options)
-      end
-
-      def usa_state_select(object, method, priority_states = nil, options = {}, html_options = {})
-        ActionView::Helpers::InstanceTag.new(object, method, self, options.delete(:object)).to_usa_state_select_tag(priority_states, options, html_options)
-      end
-
-      # Returns a string of option tags for pretty much any country in the world. Supply a country name as +selected+ to
-      # have it marked as the selected option tag. You can also supply an array of countries as +priority_countries+, so
-      # that they will be listed above the rest of the (long) list.
-      #
-      # NOTE: Only the option tags are returned, you have to wrap this call in a regular HTML select tag.
-      def country_options_for_select(selected = nil, priority_countries = nil)
-        country_options = ""
-
-        if priority_countries
-          country_options += options_for_select(priority_countries, selected)
-          country_options += "<option value=\"\" disabled=\"disabled\">-------------</option>\n"
-        end
-
-        return country_options + options_for_select(COUNTRIES, selected)
-      end
-
-      # Returns a string of option tags for the states in the United States. Supply a state name as +selected to
-      # have it marked as the selected option tag. Included also is the option to set a couple of +priority_states+ 
-      # in case you want to highligh a local area
-      # NOTE: Only the option tags are returned from this method, wrap it in a <select>
-      def usa_state_options_for_select(selected = nil, priority_states = nil)
-        state_options = ""
-        if priority_states
-          state_options += options_for_select(priority_states, selected)
-          state_options += "<option>-------------</option>\n"
-        end
-
-        if priority_states && priority_states.include?(selected)
-          state_options += options_for_select(USASTATES - priority_states, selected)
-        else
-          state_options += options_for_select(USASTATES, selected)
-        end
-
-        return state_options
-      end
-
-      # All the countries included in the country_options output.
-      COUNTRIES = ["Afghanistan", "Aland Islands", "Albania", "Algeria", "American Samoa", "Andorra", "Angola",
-        "Anguilla", "Antarctica", "Antigua And Barbuda", "Argentina", "Armenia", "Aruba", "Australia", "Austria",
-        "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin",
-        "Bermuda", "Bhutan", "Bolivia", "Bosnia and Herzegowina", "Botswana", "Bouvet Island", "Brazil",
-        "British Indian Ocean Territory", "Brunei Darussalam", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia",
-        "Cameroon", "Canada", "Cape Verde", "Cayman Islands", "Central African Republic", "Chad", "Chile", "China",
-        "Christmas Island", "Cocos (Keeling) Islands", "Colombia", "Comoros", "Congo",
-        "Congo, the Democratic Republic of the", "Cook Islands", "Costa Rica", "Cote d'Ivoire", "Croatia", "Cuba",
-        "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt",
-        "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Falkland Islands (Malvinas)",
-        "Faroe Islands", "Fiji", "Finland", "France", "French Guiana", "French Polynesia",
-        "French Southern Territories", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guadeloupe", "Guam", "Guatemala", "Guernsey", "Guinea",
-        "Guinea-Bissau", "Guyana", "Haiti", "Heard and McDonald Islands", "Holy See (Vatican City State)",
-        "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran, Islamic Republic of", "Iraq",
-        "Ireland", "Isle of Man", "Israel", "Italy", "Jamaica", "Japan", "Jersey", "Jordan", "Kazakhstan", "Kenya",
-        "Kiribati", "Korea, Democratic People's Republic of", "Korea, Republic of", "Kuwait", "Kyrgyzstan",
-        "Lao People's Democratic Republic", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libyan Arab Jamahiriya",
-        "Liechtenstein", "Lithuania", "Luxembourg", "Macao", "Macedonia, The Former Yugoslav Republic Of",
-        "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Martinique",
-        "Mauritania", "Mauritius", "Mayotte", "Mexico", "Micronesia, Federated States of", "Moldova, Republic of",
-        "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru",
-        "Nepal", "Netherlands", "Netherlands Antilles", "New Caledonia", "New Zealand", "Nicaragua", "Niger",
-        "Nigeria", "Niue", "Norfolk Island", "Northern Mariana Islands", "Norway", "Oman", "Pakistan", "Palau",
-        "Palestinian Territory, Occupied", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines",
-        "Pitcairn", "Poland", "Portugal", "Puerto Rico", "Qatar", "Reunion", "Romania", "Russian Federation",
-        "Rwanda", "Saint Barthelemy", "Saint Helena", "Saint Kitts and Nevis", "Saint Lucia",
-        "Saint Pierre and Miquelon", "Saint Vincent and the Grenadines", "Samoa", "San Marino",
-        "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore",
-        "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa",
-        "South Georgia and the South Sandwich Islands", "Spain", "Sri Lanka", "Sudan", "Suriname",
-        "Svalbard and Jan Mayen", "Swaziland", "Sweden", "Switzerland", "Syrian Arab Republic",
-        "Taiwan, Province of China", "Tajikistan", "Tanzania, United Republic of", "Thailand", "Timor-Leste",
-        "Togo", "Tokelau", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan",
-        "Turks and Caicos Islands", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom",
-        "United States", "United States Minor Outlying Islands", "Uruguay", "Uzbekistan", "Vanuatu", "Venezuela",
-        "Viet Nam", "Virgin Islands, British", "Virgin Islands, U.S.", "Wallis and Futuna", "Western Sahara",
-        "Yemen", "Zambia", "Zimbabwe"] unless const_defined?("COUNTRIES")
-
-
-    	USASTATES = [["Alabama", "AL"], ["Alaska", "AK"], ["Arizona", "AZ"], ["Arkansas", "AR"], ["California", "CA"], ["Colorado", "CO"], ["Connecticut", "CT"], ["Delaware", "DE"], ["District of Columbia", "DC"], ["Florida", "FL"], ["Georgia", "GA"], ["Hawaii", "HI"], ["Idaho", "ID"], ["Illinois", "IL"], ["Indiana", "IN"], ["Iowa", "IA"], ["Kansas", "KS"], ["Kentucky", "KY"], ["Louisiana", "LA"], ["Maine", "ME"], ["Maryland", "MD"], ["Massachusetts", "MA"], ["Michigan", "MI"], ["Minnesota", "MN"], ["Mississippi", "MS"], ["Missouri", "MO"], ["Montana", "MT"], ["Nebraska", "NE"], ["Nevada", "NV"], ["New Hampshire", "NH"], ["New Jersey", "NJ"], ["New Mexico", "NM"], ["New York", "NY"], ["North Carolina", "NC"], ["North Dakota", "ND"], ["Ohio", "OH"], ["Oklahoma", "OK"], ["Oregon", "OR"], ["Pennsylvania", "PA"], ["Rhode Island", "RI"], ["South Carolina", "SC"], ["South Dakota", "SD"], ["Tennessee", "TN"], ["Texas", "TX"], ["Utah", "UT"], ["Vermont", "VT"], ["Virginia", "VA"], ["Washington", "WA"], ["Wisconsin", "WI"], ["West Virginia", "WV"], ["Wyoming", "WY"]] unless const_defined?("USASTATES")
-
-    class ActionView::Helpers::InstanceTag #:nodoc:
-      include FormColumnHelpers
-
-      def to_country_select_tag(priority_countries, options, html_options)
-        ActiveSupport::Deprecation.warn("country_select will be removed from 2.2.0.  http://www.rubyonrails.org/deprecation/list-of-countries has more information.", caller)
-        html_options = html_options.stringify_keys
-        add_default_name_and_id(html_options)
-        value = value(object)
-        content_tag("select",
-          add_options(
-            country_options_for_select(value, priority_countries),
-            options, value
-          ), html_options
-        )
-      end
-
-      def to_usa_state_select_tag(priority_states, options, html_options)
-        html_options = html_options.stringify_keys
-        add_default_name_and_id(html_options)
-        value = value(object) if method(:value).arity > 0
-        if html_options[:name.to_s].include?('search')
-          html_options[:name.to_s] << '[]' 
-          html_options[:multiple] = true
-          options[:include_blank] = true
-        end
-        content_tag("select", add_options(usa_state_options_for_select(value, priority_states), options, value), html_options)
-      end
-    end
-
-    end
+    end      
   end
 end

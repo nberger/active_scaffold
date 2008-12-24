@@ -35,7 +35,7 @@ module ActiveScaffold::Config
     
     # the ActionLink for this action
     cattr_reader :link
-    @@link = ActiveScaffold::DataStructures::ActionLink.new('print_pdf', :label => 'PDF', :type => :table, :security_method => :print_pdf_authorized?, :popup => true)
+    @@link = ActiveScaffold::DataStructures::ActionLink.new('print_pdf', :label => :pdf, :type => :table, :security_method => :print_pdf_authorized?, :popup => true)
     
     # instance-level configuration
     # ----------------------------

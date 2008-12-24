@@ -15,3 +15,7 @@ ActiveRecord::Base.class_eval     {include ActiveRecordPermissions::Permissions}
 require 'bridges/bridge.rb'
 require 'bridges/checkbox'
 require 'bridges/dhtml_calendar'
+
+I18n.load_path << File.dirname(__FILE__) + '/lib/active_scaffold/locale/en.rb'
+
+ActionView::Base.send(:include, ActiveScaffold::Helpers::CountryHelpers)

@@ -12,7 +12,7 @@ module ActiveScaffold::Config
     # global level configuration
     # --------------------------
     cattr_reader :link
-    @@link = ActiveScaffold::DataStructures::ActionLink.new('revision', :label => 'Revision', :type => :record, :security_method => :revision_authorized?)
+    @@link = ActiveScaffold::DataStructures::ActionLink.new('revision', :label => :revision, :type => :record, :security_method => :revision_authorized?)
 
     # instance-level configuration
     # ----------------------------
@@ -20,7 +20,7 @@ module ActiveScaffold::Config
     # the label for this action. used for the header.
     attr_writer :label
     def label
-      @label ? as_(@label) : as_('Revisions for %s', @core.label.singularize)
+      @label ? as_(@label) : as_(:revisions_for_model, :model => @core.label.singularize)
     end
 
     # provides access to the list of columns specifically meant for this action to use

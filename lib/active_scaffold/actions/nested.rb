@@ -143,7 +143,7 @@ module ActiveScaffold::Actions::Nested
       respond_to do |type|
         type.html do
           if successful?
-            flash[:info] = as_('Created %s', @record.to_label)
+            flash[:info] = as_(:created_model, :model => @record.to_label)
             return_to_main
           else
             render(:action => 'add_existing_form', :layout => true)
@@ -169,7 +169,7 @@ module ActiveScaffold::Actions::Nested
 
       respond_to do |type|
         type.html do
-          flash[:info] = as_('Deleted %s', @record.to_label)
+          flash[:info] = as_(:deleted_model, :model => @record.to_label)
           return_to_main
         end
         type.js { render(:action => 'destroy.rjs', :layout => false) }

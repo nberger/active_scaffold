@@ -16,7 +16,7 @@ module ActiveScaffold
       # <%= active_scaffold_column_download_link(column, doc) %>
       def active_scaffold_column_download_link(column, record, label = nil)
         return nil if record.send(column.name).nil?
-        label ||= as_("Download")
+        label ||= as_(:download)
         if column.options[:secure_download]
           url_options = active_scaffold_column_download_link_url_options(column, record)
         else

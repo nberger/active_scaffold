@@ -19,7 +19,7 @@
   <div class="separator"></div>
   <%= submit_tag active_scaffold_config.customize.link.label, :class => "submit" %>
   <% href = url_for(params_for(:action => :reset_customize, :escape => false)) %>
-  <%= link_to_remote as_('Reset'), {:url => href,
+  <%= link_to_remote as_(:reset), {:url => href,
                             :method => :get,
                             :failure => "ActiveScaffold.report_500_response('#{active_scaffold_id}')",
                             :update => active_scaffold_content_id}, {:class => "cancel"} %>

@@ -61,8 +61,8 @@ module ActiveScaffold
       ## Search input methods
       ##
 
-      def active_scaffold_search_multi_select(column, options, select_options = nil)
-		    return active_scaffold_search_select(column, options.merge(:multiple => true), select_options)
+      def active_scaffold_search_multi_select(column, options)
+		return active_scaffold_search_select(column, options.merge(:multiple => true), select_options)
         associated_options = @record.send(column.association.name).collect {|r| [r.to_label, r.id]}
         select_options = associated_options | options_for_association(column.association, true)
         return 'no options' if select_options.empty?
@@ -109,9 +109,9 @@ module ActiveScaffold
       # to decide whether search for this field or not
       def active_scaffold_search_boolean(column, options)
         select_options = []
-        select_options << [as_(''), nil]
-        select_options << [as_('True'), 1]
-        select_options << [as_('False'), 0]
+        select_options << [as_(:nil), nil]
+        select_options << [as_(:true), 1]
+        select_options << [as_(:false), 0]
 
         value = @record.send(column.name)
         value = value.blank? ? nil : (value ? 1 : 0)
