@@ -2,8 +2,8 @@
 <% colspan += 1 unless @rev_record_1.nil? %>
 <% colspan += 1 unless @rev_record_2.nil? %>
 <tr>
-	  <td class="header_compare_cell"><%= as_('Revision') %></td>
-	  <td class="header_compare_cell"><%= as_('Current') %><br>(<%= @record.updated_at %>)</td>
+	  <td class="header_compare_cell"><%= as_(:revision) %></td>
+	  <td class="header_compare_cell"><%= as_(:current) %><br>(<%= @record.updated_at %>)</td>
     <% unless @rev_record_1.nil? %>
   	  <td class="header_compare_cell"><%= time_ago_in_words(@rev_record_1.updated_at) %> ago<br>(<%= @rev_record_1.updated_at %>)</td>
 	  <% end %>

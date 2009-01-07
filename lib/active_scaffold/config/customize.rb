@@ -13,7 +13,7 @@ module ActiveScaffold::Config
     # --------------------------
     # the ActionLink for this action
     cattr_reader :link
-    @@link = ActiveScaffold::DataStructures::ActionLink.new('show_customize', :label => 'Customize', :type => :table, :security_method => :customize_authorized?)
+    @@link = ActiveScaffold::DataStructures::ActionLink.new('show_customize', :label => :customize, :type => :table, :security_method => :customize_authorized?)
         
     # instance-level configuration
     # ----------------------------

@@ -14,7 +14,7 @@ module ActiveScaffold::Config
     # --------------------------
     # the ActionLink for this action
     cattr_reader :link
-    @@link = ActiveScaffold::DataStructures::ActionLink.new('refresh', :label => 'Refresh', :type => :table, :inline => true, :position => false, :security_method => :list_authorized?)
+    @@link = ActiveScaffold::DataStructures::ActionLink.new('refresh', :label => :refresh, :type => :table, :inline => true, :position => false, :security_method => :list_authorized?)
 
     # the ActionLink for this action
     attr_accessor :link

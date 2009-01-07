@@ -2,7 +2,7 @@ module ActionController
   module Resources
     class Resource
       ACTIVE_SCAFFOLD_ROUTING = {
-        :collection => {:show_search => :get, :update_table => :get, :edit_associated => :get, :list => :get, :new_existing => :get, :add_existing => :post, :print_html => :get, :print_pdf => :get, :show_customize => :get, :show_export_tool => :get, :reset_search => :get, :refresh => :get, :reset_customize => :get, :customize => :get, :export_tool => :get},
+        :collection => {:show_search => :get, :update_table => :get, :edit_associated => :get, :list => :get, :new_existing => :get, :add_existing => :post, :print_list => :get, :show_customize => :get, :show_export_tool => :get, :reset_search => :get, :refresh => :get, :reset_customize => :get, :customize => :get, :export_tool => :get},
         :member => {:row => :get, :nested => :get, :edit_associated => :get, :add_association => :get, :update_column => :post, :destroy_existing => :delete}
       }
 

@@ -86,11 +86,11 @@ module ActionView
         id_options = {:id => record.id.to_s, :action => 'update_column', :name => column.name.to_s}
         tag_options = {:tag => "span", :id => element_cell_id(id_options), :class => "in_place_editor_field"}
         in_place_editor_options = {:url => {:controller => params_for[:controller], :action => "update_column", :eid => params[:eid], :parent_model => params[:parent_model], :column => column.name, :id => record.id.to_s},
-         :click_to_edit_text => as_("Click to edit"),
-         :cancel_text => as_("Cancel"),
-         :loading_text => as_("Loading…"),
-         :save_text => as_("Update"),
-         :saving_text => as_("Saving…"),
+         :click_to_edit_text => as_(:click_to_edit),
+         :cancel_text => as_(:cancel),
+         :loading_text => as_(:loading_),
+         :save_text => as_(:update),
+         :saving_text => as_(:saving_),
          :script => true}.merge(column.options)
         html =  html_for_inplace_display(formatted_column, tag_options[:id], in_place_editor_options)
         html << form_for_inplace_display(record, column, tag_options[:id], in_place_editor_options, options)
@@ -114,7 +114,7 @@ module ActionView
         in_place_editor_options[:url] ||= {}
         in_place_editor_options[:url][:action] ||= "set_record_#{column.name}"
         in_place_editor_options[:url][:id] ||= record.id
-        loader_message = in_place_editor_options[:saving_text] || as_("Saving...")
+        loader_message = in_place_editor_options[:saving_text] || as_(:saving_)
         retval << form_remote_tag(:url => in_place_editor_options[:url],
   				:method => in_place_editor_options[:http_method] || :post,
           :loading => "$('#{id_string}_form').hide(); $('loader_#{id_string}').show();",
@@ -123,7 +123,7 @@ module ActionView
 
         retval << field_for_inplace_editing(record, options, column )
         retval << content_tag(:br) if in_place_editor_options[:br]
-        retval << submit_tag(as_("OK"), :class => "inplace_submit")
+        retval << submit_tag(as_(:ok), :class => "inplace_submit")
         retval << link_to_function( "Cancel", "$('#{id_string}_form').hide();$('#{id_string}').show() ", {:class => "inplace_cancel" })
         retval << "</form>"
         # #FIXME 2008-01-14 (EJM) Level=0 - Use AS's spinner

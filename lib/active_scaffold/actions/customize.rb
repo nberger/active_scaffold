@@ -1,7 +1,7 @@
 #TODO 2007-11-16 (EJM) Level=0 - Ignore lock_version
 module ActiveScaffold::Actions
   module Customize
-    include ActiveScaffold::Actions::PrintList
+    include ActiveScaffold::Actions::PrintBase
     def self.included(base)
       base.before_filter :customize_authorized?, :only => [:customize]
       base.before_filter :store_custum_list

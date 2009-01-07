@@ -12,8 +12,8 @@
               <%= render :partial => 'create_form' -%>
               <% flash[:error] = flash[:warning] = flash[:info] = nil %>
               <% parent_id = @controller.active_scaffold_session_storage[:constraints].each_key {|id| id}.to_a.flatten[1] %>
-              <%= button_to as_('Previous'), :controller => params[:wizard_controller], :action => "previous_wizard", :id => parent_id, :class => "submit" %>
-              <%= button_to as_('Continue'), :controller => params[:wizard_controller], :action => "next_wizard", :id => parent_id, :class => "submit" %>&nbsp;
+              <%= button_to as_(:previous), :controller => params[:wizard_controller], :action => "previous_wizard", :id => parent_id, :class => "submit" %>
+              <%= button_to as_(:continue), :controller => params[:wizard_controller], :action => "next_wizard", :id => parent_id, :class => "submit" %>&nbsp;
             </div>
           </div>
         </td>
@@ -27,9 +27,9 @@
 <script type="text/javascript">
 	new ActiveScaffold.Actions.Table($$('#<%= active_scaffold_id -%> div.active-scaffold-header a.action'), $('<%= before_header_id -%>'), $('<%= loading_indicator_id(:action => :table) -%>'))
 	ActiveScaffold.server_error_response = '<p class="error-message message">'
-	  + <%= as_('Request Failed (code 500, Internal Error)').to_json %>
+	  + <%= as_(:internal_error).to_json %>
 	  + '<a href="#" onclick="Element.remove(this.parentNode); return false;">'
-	  + <%= as_('Close').to_json %>
+	  + <%= as_(:close).to_json %>
 	  + '</a>'
 	  + '</p>';
 </script>

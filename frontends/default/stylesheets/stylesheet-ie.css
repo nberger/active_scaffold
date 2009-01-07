@@ -34,8 +34,7 @@ float: none;
 padding: 4px 0;
 }
 .active-scaffold-header div.actions a.show_customize,
-.active-scaffold-header div.actions a.show_print_html,
-.active-scaffold-header div.actions a.show_print_pdf {
+.active-scaffold-header div.actions a.show_print_list {
 background-image: none;
 filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../images/active_scaffold/default/printer_tool.png', sizingMethod='crop');
 }

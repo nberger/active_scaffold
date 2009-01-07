@@ -7,7 +7,7 @@ default_sorting_stages = ['ASC', 'DESC']
 <% if active_scaffold_config.left_handed and active_scaffold_config.action_links.any? {|link| link.type == :record } -%>
 <th class="actions">
   <% href = url_for(params_for(:action => :reset_search, :escape => false).delete_if{|k,v| k == 'search'}) -%>
-  <%= link_to_remote("(" + as_("Filtered - Click to Reset") + ")",
+  <%= link_to_remote(as_(:filtered__click_to_reset),
     { :url => href,
       :method => :get,
       :before => "addActiveScaffoldPageToHistory('#{href}', '#{params[:controller]}')",

@@ -75,7 +75,7 @@ module ActiveScaffold
               if controller_actions.include?(:create) and column_model.authorized_for?(:action => :create)
                 link.action = 'new'
                 link.crud_type = :create
-                text = as_('Create New')
+                text = as_(:create_new)
               end
             end
           end
@@ -171,7 +171,7 @@ module ActiveScaffold
       end
 
       def nested_label(association)
-        as_("%s for %s", active_scaffold_config_for(association.klass).label, format_column(@record.to_label))
+        as_(:nested_for_model, :nested_model => active_scaffold_config_for(association.klass).label, :parent_model => format_column(@record.to_label))
       end
       
       ##
