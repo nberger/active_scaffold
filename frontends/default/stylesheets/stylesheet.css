@@ -814,8 +814,7 @@ font-size: 100%;
   float:left;
 }
 .active-scaffold-header div.actions a.show_customize,
-.active-scaffold-header div.actions a.print_html,
-.active-scaffold-header div.actions a.print_pdf,
+.active-scaffold-header div.actions a.print_list,
 .active-scaffold-header div.actions a.show_export_tool {
 padding-left: 19px;
 background-position: 1px 50%;
@@ -827,8 +826,7 @@ background-repeat: no-repeat;
 .active-scaffold-header div.actions a.show_export_tool {
   background-image: url(../../../images/active_scaffold/default/export_tool.png);
 }
-.active-scaffold-header div.actions a.print_html,
-.active-scaffold-header div.actions a.print_pdf {
+.active-scaffold-header div.actions a.print_list {
 background-image: url(../../../images/active_scaffold/default/printer_tool.png);
 }
 
@@ -888,8 +886,7 @@ letter-spacing: -1px;
 border: solid 1px #1F7F00;
 }
 .active-scaffold-header div.actions a.show_customize,
-.active-scaffold-header div.actions a.print_html,
-.active-scaffold-header div.actions a.print_pdf,
+.active-scaffold-header div.actions a.print_list,
 .active-scaffold-header div.actions a.show_export_tool {
 padding-left: 19px;
 background-position: 1px 50%;
@@ -901,8 +898,7 @@ background-repeat: no-repeat;
 .active-scaffold-header div.actions a.show_export_tool {
   background-image: url(../../../images/active_scaffold/default/export_tool.png);
 }
-.active-scaffold-header div.actions a.print_html,
-.active-scaffold-header div.actions a.print_pdf {
+.active-scaffold-header div.actions a.print_list {
 background-image: url(../../../images/active_scaffold/default/printer_tool.png);
 }
 

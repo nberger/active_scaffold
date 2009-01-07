@@ -85,8 +85,7 @@ module ActiveScaffold
         include ActiveScaffold::Actions::Core
         active_scaffold_config.actions.each do |mod|
           name = mod.to_s.camelize
-          include "ActiveScaffold::Actions::#{name}".constantize rescue nil
-
+          include "ActiveScaffold::Actions::#{name}".constantize #rescue nil
           # sneak the action links from the actions into the main set
           if link = active_scaffold_config.send(mod).link rescue nil
             active_scaffold_config.action_links << link
