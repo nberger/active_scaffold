@@ -198,19 +198,18 @@ class ActiveScaffoldGenerator < Rails::Generator::NamedBase
 
       # Model, controller, helper, views, and test directories.
       m.directory File.join('app/models', class_path)
-      # I use rspec
-      # m.directory File.join('test/unit', class_path)
+      m.directory File.join('test/unit', class_path)
+      # I use factories
       # m.directory File.join('test/fixtures', class_path)
       m.directory File.join('app/controllers', controller_class_path)
       m.directory File.join('app/helpers', controller_class_path)
       m.directory File.join('app/views', controller_class_path, controller_file_name)
       m.directory File.join('app/views/layouts', controller_class_path)
-      # I use rspec
-      # m.directory File.join('test/functional', controller_class_path)
+      m.directory File.join('test/functional', controller_class_path)
 
-      # I use rspec
-      # # Unit test, and fixtures.
-      # m.template 'unit_test.rb',  File.join('test/unit', "#{singular_name}_test.rb")
+      # Unit test, and fixtures.
+      m.template 'unit_test.rb',  File.join('test/unit', "#{singular_name}_test.rb")
+      # I use factories
       # m.template 'fixtures.yml',  File.join('test/fixtures', "#{singular_name}.yml")
 
       m.complex_template 'model.rb',
@@ -241,6 +240,7 @@ class ActiveScaffoldGenerator < Rails::Generator::NamedBase
         :mark_id => singular_name) if less_dry_partial?
 
       # Controller class, functional test, helper, and views.
+      m.template('functional_test.rb', File.join('test/functional', controller_class_path, "#{controller_file_name}_controller_test.rb"))
       controller_template_name = 'controller_methods.rb'
       m.complex_template controller_template_name,
         File.join('app/controllers',

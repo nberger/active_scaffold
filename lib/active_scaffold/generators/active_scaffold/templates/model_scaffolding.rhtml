@@ -25,7 +25,27 @@
       end
     end
   end
-  if (@model_instance.class.content_columns & [:name, :label, :title]).length == 0 -%>  
+%>
+<%
+max_size = @model_instance.class.column_names.collect{|name| name.size}.max + 1
+@model_instance.class.columns.each do |col|
+  next if [:id, :created_at, :updated_at, :lock_version].include?(col.name.to_sym)
+	next if col.name.include?('_id') and col.name.last(3) == '_id'
+  attrs = []
+  attrs << "default(#{quote(col.default)})" if col.default
+  attrs << "not null" unless col.null
+  attrs << "primary key" if col.name == @model_instance.class.primary_key
+
+  col_type = col.type.to_s
+  if col_type == "decimal"
+    col_type << "(#{col.precision}, #{col.scale})"
+  else
+    col_type << "(#{col.limit})" if col.limit
+  end %>	attribute :<%= col.name %>, :is => :required  <%#= sprintf("# %s", col_type, attrs.join(", ")) %>
+<%
+end
+%><%
+  if @model_instance.class.content_columns.find {|c| [:name, :label, :title].include?(c.name.to_sym)}.nil? -%>  
 	def to_label
     "#{}" # :name, :label, :title columns not found. Put the Model's label column(s) here for example: first_name + " " + last_name
   end
