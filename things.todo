@@ -1,8 +1,4 @@
 Check In:
-- Fix finder method signatures for those methods that don't need a like_pattern
-- Remove input_box.js - it didn't belong here.
-- Add wizard ability to create and update actions
-- Add active_scaffold_tools_form_columns_to_ignore
 
 ========:
 = HIGH =:
