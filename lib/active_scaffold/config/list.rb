@@ -65,6 +65,34 @@ module ActiveScaffold::Config
       @label ? as_(@label) : @core.label
     end
 
+    # We are handling these via as_() and localization
+    # attr_writer :no_entries_message
+    # def no_entries_message
+    #   @no_entries_message ? as_(@no_entries_message) : 'No Entries'
+    # end
+    # 
+    # attr_writer :filtered_message
+    # def filtered_message
+    #   @filtered_message ? as_(@filtered_message) : 'Filtered List'
+    # end
+    
+    attr_writer :always_show_search
+    def always_show_search
+      @always_show_search && !search_partial.blank?
+    end
+    
+    def search_partial
+      return "search" if @core.actions.include?(:search)
+      return "live_search" if @core.actions.include?(:live_search)
+      return "field_search" if @core.actions.include?(:field_search)
+    end
+    
+    # always show create
+    attr_writer :always_show_create
+    def always_show_create
+      @always_show_create && @core.actions.include?(:create)
+    end
+    
     class UserSettings < UserSettings
       # This label has alread been localized.
       def label
@@ -102,7 +130,6 @@ module ActiveScaffold::Config
       def count_includes
         @conf.count_includes
       end
-      
     end
   end
 end

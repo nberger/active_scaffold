@@ -32,7 +32,9 @@ module ActiveScaffold::Actions
 
     def list
       do_list
-
+      if active_scaffold_config.list.always_show_create
+        do_new
+      end
       respond_to do |type|
         type.html {
           reset_active_scaffold_session unless params[:wizard_controller]

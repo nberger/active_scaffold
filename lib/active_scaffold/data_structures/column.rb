@@ -19,8 +19,7 @@ module ActiveScaffold::DataStructures
       @params ||= Set.new
     end
 
-    # the display-name of the column. this will be used, for instance, as the column title in the table and as the field name in the form.
-    # if left alone it will utilize human_attribute_name which includes localization
+    # the display-name of the column. this will be used, for instance, as the column title in the table and as the field name in the form. If left alone it will utilize human_attribute_name which includes localization
     attr_writer :label
     def label
       @label || active_record_class.human_attribute_name(name.to_s)
@@ -162,6 +161,16 @@ module ActiveScaffold::DataStructures
       @associated_number
     end
 
+    # whether a blank row must be shown in the subform
+    cattr_accessor :show_blank_record
+    @@show_blank_record = true
+    attr_accessor :show_blank_record
+
+    # methods for automatic links in singular association columns
+    cattr_accessor :actions_for_association_links
+    @@actions_for_association_links = [:new, :edit, :show]
+    attr_accessor :actions_for_association_links
+
     # ----------------------------------------------------------------- #
     # the below functionality is intended for internal consumption only #
     # ----------------------------------------------------------------- #
@@ -213,14 +222,20 @@ module ActiveScaffold::DataStructures
       @weight = 0
       @associated_limit = self.class.associated_limit
       @associated_number = self.class.associated_number
+      @show_blank_record = self.class.show_blank_record
+      @actions_for_association_links = self.class.actions_for_association_links if @association
       
       # default all the configurable variables
+      # self.label = @column.human_name unless @column.nil? We are doing it in the accessor methods above
+      # self.label ||= self.name.to_s.titleize
       self.css_class = ''
       if active_record_class.respond_to? :reflect_on_validations_for
-        column_name = name
-        column_name = @association.primary_key_name if @association
-        self.required = active_record_class.reflect_on_validations_for(column_name.to_sym).any? do |val|
-          val.macro == :validates_presence_of or (val.macro == :validates_inclusion_of and not val.options[:allow_nil] and not val.options[:allow_blank])
+        column_names = [name]
+        column_names << @association.primary_key_name if @association
+        self.required = column_names.any? do |column_name|
+          active_record_class.reflect_on_validations_for(column_name.to_sym).any? do |val|
+            val.macro == :validates_presence_of or (val.macro == :validates_inclusion_of and not val.options[:allow_nil] and not val.options[:allow_blank])
+          end
         end
       else
         self.required = false

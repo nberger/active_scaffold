@@ -2,7 +2,6 @@ module ActiveScaffold
   module Helpers
     # Helpers that assist with the rendering of a Form Column
     module FormColumnHelpers
-      
       # This method decides which input to use for the given column.
       # It does not do any rendering. It only decides which method is responsible for rendering.
       def active_scaffold_input_for(column, scope = nil, options = {})
@@ -49,21 +48,9 @@ module ActiveScaffold
 
       alias form_column active_scaffold_input_for
 
-      def active_scaffold_observe(column, id_name)
-        if column.options[:observe_method]
-          action = @record.id ? :update : :create
-          return observe_field(id_name,
-                      :frequency => 0.2,
-                      :url => {:action => column.options[:observe_method], :parent_id => @record.id}, 
-                      :with => "Form.serialize('#{element_form_id(:action => action)}')+'&='" ) unless !column.options[:observe_restrict_actions].nil? and column.options[:observe_restrict_actions].include?(action)
-        end
-        ''
-      end
-
       # the standard active scaffold options used for textual inputs
       def active_scaffold_input_text_options(options = {})
         options[:autocomplete] = 'off'
-        options[:size] ||= 20
         options[:class] = "#{options[:class]} text-input".strip
         options
       end
@@ -76,36 +63,17 @@ module ActiveScaffold
         end
         options[:class] ||= "#{column.name}-input"
         name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
-        { :name => name, :id => "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"}.merge(options)
+
+        # Fix for keeping unique IDs in subform
+        id_control = "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"
+        id_control += scope.gsub (/(\[|\])/, '_').gsub('__', '_').gsub(/_$/, '') if scope
+
+        { :name => name, :id => id_control}.merge(options)
       end
 
       ##
       ## Form input methods
       ##
-
-      def active_scaffold_add_existing_input(options)
-        if controller.respond_to?(:record_select_config)
-          remote_controller = active_scaffold_controller_for(record_select_config.model).controller_path
-          record_select_field(
-            "#{options[:name]}",
-            active_scaffold_config.model.new,
-            {:controller => remote_controller, :params => options[:url_options].merge(:parent_model => record_select_config.model)}.merge(active_scaffold_input_text_options))
-        else
-          # select_options = options_for_select(options_for_association(nested_association)) unless column.through_association?
-          select_options ||= options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
-          unless select_options.empty?
-            select_tag 'associated_id', '<option value="">' + as_(:_select_) + '</option>' + select_options
-          end  
-        end
-      end
-
-      def active_scaffold_add_existing_label
-        if controller.respond_to?(:record_select_config)
-          record_select_config.model.to_s.underscore.humanize
-        else
-          active_scaffold_config.model.to_s.underscore.humanize
-        end
-      end
 
       def active_scaffold_input_singular_association(column, options)
         associated = @record.send(column.association.name)
@@ -187,6 +155,13 @@ module ActiveScaffold
       def active_scaffold_input_checkbox(column, options)
         check_box(:record, column.name, options)
       end
+      # Moved this to country module
+      # def active_scaffold_input_country(column, options)
+      #   priority = ["United States"]
+      #   select_options = {:prompt => as_('- select -')}
+      #   select_options.merge!(options)
+      #   country_select(:record, column.name, column.options[:priority] || priority, select_options, column.options)
+      # end
 
       def active_scaffold_input_password(column, options)
         password_field :record, column.name, active_scaffold_input_text_options(options)
@@ -195,6 +170,15 @@ module ActiveScaffold
       def active_scaffold_input_textarea(column, options)
         text_area(:record, column.name, options.merge(:cols => column.options[:cols], :rows => column.options[:rows]))
       end
+      # Moved this to state module
+      # def active_scaffold_input_usa_state(column, options)
+      #   select_options = {:prompt => as_('- select -')}
+      #   select_options.merge!(options)
+      #   select_options.delete(:size)
+      #   options.delete(:prompt)
+      #   options.delete(:priority)
+      #   usa_state_select(:record, column.name, column.options[:priority], select_options, column.options.merge!(options))
+      # end
 
       def active_scaffold_input_virtual(column, options)
         text_field :record, column.name, active_scaffold_input_text_options(options)
@@ -314,6 +298,41 @@ module ActiveScaffold
       # = AST =
       # =======
       
+      def active_scaffold_add_existing_input(options)
+        if controller.respond_to?(:record_select_config)
+          remote_controller = active_scaffold_controller_for(record_select_config.model).controller_path
+          record_select_field(
+            "#{options[:name]}",
+            active_scaffold_config.model.new,
+            {:controller => remote_controller, :params => options[:url_options].merge(:parent_model => record_select_config.model)}.merge(active_scaffold_input_text_options))
+        else
+          # select_options = options_for_select(options_for_association(nested_association)) unless column.through_association?
+          select_options ||= options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
+          unless select_options.empty?
+            select_tag 'associated_id', '<option value="">' + as_(:_select_) + '</option>' + select_options
+          end  
+        end
+      end
+
+      def active_scaffold_add_existing_label
+        if controller.respond_to?(:record_select_config)
+          record_select_config.model.to_s.underscore.humanize
+        else
+          active_scaffold_config.model.to_s.underscore.humanize
+        end
+      end
+
+      def active_scaffold_observe(column, id_name)
+        if column.options[:observe_method]
+          action = @record.id ? :update : :create
+          return observe_field(id_name,
+                      :frequency => 0.2,
+                      :url => {:action => column.options[:observe_method], :parent_id => @record.id}, 
+                      :with => "Form.serialize('#{element_form_id(:action => action)}')+'&='" ) unless !column.options[:observe_restrict_actions].nil? and column.options[:observe_restrict_actions].include?(action)
+        end
+        ''
+      end
+
       def active_scaffold_input_hidden(column, options)
     		input(:record, column.name, options.merge(:type => :hidden))
       end

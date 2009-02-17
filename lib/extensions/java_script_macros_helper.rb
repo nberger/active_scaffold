@@ -33,7 +33,7 @@ module ActionView
         if column.list_ui == :checkbox
           active_scaffold_column_checkbox(column, record)
         else
-          clean_column_value(format_column(value))
+          clean_column_value(format_value(value))
         end
       end
       

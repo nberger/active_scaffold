@@ -7,6 +7,7 @@ module ActiveScaffold::Actions
       base.before_filter :include_habtm_actions
       # TODO: it's a bit wasteful to run this routine every page load.
       base.before_filter :links_for_associations
+      base.helper_method :nested_habtm?
     end
 
     def nested
@@ -45,12 +46,12 @@ module ActiveScaffold::Actions
 
             actions = controller.active_scaffold_config.actions
             action = nil
-            if actions.include? :update and model.authorized_for? :action => :update
+            if actions.include? :update and column.actions_for_association_links.include? :edit and model.authorized_for? :action => :update
               action = 'edit'
-            elsif actions.include? :show and model.authorized_for? :action => :read
+            elsif actions.include? :show and column.actions_for_association_links.include? :show and model.authorized_for? :action => :read
               action = 'show'
             end
-            column.set_link(action, :controller => File.join('/', controller.controller_path), :parameters => {:parent_controller => params[:controller]}) if action
+            column.set_link(action, :controller => controller.controller_path, :parameters => {:parent_controller => params[:controller]}) if action
           end
         end
       end

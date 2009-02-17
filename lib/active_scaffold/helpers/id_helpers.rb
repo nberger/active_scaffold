@@ -50,23 +50,6 @@ module ActiveScaffold
         "#{controller_id}-#{link_action}-#{link_id}-link"
       end
 
-      def customize_form_id
-        "#{controller_id}-customize-form"
-      end
-
-      def nested_id(options = {})
-        options[:action] = :nested
-        element_row_id(options)
-      end
-
-      def active_scaffold_tools_list_columns
-        @list_columns || active_scaffold_config.list.columns.collect
-      end
-      
-      def active_scaffold_tools_form_columns_to_ignore(column)
-        @form_column_names.nil? ? false : !@form_column_names.include?(column.name)
-      end
-      
       def active_scaffold_column_header_id(column)
         name = column.respond_to?(:name) ? column.name : column.to_s
         clean_id "#{controller_id}-#{name}-column"
@@ -131,6 +114,23 @@ module ActiveScaffold
         "#{controller_id}-#{options[:action]}-#{options[:id]}-iframe"
       end
 
+      def customize_form_id
+        "#{controller_id}-customize-form"
+      end
+
+      def nested_id(options = {})
+        options[:action] = :nested
+        element_row_id(options)
+      end
+
+      def active_scaffold_tools_list_columns
+        @list_columns || active_scaffold_config.list.columns.collect
+      end
+      
+      def active_scaffold_tools_form_columns_to_ignore(column)
+        @form_column_names.nil? ? false : !@form_column_names.include?(column.name)
+      end
+      
       def field_error_id(column)
         "field_error_#{column.name}_#{params[:eid] || params[:id]}"
       end

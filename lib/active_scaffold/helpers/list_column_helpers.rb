@@ -24,20 +24,20 @@ module ActiveScaffold
             value = record.send(column.name)
 
             if column.association.nil? or column_empty?(value)
-              formatted_value = clean_column_value(format_column(value))
+              formatted_value = clean_column_value(format_value(value))
             else
               case column.association.macro
                 when :has_one, :belongs_to
-                  formatted_value = clean_column_value(format_column(value.to_label))
+                  formatted_value = clean_column_value(format_value(value.to_label))
 
                 when :has_many, :has_and_belongs_to_many
-				  if column.associated_limit.nil?
+				          if column.associated_limit.nil?
                     firsts = value.collect { |v| v.to_label }
                   else
                     firsts = value.first(column.associated_limit + 1).collect { |v| v.to_label }
                     firsts[column.associated_limit] = '…' if firsts.length > column.associated_limit
-				  end
-                  formatted_value = clean_column_value(format_column(firsts.join(', ')))
+				          end
+                  formatted_value = clean_column_value(format_value(firsts.join(', ')))
                   formatted_value << " (#{value.length})" if column.associated_number? and column.associated_limit and firsts.length > column.associated_limit
                   formatted_value
               end
@@ -54,10 +54,6 @@ module ActiveScaffold
         end
       end
 
-      def list_action_authorized?(link, record)
-       !(controller.respond_to?(link.security_method) and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, link)))) and record.authorized_for?(:action => link.crud_type)
-      end
-      
       # TODO: move empty_field_text and &nbsp; logic in here?
       # TODO: move active_scaffold_inplace_edit in here?
       # TODO: we need to distinguish between the automatic links *we* create and the ones that the dev specified. some logic may not apply if the dev specified the link.
@@ -72,7 +68,7 @@ module ActiveScaffold
             else
               column_model = column.association.klass
               controller_actions = active_scaffold_config_for(column_model).actions
-              if controller_actions.include?(:create) and column_model.authorized_for?(:action => :create)
+              if controller_actions.include?(:create) and column.actions_for_association_links.include? :new and column_model.authorized_for?(:action => :create)
                 link.action = 'new'
                 link.crud_type = :create
                 text = as_(:create_new)
@@ -117,41 +113,21 @@ module ActiveScaffold
       ## Overrides
       ##
       def active_scaffold_column_text(column, record)
-        truncate(clean_column_value(record.send(column.name)), 50)
+        truncate(clean_column_value(record.send(column.name)), :length => 50)
       end
 
       def active_scaffold_column_checkbox(column, record)
         column_value = record.send(column.name)
+        checked = column_value.class.to_s.include?('Class') ? column_value : column_value == 1
         if column.inplace_edit and record.authorized_for?(:action => :update, :column => column.name)
           id_options = {:id => record.id.to_s, :action => 'update_column', :name => column.name.to_s}
           tag_options = {:tag => "span", :id => element_cell_id(id_options), :class => "in_place_editor_field"}
           script = remote_function(:method => 'POST', :url => {:controller => params_for[:controller], :action => "update_column", :column => column.name, :id => record.id.to_s, :value => !column_value, :eid => params[:eid]})
-          content_tag(:span, check_box_tag(tag_options[:id], 1, column_value || column_value == 1, {:onchange => script}) , tag_options)
+          content_tag(:span, check_box_tag(tag_options[:id], 1, checked, {:onchange => script}) , tag_options)
         else
-          check_box_tag(nil, 1, column_value || column_value == 1, :disabled => true)
+          check_box_tag(nil, 1, checked, :disabled => true)
         end
       end
-
-      def active_scaffold_column_percentage(column, record)
-        number_to_percentage(record[column.name].to_s, :precision => 1)
-      end
-
-      def active_scaffold_column_ssn(column, record)
-        usa_number_to_ssn(record[column.name].to_s)
-      end
-
-      def active_scaffold_column_usa_money(column, record)
-        number_to_currency(record[column.name].to_s)
-      end
-
-      def active_scaffold_column_usa_phone(column, record)
-        usa_number_to_phone(record[column.name].to_s)
-      end
-
-      def active_scaffold_column_usa_zip(column, record)
-        usa_number_to_zip(record[column.name].to_s)
-      end
-
 
       def column_override(column)
         "#{column.name.to_s.gsub('?', '')}_column" # parse out any question marks (see issue 227)
@@ -170,15 +146,11 @@ module ActiveScaffold
         "active_scaffold_column_#{list_ui}"
       end
 
-      def nested_label(association)
-        as_(:nested_for_model, :nested_model => active_scaffold_config_for(association.klass).label, :parent_model => format_column(@record.to_label))
-      end
-      
       ##
       ## Formatting
       ##
 
-      def format_column(column_value)
+      def format_value(column_value)
         if column_empty?(column_value)
           active_scaffold_config.list.empty_field_text
         elsif column_value.instance_of? Time
@@ -200,6 +172,36 @@ module ActiveScaffold
         date.strftime(format)
       end
 
+      # =======
+      # = AST =
+      # =======
+      def nested_label(association)
+        as_(:nested_for_model, :nested_model => active_scaffold_config_for(association.klass).label, :parent_model => format_value(@record.to_label))
+      end
+      
+      def list_action_authorized?(link, record)
+       !(controller.respond_to?(link.security_method) and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, link)))) and record.authorized_for?(:action => link.crud_type)
+      end
+      
+      def active_scaffold_column_percentage(column, record)
+        number_to_percentage(record[column.name].to_s, :precision => 1)
+      end
+
+      def active_scaffold_column_ssn(column, record)
+        usa_number_to_ssn(record[column.name].to_s)
+      end
+
+      def active_scaffold_column_usa_money(column, record)
+        number_to_currency(record[column.name].to_s)
+      end
+
+      def active_scaffold_column_usa_phone(column, record)
+        usa_number_to_phone(record[column.name].to_s)
+      end
+
+      def active_scaffold_column_usa_zip(column, record)
+        usa_number_to_zip(record[column.name].to_s)
+      end
     end
   end
 end
