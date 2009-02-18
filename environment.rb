@@ -18,3 +18,6 @@ require 'bridges/checkbox'
 I18n.load_path << File.dirname(__FILE__) + '/lib/active_scaffold/locale/en.rb'
 
 ActionView::Base.send(:include, ActiveScaffold::Helpers::CountryHelpers)
+
+require 'components'
+ActionController::Base.send :include, Components
