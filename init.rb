@@ -1,7 +1,7 @@
 ##
 ## Initialize the environment
 ##
-unless Rails::VERSION::MAJOR == 2 && Rails::VERSION::MINOR >= 2
+unless Rails::VERSION::MAJOR == 2 && Rails::VERSION::MINOR >= 3
   raise "This version of ActiveScaffold requires Rails 2.2 or higher.  Please use an earlier version."
 end
 

@@ -1,48 +1,145 @@
 module ActiveScaffold
   module Finder
-    # Takes a collection of search terms (the tokens) and creates SQL that
-    # searches all specified ActiveScaffold columns. A row will match if each
-    # token is found in at least one of the columns.
-    def self.create_conditions_for_columns(tokens, columns, like_pattern = '%?%')
-      # if there aren't any columns, then just return a nil condition
-      return unless columns.length > 0
+    module ClassMethods
+      # Takes a collection of search terms (the tokens) and creates SQL that
+      # searches all specified ActiveScaffold columns. A row will match if each
+      # token is found in at least one of the columns.
+      def create_conditions_for_columns(tokens, columns, like_pattern = '%?%')
+        # if there aren't any columns, then just return a nil condition
+        return unless columns.length > 0
 
-      tokens = [tokens] if tokens.is_a? String
+        tokens = [tokens] if tokens.is_a? String
 
-      where_clauses = []
-      columns.each do |column|
-        where_clauses << "LOWER(#{column.search_sql}) LIKE ?"
+        where_clauses = []
+        columns.each do |column|
+          where_clauses << ((column.column.nil? || column.column.text?) ? "LOWER(#{column.search_sql}) LIKE ?" : "#{column.search_sql} = ?")
+        end
+        phrase = "(#{where_clauses.join(' OR ')})"
+
+        sql = ([phrase] * tokens.length).join(' AND ')
+        tokens = tokens.collect do |value|
+          columns.collect {|column| (column.column.nil? || column.column.text?) ? like_pattern.sub('?', value.downcase) : column.column.type_cast(value)}
+        end.flatten
+
+        [sql, *tokens]
       end
-      phrase = "(#{where_clauses.join(' OR ')})"
 
-      sql = ([phrase] * tokens.length).join(' AND ')
-      tokens = tokens.collect{ |value| [like_pattern.sub('?', value.downcase)] * where_clauses.length }.flatten
-
-      [sql, *tokens]
-    end
-
-    # Generates an SQL condition for the given ActiveScaffold column based on
-    # that column's database type (or form_ui ... for virtual columns?).
-    # TODO: this should reside on the column, not the controller
-    def self.condition_for_column(column, value, like_pattern = '%?%')
-      # we must check false or not blank because we want to search for false but false is blank
-      return unless column and column.search_sql and (not value.blank?)
-      return if (value.is_a?(Array) and value.join.blank?)
-      search_ui = column.search_ui || column.column.type
-      if self.respond_to?("condition_for_#{search_ui}_column")
-        self.send("condition_for_#{search_ui}_column", column, value, like_pattern)
-      else
-        case search_ui
-          when :boolean, :checkbox
-            ["#{column.search_sql} = ?", value.to_i]
-          when :select
-            ["#{column.search_sql} = ?", value[:id]] unless value[:id].blank?
-          else
-            self.condition_for_string_column(column, value, like_pattern)
+      # Generates an SQL condition for the given ActiveScaffold column based on
+      # that column's database type (or form_ui ... for virtual columns?).
+      # TODO: this should reside on the column, not the controller
+      def condition_for_column(column, value, like_pattern = '%?%')
+        # we must check false or not blank because we want to search for false but false is blank
+        return unless column and column.search_sql and (not value.blank?)
+        return if (value.is_a?(Array) and value.join.blank?)
+        search_ui = column.search_ui || column.column.type
+        if self.respond_to?("condition_for_#{column.name}_column")
+          self.send("condition_for_#{column.name}_column", column, value, like_pattern)
+        elsif self.respond_to?("condition_for_#{search_ui}_type")
+          self.send("condition_for_#{search_ui}_type", column, value, like_pattern)
+        else
+          case search_ui
+            when :boolean, :checkbox
+              ["#{column.search_sql} = ?", column.column.type_cast(value)]
+            when :select
+              ["#{column.search_sql} = ?", value[:id]] unless value[:id].blank?
+            when :multi_select
+              ["#{column.search_sql} in (?)", value.values.collect{|hash| hash[:id]}]
+            else
+              if column.column.nil? || column.column.text?
+                ["LOWER(#{column.search_sql}) LIKE ?", like_pattern.sub('?', value.downcase)]
+              else
+                ["#{column.search_sql} = ?", column.column.type_cast(value)]
+              end
+          end
         end
       end
-    end
 
+      def condition_for_integer_type(column, value, like_pattern = nil)
+        if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.include?(value['opt'])
+          nil
+        elsif value['opt'] == 'BETWEEN'
+          ["#{column.search_sql} BETWEEN ? AND ?", value['from'].to_f, value['to'].to_f]
+        else
+          ["#{column.search_sql} #{value['opt']} ?", value['from'].to_f]
+        end
+      end
+      alias_method :condition_for_decimal_type, :condition_for_integer_type
+      alias_method :condition_for_float_type, :condition_for_integer_type
+      alias_method :condition_for_usa_money_type, :condition_for_integer_type
+
+      def condition_for_string_type(column, value, like_pattern = '%?%')
+        if !value.is_a?(Hash)
+          ["LOWER(#{column.search_sql}) LIKE ?", like_pattern.sub('?', value.downcase)]
+        elsif value['from'].blank? or not ActiveScaffold::Finder::StringComparators.flatten.include?(value['opt'])
+          nil
+        elsif value['opt'] == 'BETWEEN'
+          ["#{column.search_sql} BETWEEN ? AND ?", value['from'], value['to']]
+        elsif value['opt'].include?('?')
+          ["#{column.search_sql} LIKE ?", value['opt'].sub('?', value['from'].downcase)]
+        else
+          ["#{column.search_sql} #{value['opt']} ?", value['from']]
+        end
+      end
+      alias_method :condition_for_text_type, :condition_for_string_type
+
+      def condition_for_datetime_type(column, value, like_pattern = nil)
+        conversion = value['from']['hour'].blank? && value['to']['hour'].blank? ? 'to_date' : 'to_time'
+        from_value, to_value = ['from', 'to'].collect do |field|
+          Time.zone.local(*['year', 'month', 'day', 'hour', 'minutes', 'seconds'].collect {|part| value[field][part].to_i}) rescue nil
+        end
+
+        if from_value.nil? and to_value.nil?
+          nil
+        elsif !from_value
+          ["#{column.search_sql} <= ?", to_value.send(conversion).to_s(:db)]
+        elsif !to_value
+          ["#{column.search_sql} >= ?", from_value.send(conversion).to_s(:db)]
+        else
+          ["#{column.search_sql} BETWEEN ? AND ?", from_value.send(conversion).to_s(:db), to_value.send(conversion).to_s(:db)]
+        end
+      end
+      alias_method :condition_for_date_type, :condition_for_datetime_type
+      alias_method :condition_for_time_type, :condition_for_datetime_type
+      alias_method :condition_for_timestamp_type, :condition_for_datetime_type
+
+      def condition_for_dhtml_calendar_type(column, value, like_pattern = nil)
+        return nil if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.include?(value['opt'])
+        tmp_model = column.active_record_class.new
+        time_from = time_to = ""
+        if column.column.type == :datetime
+          time_from = " 00:00:00"
+          time_to = " 23:59:59"
+        end
+        if value['opt'] == 'BETWEEN'
+          ["#{column.search_sql} BETWEEN ? AND ?", tmp_model.cast_to_date(value[:from]) + time_from, tmp_model.cast_to_date(value[:to]) + time_to]
+        else
+          ["#{column.search_sql} #{value['opt']} ?", tmp_model.cast_to_date(value[:from]) + time_from]
+        end
+      end
+
+      def condition_for_exact_type(column, value, like_pattern = nil)
+        ["#{column.search_sql} = ?", value]
+      end
+
+      def condition_for_record_select_type(column, value, like_pattern = nil)
+        if value.is_a?(Array)
+          ["#{column.search_sql} IN (?)", value]
+        else
+          ["#{column.search_sql} = ?", value]
+        end
+      end
+
+      def condition_for_multi_select_type(column, value, like_pattern = nil)
+        case value
+        when Hash
+          values = value.values
+        else
+          values = value
+        end
+        ["#{column.search_sql} in (?)", values]
+      end
+    end
+    
     NumericComparators = [
       '=',
       '>=',
@@ -62,100 +159,10 @@ module ActiveScaffold
       ['is between', 'BETWEEN']
     ]
 
-    def self.condition_for_integer_column(column, value, like_pattern = nil)
-      if value['from'].blank? or not NumericComparators.include?(value['opt'])
-        nil
-      elsif value['opt'] == 'BETWEEN'
-        ["#{column.search_sql} BETWEEN ? AND ?", value['from'].to_f, value['to'].to_f]
-      else
-        ["#{column.search_sql} #{value['opt']} ?", value['from'].to_f]
-      end
+    def self.included(klass)
+      klass.extend ClassMethods
     end
-    class << self
-      alias_method :condition_for_decimal_column, :condition_for_integer_column
-      alias_method :condition_for_float_column, :condition_for_integer_column
-      alias_method :condition_for_usa_money_column, :condition_for_integer_column
-    end
-
-    def self.condition_for_string_column(column, value, like_pattern = '%?%')
-      if !value.is_a?(Hash)
-        ["LOWER(#{column.search_sql}) LIKE ?", like_pattern.sub('?', value.downcase)]
-      elsif value['from'].blank? or not StringComparators.flatten.include?(value['opt'])
-        nil
-      elsif value['opt'] == 'BETWEEN'
-        ["#{column.search_sql} BETWEEN ? AND ?", value['from'], value['to']]
-      elsif value['opt'].include?('?')
-        ["#{column.search_sql} LIKE ?", value['opt'].sub('?', value['from'].downcase)]
-      else
-        ["#{column.search_sql} #{value['opt']} ?", value['from']]
-      end
-    end
-    class << self
-      alias_method :condition_for_text_column, :condition_for_string_column
-    end
-
-    def self.condition_for_datetime_column(column, value, like_pattern = nil)
-      conversion = value['from']['hour'].blank? && value['to']['hour'].blank? ? 'to_date' : 'to_time'
-      from_value, to_value = ['from', 'to'].collect do |field|
-        Time.zone.local(*['year', 'month', 'day', 'hour', 'minutes', 'seconds'].collect {|part| value[field][part].to_i}) rescue nil
-      end
-
-      if from_value.nil? and to_value.nil?
-        nil
-      elsif !from_value
-        ["#{column.search_sql} <= ?", to_value.send(conversion).to_s(:db)]
-      elsif !to_value
-        ["#{column.search_sql} >= ?", from_value.send(conversion).to_s(:db)]
-      else
-        ["#{column.search_sql} BETWEEN ? AND ?", from_value.send(conversion).to_s(:db), to_value.send(conversion).to_s(:db)]
-      end
-    end
-    class << self
-      alias_method :condition_for_date_column, :condition_for_datetime_column
-      alias_method :condition_for_time_column, :condition_for_datetime_column
-      alias_method :condition_for_timestamp_column, :condition_for_datetime_column
-    end
-
-    def self.condition_for_dhtml_calendar_column(column, value, like_pattern = nil)
-      return nil if value['from'].blank? or not NumericComparators.include?(value['opt'])
-      tmp_model = column.active_record_class.new
-      time_from = time_to = ""
-      if column.column.type == :datetime
-        time_from = " 00:00:00"
-        time_to = " 23:59:59"
-      end
-      if value['opt'] == 'BETWEEN'
-        ["#{column.search_sql} BETWEEN ? AND ?", tmp_model.cast_to_date(value[:from]) + time_from, tmp_model.cast_to_date(value[:to]) + time_to]
-      else
-        ["#{column.search_sql} #{value['opt']} ?", tmp_model.cast_to_date(value[:from]) + time_from]
-      end
-    end
-
-    def self.condition_for_exact_column(column, value, like_pattern = nil)
-      ["#{column.search_sql} = ?", value]
-    end
-
-    def self.condition_for_record_select_column(column, value, like_pattern = nil)
-      if value.is_a?(Array)
-        ["#{column.search_sql} IN (?)", value]
-      else
-        ["#{column.search_sql} = ?", value]
-      end
-    end
-
-    def self.condition_for_multi_select_column(column, value, like_pattern = nil)
-      case value
-      when Hash
-        values = value.values
-      else
-        values = value
-      end
-      ["#{column.search_sql} in (?)", values]
-    end
-    class << self
-      alias_method :condition_for_usa_state_column, :condition_for_multi_select_column
-    end
-
+    
     protected
 
     attr_writer :active_scaffold_conditions
@@ -172,7 +179,7 @@ module ActiveScaffold
     def active_scaffold_habtm_joins
       @active_scaffold_habtm_joins ||= []
     end
-    
+  
     def all_conditions
       merge_conditions(
         active_scaffold_conditions,                   # from the search modules
@@ -201,7 +208,6 @@ module ActiveScaffold
     # TODO: this should reside on the model, not the controller
     def find_page(options = {})
       options.assert_valid_keys :sorting, :per_page, :page, :count_includes
-
       # The order of these local assignments is critical. all_conditions must come before joins_for_finder
       full_includes = (active_scaffold_joins.empty? ? nil : active_scaffold_joins)      
       options[:per_page] ||= 999999999
@@ -217,15 +223,14 @@ module ActiveScaffold
 
       # create a general-use options array that's compatible with Rails finders
       finder_options = { :order => build_order_clause(options[:sorting]),
-                         :conditions => finder_conditions,
-                         :joins => joins,
+                         :conditions => all_conditions,
+                         :joins => joins_for_finder,
                          :include => options[:count_includes]}
-      finder_options[:select] = klass.connection.distinct("#{table_name}.#{klass.primary_key}", '') if !joins.empty?
+
       # NOTE: we must use :include in the count query, because some conditions may reference other tables
       count = klass.count(finder_options.reject{|k,v| [:order].include? k})
-      
-      finder_options[:select] = "#{klass.connection.distinct("#{table_name}.#{klass.primary_key}", '')}, #{table_name}.*" if !joins.empty?
-      finder_options.merge!(:include => full_includes)
+
+      finder_options.merge! :include => full_includes
 
       # we build the paginator differently for method- and sql-based sorting
       if options[:sorting] and options[:sorting].sorts_by_method?
@@ -285,7 +290,7 @@ module ActiveScaffold
 
       page = pager.page(options[:page])
     end
-    
+  
     # TODO: this should reside on the model, not the controller
     def merge_conditions(*conditions)
       c = conditions.find_all {|c| not c.nil? and not c.empty? }

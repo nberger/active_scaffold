@@ -55,7 +55,6 @@ module ActiveScaffold
       end
 
       # TODO: move empty_field_text and &nbsp; logic in here?
-      # TODO: move active_scaffold_inplace_edit in here?
       # TODO: we need to distinguish between the automatic links *we* create and the ones that the dev specified. some logic may not apply if the dev specified the link.
       def render_list_column(text, column, record)
         make_available_method = "#{column.name}_make_available?"
@@ -85,10 +84,7 @@ module ActiveScaffold
               url_options.delete :id
               url_options[:parent_id] = record.id
               url_options[:parent_column] = column.association.reverse
-              constraints = {url_options[:parent_column].to_sym => url_options[:parent_id]}
-              eid = Digest::MD5.hexdigest(params[:controller] + params[:parent_controller].to_s + constraints.to_s)
-              session["as:#{eid}"] = {:constraints => constraints}
-              url_options[:eid] = eid
+              url_options[:parent_model] = record.class.name # needed for polymorphic associations
             end
           end
 
@@ -150,26 +146,14 @@ module ActiveScaffold
       ## Formatting
       ##
 
-      def format_value(column_value)
+      def format_value(column_value, options = {})
         if column_empty?(column_value)
           active_scaffold_config.list.empty_field_text
-        elsif column_value.instance_of? Time
-          format_time(column_value)
-        elsif column_value.instance_of? Date
-          format_date(column_value)
+        elsif column_value.is_a?(Time) || column_value.is_a?(Date)
+          l(column_value, :format => options[:format] || :default)
         else
           column_value.to_s
         end
-      end
-
-      def format_time(time)
-        format = ActiveSupport::CoreExtensions::Time::Conversions::DATE_FORMATS[:default] || "%m/%d/%Y %I:%M %p"
-        time.strftime(format)
-      end
-
-      def format_date(date)
-        format = ActiveSupport::CoreExtensions::Date::Conversions::DATE_FORMATS[:default] || "%m/%d/%Y"
-        date.strftime(format)
       end
 
       # =======

@@ -88,9 +88,9 @@ module ActionView
         in_place_editor_options = {:url => {:controller => params_for[:controller], :action => "update_column", :eid => params[:eid], :parent_model => params[:parent_model], :column => column.name, :id => record.id.to_s},
          :click_to_edit_text => as_(:click_to_edit),
          :cancel_text => as_(:cancel),
-         :loading_text => as_(:loading_),
+         :loading_text => as_(:loading),
          :save_text => as_(:update),
-         :saving_text => as_(:saving_),
+         :saving_text => as_(:saving),
          :script => true}.merge(column.options)
         html =  html_for_inplace_display(formatted_column, tag_options[:id], in_place_editor_options)
         html << form_for_inplace_display(record, column, tag_options[:id], in_place_editor_options, options)

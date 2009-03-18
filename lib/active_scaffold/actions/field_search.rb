@@ -32,7 +32,7 @@ module ActiveScaffold::Actions
         search_session_info.each do |key, value|
           next unless active_scaffold_config.field_search.columns.include?(key)
           column = active_scaffold_config.columns[key]
-          search_conditions << ActiveScaffold::Finder.condition_for_column(column, value, like_pattern)
+          search_conditions << self.class.condition_for_column(column, value, like_pattern)
         end
         search_conditions.compact!
         self.active_scaffold_conditions = merge_conditions(self.active_scaffold_conditions, *search_conditions)

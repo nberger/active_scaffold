@@ -110,8 +110,8 @@ module ActiveScaffold
       def active_scaffold_search_boolean(column, options)
         select_options = []
         select_options << [as_(:nil), nil]
-        select_options << [as_(:true), 1]
-        select_options << [as_(:false), 0]
+        select_options << [as_(:true), true]
+        select_options << [as_(:false), false]
 
         value = @record.send(column.name)
         value = value.blank? ? nil : (value ? 1 : 0)

@@ -103,11 +103,13 @@ module ActiveScaffold
       end
 
       # easy way to include ActiveScaffold assets
-      def active_scaffold_includes(frontend = :default)
-        js = javascript_include_tag(*active_scaffold_javascripts(frontend))
+      def active_scaffold_includes(*args)
+        frontend = args.first.is_a?(Symbol) ? args.shift : :default
+        options = args.first.is_a?(Hash) ? args.shift : {}
+        js = javascript_include_tag(*active_scaffold_javascripts(frontend).push(options))
 
-        css = stylesheet_link_tag(*active_scaffold_stylesheets(frontend))
-        ie_css = stylesheet_link_tag(*active_scaffold_ie_stylesheets(frontend))
+        css = stylesheet_link_tag(*active_scaffold_stylesheets(frontend).push(options))
+        ie_css = stylesheet_link_tag(*active_scaffold_ie_stylesheets(frontend).push(options))
 
         js + "\n" + css + "\n<!--[if IE]>" + ie_css + "<![endif]-->\n"
       end
@@ -115,20 +117,6 @@ module ActiveScaffold
       # a general-use loading indicator (the "stuff is happening, please wait" feedback)
       def loading_indicator_tag(options)
         image_tag "/images/active_scaffold/default/indicator.gif", :style => "visibility:hidden;", :id => loading_indicator_id(options), :alt => "loading indicator", :class => "loading-indicator"
-      end
-
-      def params_for(options = {})
-        # :adapter and :position are one-use rendering arguments. they should not propagate.
-        # :sort, :sort_direction, and :page are arguments that stored in the session. they need not propagate.
-        # and wow. no we don't want to propagate :record.
-        # :commit is a special rails variable for form buttons
-        blacklist = [:adapter, :position, :sort, :sort_direction, :page, :record, :commit, :_method]
-        unless @params_for
-          @params_for = params.clone.delete_if { |key, value| blacklist.include? key.to_sym if key }
-          @params_for[:controller] = '/' + @params_for[:controller] unless @params_for[:controller].first(1) == '/' # for namespaced controllers
-          @params_for.delete(:id) if @params_for[:id].nil?
-        end
-        @params_for.merge(options)
       end
 
       # Creates a javascript-based link that toggles the visibility of some element on the page.
