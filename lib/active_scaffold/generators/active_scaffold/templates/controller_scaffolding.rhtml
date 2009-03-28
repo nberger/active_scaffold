@@ -1,4 +1,5 @@
   active_scaffold :<%=@singular_name.pluralize%> do |config|
+		config.actions.swap :field_search, :search
 	  has_columns [
 <%= all_columns(@model_instance, @singular_name, { :has_columns => true, :exclude => %w(id created_on created_at updated_on updated_at lock_version) }).chop %>
 	  ]
