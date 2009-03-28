@@ -16,7 +16,7 @@
       end
       if association_reverse == @model_instance.class.table_name 
       	if association.include?(association_reverse)
-				%>	has_and_belongs_to_many :<%= association.gsub(association_reverse, '').gsub(/^\_/, "").gsub(/\_/, "") %>
+					%>	has_and_belongs_to_many :<%= association.gsub(association_reverse, '').gsub(/^\_/, "").gsub(/\_$/, "") %>
 <%
 				else
 				%>	has_many :<%= association %>
