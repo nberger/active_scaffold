@@ -126,6 +126,9 @@ module ActiveScaffold::Config
 
       # inherit from the global set of action links
       @action_links = self.class.action_links.clone
+      
+      # the default label
+      @label = self.model_id.pluralize.titleize
     end
 
     # To be called after your finished configuration
