@@ -242,10 +242,16 @@ module ActiveScaffold::DataStructures
       end
       self.sort = true
       self.search_sql = true
-
-      # SemanticAttributes aware
-      self.required = !active_record_class.semantic_attributes[self.name].predicates.find {|p| p.allow_empty? == false }.nil?
-
+      
+      if defined?(SemanticAttributes::Attribute)
+        self.required = !active_record_class.semantic_attributes[self.name].predicates.find {|p| p.allow_empty? == false }.nil?
+        active_record_class.semantic_attributes[self.name].predicates.find do |p| 
+          sem_type = p.class.to_s.split('::')[1].underscore.to_sym
+          next if sem_type == :required
+          @form_ui = sem_type
+        end
+      end
+      
       self.includes = (association and not polymorphic_association?) ? [association.name] : []
     end
 

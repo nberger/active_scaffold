@@ -344,6 +344,7 @@ module ActiveScaffold
                       :value => usa_number_to_ssn(@record[column.name].to_s),
                       :onblur => "SsnDashAdd(this);return true;")
       end
+      alias active_scaffold_input_social_security_number active_scaffold_input_ssn
       
       def active_scaffold_input_timezone(column, options)
         time_zone_select(:record, column.name)
