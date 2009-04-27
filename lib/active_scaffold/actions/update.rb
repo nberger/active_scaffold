@@ -39,8 +39,12 @@ module ActiveScaffold::Actions
             end
           else # just a regular post
             if successful?
-              flash[:info] = as_(:updated_model, :model => @record.to_label)
-              return_to_main
+              if params[:wizard_controller]
+                redirect_to_next_step
+              else
+                flash[:info] = as_(:updated_model, :model => @record.to_label)
+                return_to_main
+              end
             else
               render(:action => 'update', :layout => true)
             end

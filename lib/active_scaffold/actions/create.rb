@@ -42,7 +42,9 @@ module ActiveScaffold::Actions
           else
             if successful?
               flash[:info] = as_(:created_model, :model => @record.to_label)
-              if active_scaffold_config.create.edit_after_create
+              if params[:wizard_controller]
+                redirect_to_next_step
+              elsif active_scaffold_config.create.edit_after_create
                 redirect_to params.merge(:action => "edit", :id => @record.id)
               else
                 return_to_main
