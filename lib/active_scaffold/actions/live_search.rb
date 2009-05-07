@@ -14,7 +14,8 @@ module ActiveScaffold::Actions
             return_to_main
           end
         end
-        type.js { render(:partial => "live_search", :layout => false) }
+        type.js { render(:partial => "live_search") }
+        show_search_respond_to type if self.respond_to? :show_search_respond_to
       end
     end
 

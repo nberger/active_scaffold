@@ -19,9 +19,10 @@ module ActiveScaffold::Actions
       respond_to do |type|
         type.js do
           do_list
-          render(:partial => 'list', :layout => false)
+          render(:partial => 'list')
         end
         type.html { return_to_main }
+        update_table_respond_to type if self.respond_to? :update_table_respond_to
       end
     end
 
@@ -32,15 +33,19 @@ module ActiveScaffold::Actions
 
     def list
       do_list
+      if active_scaffold_config.list.always_show_create
+        do_new
+      end
       respond_to do |type|
         type.html {
           reset_active_scaffold_session unless params[:wizard_controller]
-          render :action => 'list', :layout => true
+          render :action => 'list'
         }
         type.js { render :action => 'list', :layout => false }
         type.xml { render :xml => response_object.to_xml, :content_type => Mime::XML, :status => response_status }
         type.json { render :text => response_object.to_json, :content_type => Mime::JSON, :status => response_status }
         type.yaml { render :text => response_object.to_yaml, :content_type => Mime::YAML, :status => response_status }
+        list_respond_to type if self.respond_to? :list_respond_to
       end
     end
 
@@ -48,22 +53,12 @@ module ActiveScaffold::Actions
 
     # The actual algorithm to prepare for the list view
     def do_list
-      if active_scaffold_config.list.always_show_create
-        if params[:record]
-          do_create
-          if successful?
-            do_new
-          end
-        else
-          do_new
-        end
-      end
       includes_for_list_columns = active_scaffold_config.list.columns.collect{ |c| c.includes }.flatten.uniq.compact
       self.active_scaffold_joins.concat includes_for_list_columns
 
       options = { :sorting => active_scaffold_config.list.user.sorting,
                   :count_includes => active_scaffold_config.list.user.count_includes }
-      paginate = (params[:format].nil?) ? (accepts? :html, :js) : [:html, :js].include?(params[:format])
+      paginate = (params[:format].nil?) ? (accepts? :html, :js) : ['html', 'js'].include?(params[:format])
       if paginate
         options.merge!({
           :per_page => active_scaffold_config.list.user.per_page,

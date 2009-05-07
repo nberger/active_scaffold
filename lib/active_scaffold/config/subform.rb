@@ -2,13 +2,18 @@ module ActiveScaffold::Config
   class Subform < Base
     def initialize(core_config)
       @core = core_config
+      @layout = self.class.layout
     end
 
     # global level configuration
     # --------------------------
+    cattr_accessor :layout
+    @@per_page = :horizontal
 
     # instance-level configuration
     # ----------------------------
+
+    attr_accessor :layout
 
     # provides access to the list of columns specifically meant for the Sub-Form to use
     def columns

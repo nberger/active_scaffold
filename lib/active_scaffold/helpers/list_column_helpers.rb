@@ -1,8 +1,9 @@
+# coding: utf-8
 module ActiveScaffold
   module Helpers
     # Helpers that assist with the rendering of a List Column
     module ListColumnHelpers
-      include ActionView::Helpers::JavaScriptMacrosHelper
+      include ActionView::Helpers::JavaScriptMacrosHelper      
       
       def get_column_value(record, column)
         begin
@@ -60,38 +61,56 @@ module ActiveScaffold
         make_available_method = "#{column.name}_make_available?"
         return active_scaffold_config.list.empty_field_text if record.respond_to?(make_available_method) and !record.send(make_available_method)
         if column.link
-          link = column.link.clone
-          if column.singular_association? and column_empty?(text) 
-            if column.options[:show_create_link_if_empty].blank?
-              return "<a class='disabled'>#{text}</a>"
-            else
-              column_model = column.association.klass
-              controller_actions = active_scaffold_config_for(column_model).actions
-              if controller_actions.include?(:create) and column.actions_for_association_links.include? :new and column_model.authorized_for?(:action => :create)
-                link.action = 'new'
-                link.crud_type = :create
-                text = as_(:create_new)
-              end
-            end
-          end
-          return "<a class='disabled'>#{text}</a>" unless record.authorized_for?(:action => column.link.crud_type)
-
+          link = column.link
+          associated = record.send(column.association.name) if column.association
           url_options = params_for(:action => nil, :id => record.id, :link => text)
-          if column.singular_association? and column.link.action != 'nested'
-            if associated = record.send(column.association.name)
-              url_options[:id] = associated.id
-            elsif link.action == 'new'
-              url_options.delete :id
+          url_options[:parent_controller] = params[:controller] if link.controller and link.controller.to_s != params[:controller]
+          url_options[:id] = associated.id if associated and link.controller and link.controller.to_s != params[:controller]
+
+          # setup automatic link
+          if column.autolink # link to nested scaffold or inline form
+            link = action_link_to_inline_form(column, associated) if link.crud_type.nil? # automatic link to inline form (singular association)
+            return text if link.crud_type.nil?
+            if link.crud_type == :create
+              url_options[:link] = as_(:create_new)
               url_options[:parent_id] = record.id
               url_options[:parent_column] = column.association.reverse
               url_options[:parent_model] = record.class.name # needed for polymorphic associations
+              url_options.delete :id
             end
           end
+
+          # check authorization
+          if column.association
+            authorized = (associated ? associated : column.association.klass).authorized_for?(:action => link.crud_type)
+            authorized = authorized and record.authorized_for?(:action => :update, :column => column.name) if link.crud_type == :create
+          else
+            authorized = record.authorized_for?(:action => link.crud_type)
+          end
+          return "<a class='disabled'>#{text}</a>" unless authorized
 
           render_action_link(link, url_options)
         else
           text
         end
+      end
+
+      # setup the action link to inline form
+      def action_link_to_inline_form(column, associated)
+        link = column.link.clone
+        if column_empty?(associated) # if association is empty, we only can link to create form
+          if column.actions_for_association_links.include?(:new)
+            link.action = 'new'
+            link.crud_type = :create
+          end
+        elsif column.actions_for_association_links.include?(:edit)
+          link.action = 'edit'
+          link.crud_type = :update
+        elsif column.actions_for_association_links.include?(:show)
+          link.action = 'show'
+          link.crud_type = :read
+        end
+        link
       end
 
       # There are two basic ways to clean a column's value: h() and sanitize(). The latter is useful
@@ -154,6 +173,34 @@ module ActiveScaffold
         else
           column_value.to_s
         end
+      end
+
+      # ==========
+      # = Inline Edit =
+      # ==========
+      def format_inplace_edit_column(record,column)
+        value = record.send(column.name)
+        if column.list_ui == :checkbox
+          active_scaffold_column_checkbox(column, record)
+        else
+          clean_column_value(format_value(value))
+        end
+      end
+      
+      def active_scaffold_inplace_edit(record, column)
+        formatted_column = format_inplace_edit_column(record,column)
+        id_options = {:id => record.id.to_s, :action => 'update_column', :name => column.name.to_s}
+        tag_options = {:tag => "span", :id => element_cell_id(id_options), :class => "in_place_editor_field"}
+        in_place_editor_options = {:url => {:controller => params_for[:controller], :action => "update_column", :column => column.name, :id => record.id.to_s},
+         :with => params[:eid] ? "Form.serialize(form) + '&eid=#{params[:eid]}'" : nil,
+         :click_to_edit_text => as_(:click_to_edit),
+         :cancel_text => as_(:cancel),
+         :loading_text => as_(:loading),
+         :save_text => as_(:update),
+         :saving_text => as_(:saving),
+         :options => "{method: 'post'}",
+         :script => true}.merge(column.options)
+        content_tag(:span, formatted_column, tag_options) + in_place_editor(tag_options[:id], in_place_editor_options)
       end
 
       # =======

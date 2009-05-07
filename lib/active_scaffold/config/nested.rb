@@ -16,15 +16,15 @@ module ActiveScaffold::Config
     # ----------------------------
     attr_accessor :shallow_delete
 
+    # Add a nested ActionLink
     def add_link(label, models, options = {})
-      options[:security_method] ||= :nested_authorized?
-      @core.action_links.add('nested', options.merge(:label => label, :type => :record, :position => :after, :parameters => {:associations => models.join(' ')}))
+      @core.action_links.add('nested', options.merge(:label => label, :type => :record, :security_method => :nested_authorized?, :position => :after, :parameters => {:associations => models.join(' ')}))
     end
 
     # the label for this Nested action. used for the header.
     attr_writer :label
     def label
-      @label ? as_(@label) : "#{as_(:add_existing)} #{@core.label.singularize}"
+      @label ? as_(@label) : as_(:add_existing_model, :model => @core.label)
     end
 
   end

@@ -1,3 +1,4 @@
+require 'active_scaffold/config/base'
 module ActiveScaffold::Config
   class Core < Base
     # global level configuration
@@ -95,8 +96,10 @@ module ActiveScaffold::Config
 
     # a generally-applicable name for this ActiveScaffold ... will be used for generating page/section headers
     attr_writer :label
-    def label
-      @label || model.human_name
+    def label(options={})
+      options[:count] ||= model.count
+      options[:default] ||= model.name.pluralize if options[:count].to_i > 1
+      as_(@label, options) || model.human_name(options)
     end
 
     ##
@@ -126,9 +129,6 @@ module ActiveScaffold::Config
 
       # inherit from the global set of action links
       @action_links = self.class.action_links.clone
-      
-      # the default label
-      @label = self.model_id.pluralize.titleize
     end
 
     # To be called after your finished configuration

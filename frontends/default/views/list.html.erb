@@ -18,7 +18,7 @@
           <td> 
             <div  class="active-scaffold create-view <%= "#{params[:controller]}-view" %> view">
               <%= render :partial => 'create_form_on_list' %>
-				      <% if params[:wizard_controller] %>
+				      <% if params[:wizard_controller] and @controller.active_scaffold_session_storage[:constraints] %>
 	              <% flash[:error] = flash[:warning] = flash[:info] = nil %>
 	              <% parent_id = @controller.active_scaffold_session_storage[:constraints].each_key {|id| id}.to_a.flatten[1] %>
 								<div>
