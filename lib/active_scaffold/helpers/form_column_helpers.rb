@@ -301,10 +301,13 @@ module ActiveScaffold
       def active_scaffold_add_existing_input(options)
         if controller.respond_to?(:record_select_config)
           remote_controller = active_scaffold_controller_for(record_select_config.model).controller_path
-          record_select_field(
-            "#{options[:name]}",
-            active_scaffold_config.model.new,
-            {:controller => remote_controller, :params => options[:url_options].merge(:parent_model => record_select_config.model)}.merge(active_scaffold_input_text_options))
+          record_select_options = {:controller => remote_controller, :params => {:parent_model => record_select_config.model}}
+          record_select_options.merge!(active_scaffold_input_text_options)
+          record_select_field(options[:name], @record, record_select_options)
+          # record_select_field(
+          #   "#{options[:name]}",
+          #   active_scaffold_config.model.new,
+          #   {:controller => remote_controller, :params => options[:url_options].merge(:parent_model => record_select_config.model)}.merge(active_scaffold_input_text_options))
         else
           # select_options = options_for_select(options_for_association(nested_association)) unless column.through_association?
           select_options ||= options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
