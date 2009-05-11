@@ -40,19 +40,13 @@ end
     <%= render :partial => 'form_messages' %>
   <% end -%>
 
-  <%= render :partial => 'form', :locals => { :columns => active_scaffold_config.update.columns } %>
+  <%= render :partial => @form_name || 'form', :locals => { :columns => active_scaffold_config.update.columns } %>
 
   <% if request.xhr? -%>
     <div id="footer_<%= element_messages_id(:action => :update) %>" class="messages-container"></div>
   <% end -%>  
   <p class="form-footer">
-    <% if params[:wizard_controller] == params[:controller] %>
-    		<%= submit_tag as_(:previous), submit_options.merge(:class => "submit") if @previous_step %>
-    		<%= submit_tag as_(:continue), submit_options.merge(:class => "submit") %>
-		<% else %>
-	    <%= submit_tag as_(:update), submit_options.merge(:class => "submit") %>
-	    <%= link_to as_(:cancel), params_for(:controller => params[:parent_controller] ? params[:parent_controller] : params[:controller], :action => 'list'), :class => 'cancel' %>
-		<% end %>
+		<%= render :partial => 'update_form_submit', :locals => {:submit_options => submit_options} %>
     <%= loading_indicator_tag(:action => :update, :id => params[:id]) %>
   </p>
 

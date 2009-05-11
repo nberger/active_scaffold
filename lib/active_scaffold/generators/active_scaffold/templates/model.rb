@@ -1,3 +1,3 @@
-class <%= class_name %> < ActiveRecord::Base
+class <%= model_name %> < ActiveRecord::Base
 <%= template_for_inclusion %>
 end

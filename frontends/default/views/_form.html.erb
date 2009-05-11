@@ -1,8 +1,5 @@
 <ol class="form" <%= 'style="display: none;"' if columns.collapsed -%>>
   <% columns.each :for => @record do |column| -%>
-		<% next if active_scaffold_tools_form_columns_to_ignore(column)  %>
-    <% make_available_method = "#{column.name}_make_available?" %>
-    <% next if @record.respond_to?(make_available_method) and !@record.send(make_available_method) %>
     <% if is_subsection? column -%>
     <li class="sub-section">
       <h5><%= column.label %> (<%= link_to_visibility_toggle(:default_visible => !column.collapsed) -%>)</h5>
@@ -13,9 +10,12 @@
       <%= render :partial => form_partial_for_column(column), :locals => { :column => column } -%>
     </li>
     <% else -%>
-    <li class="form-element <%= 'required' if column.required? %>">
-      <%= render :partial => form_partial_for_column(column), :locals => { :column => column } -%>
-    </li>
+			<% next if active_scaffold_tools_form_columns_to_ignore(column)  %>
+	    <% make_available_method = "#{column.name}_make_available?" %>
+	    <% next if @record.respond_to?(make_available_method) and !@record.send(make_available_method) %>
+	    <li class="form-element <%= 'required' if column.required? %>">
+	      <%= render :partial => form_partial_for_column(column), :locals => { :column => column } -%>
+	    </li>
     <% end -%>
   <% end -%>
 </ol>

@@ -247,6 +247,7 @@ module ActiveScaffold::DataStructures
       self.search_sql = true
       
       if defined?(SemanticAttributes::Attribute)
+        #TODO 2009-05-08 (EJM) Level=0 - This isn't picking up the condition require with_options block
         self.required = !active_record_class.semantic_attributes[self.name].predicates.find {|p| p.allow_empty? == false }.nil?
         active_record_class.semantic_attributes[self.name].predicates.find do |p| 
           sem_type = p.class.to_s.split('::')[1].underscore.to_sym
