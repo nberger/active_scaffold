@@ -37,7 +37,7 @@
 			  # add_index "organizations_users", ["organization_id", "user_id"], :name => "by_org_user", :unique => true
 			  # add_index "products", ["applicant_id"], :name => "index_products_on_applicant_id"
 	      if association == @model_instance.class.table_name
-	        %>	belongs_to :<%= association_column[0..-4] %>, :class_name => "<%= association_reverse.singularize.camelize %>", :index_method => "<%= association_column %>"
+	        %>	belongs_to :<%= association_column[0..-4] %>, :class_name => "<%= association_reverse.singularize.camelize %>", :foreign_key => "<%= association_column %>"
 <%
 	      end
 	      if association_reverse == @model_instance.class.table_name 
