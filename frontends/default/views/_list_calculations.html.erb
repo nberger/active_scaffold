@@ -25,9 +25,9 @@
                           else
                             number_with_delimiter(calculation.to_s)
                         end
-                      end
-        _erbout.concat calculation.to_s
+                      end        
         -%>
+		<%= calculation.to_s %>
       <% else -%>
         &nbsp;
       <% end -%>
