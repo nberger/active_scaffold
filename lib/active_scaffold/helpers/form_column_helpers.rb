@@ -39,7 +39,7 @@ module ActiveScaffold
             end
             html << active_scaffold_observe(column, options[:id])
             html
-          end
+          end.to_s + javascript_for_update_column(column, scope, options)
         rescue Exception => e
           logger.error Time.now.to_s + "#{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
           raise e
