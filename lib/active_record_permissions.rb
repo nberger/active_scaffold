@@ -82,6 +82,9 @@ module ActiveRecordPermissions
         column_and_action_security_method(options[:column], options[:action])
       ].compact.select {|m| respond_to?(m)}
 
+      # first check if parent_record disallows action for this association
+      return false if parent_record_disallows_action_for_association?(options[:association], options[:action], options[:parent_record])
+      
       # if any method returns false, then return false
       return false if methods.any? {|m| !send(m)}
 
@@ -119,6 +122,20 @@ module ActiveRecordPermissions
 
     def column_and_action_security_method(column, action)
       "#{column}_authorized_for_#{action}?" if column and action
+    end
+    
+    # PATCH NB: Esto permite chequear en el padre si se puede actualizar el hijo. Especialmente util para verificar si el padre admite add_new del hijo,
+    # por ejemplo una orden de compra puede (des)autorizar el update, destroy o add-new de los productos
+    def parent_record_disallows_action_for_association?(association, action, parent_record)
+      return false unless association and action and parent_record
+      
+      parent_method = association.to_s + "_authorized_for?"      
+      return false unless parent_record.respond_to?(parent_method)
+      
+      # si la acción es create, para el parent es add_new
+      action = :add_new if action == :create
+      
+      ! parent_record.send(parent_method, :action => action)
     end
   end
 end

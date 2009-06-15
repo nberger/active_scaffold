@@ -8,7 +8,7 @@ module ActiveScaffold::Config
     # global level configuration
     # --------------------------
     cattr_accessor :layout
-    @@per_page = :horizontal
+    @@layout = :horizontal
 
     # instance-level configuration
     # ----------------------------
