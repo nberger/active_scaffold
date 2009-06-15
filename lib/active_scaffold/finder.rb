@@ -147,16 +147,16 @@ module ActiveScaffold
       '>',
       '<',
       '!=',
-      'BETWEEN'
+      as_('is_between')
     ]
 
     StringComparators = [
-      ['is like', '%?%'],
-      ['begins with', '?%'],
-      ['ends with', '%?'],
+      [as_('is_like'), '%?%'],
+      [as_('begins_with'), '?%'],
+      [as_('ends_with'), '%?'],
       ['=', '='],
       ['!=', '!='],
-      ['is between', 'BETWEEN']
+      [as_('is_between'), 'BETWEEN']
     ]
 
     def self.included(klass)
