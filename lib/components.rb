@@ -136,7 +136,7 @@ module Components
       def assign_shortcuts_with_render_component(request, response)
         assign_shortcuts_without_render_component(request, response)
         flash(:refresh)
-        flash.sweep if @_session && !component_request?
+        #flash.sweep if @_session && !component_request?
       end
   end
 end
