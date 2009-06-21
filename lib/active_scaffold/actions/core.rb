@@ -32,6 +32,9 @@ module ActiveScaffold::Actions
       end
     end
 
+    def default_formats
+      [:html, :js, :json, :xml, :yaml]
+    end
     # Returns true if the client accepts one of the MIME types passed to it
     # ex: accepts? :html, :xml
     def accepts?(*types)
@@ -109,6 +112,25 @@ module ActiveScaffold::Actions
         end
       end
       conditions
+    end
+    private
+    def respond_to_action(action)
+      respond_to do |type|
+        send("#{action}_formats").each do |format|
+          type.send(format){ send("#{action}_respond_to_#{format}") }
+        end
+      end
+    end
+
+    def response_code_for_rescue(exception)
+      case exception
+        when ActiveScaffold::RecordNotAllowed
+          "403 Record Not Allowed"
+        when ActiveScaffold::ActionNotAllowed
+          "403 Action Not Allowed"
+        else
+          super
+      end
     end
   end
 end

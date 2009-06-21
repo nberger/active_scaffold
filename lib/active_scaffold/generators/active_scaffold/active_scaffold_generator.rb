@@ -48,8 +48,19 @@ class ScaffoldingSandbox
       }]," }
   end
 
+  def default_as_block
+    Proc.new { |record, column| 
+      column_name = column.name
+      column_name = column_name[0..-4] if column_name[-3, 3] == "_id"
+":#{column_name}" }
+  end
+
   def all_columns(record, record_name, options) 
-    if options[:has_columns]
+		join_str = "\n"
+    if options[:as_columns]
+			join_str = ', '
+      input_block = options[:input_block] || default_as_block
+    elsif options[:has_columns]
       input_block = options[:input_block] || default_column_block
     elsif options[:show_columns]
       input_block = options[:input_block] || default_show_block
@@ -63,7 +74,7 @@ class ScaffoldingSandbox
       filtered_content_columns = record.class.columns
     end
 
-    filtered_content_columns.collect{ |column| input_block.call(record_name, column) }.join("\n")
+    filtered_content_columns.collect{ |column| input_block.call(record_name, column) }.sort.join(join_str)
   end
   
 end

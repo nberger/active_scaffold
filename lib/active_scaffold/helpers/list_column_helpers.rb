@@ -56,6 +56,7 @@ module ActiveScaffold
       end
 
       # TODO: move empty_field_text and &nbsp; logic in here?
+      # TODO: move active_scaffold_inplace_edit in here?
       # TODO: we need to distinguish between the automatic links *we* create and the ones that the dev specified. some logic may not apply if the dev specified the link.
       def render_list_column(text, column, record)
         make_available_method = "#{column.name}_make_available?"
@@ -128,7 +129,7 @@ module ActiveScaffold
       ## Overrides
       ##
       def active_scaffold_column_text(column, record)
-        truncate(clean_column_value(record.send(column.name)), :length => 50)
+        truncate(clean_column_value(record.send(column.name)), :length => column.options[:truncate] || 50)
       end
 
       def active_scaffold_column_checkbox(column, record)
@@ -138,7 +139,7 @@ module ActiveScaffold
           id_options = {:id => record.id.to_s, :action => 'update_column', :name => column.name.to_s}
           tag_options = {:tag => "span", :id => element_cell_id(id_options), :class => "in_place_editor_field"}
           script = remote_function(:method => 'POST', :url => {:controller => params_for[:controller], :action => "update_column", :column => column.name, :id => record.id.to_s, :value => !column_value, :eid => params[:eid]})
-          content_tag(:span, check_box_tag(tag_options[:id], 1, checked, {:onchange => script}) , tag_options)
+          content_tag(:span, check_box_tag(tag_options[:id], 1, checked, {:onclick => script}) , tag_options)
         else
           check_box_tag(nil, 1, checked, :disabled => true)
         end
