@@ -1,103 +1,86 @@
 <%
-  file_name = File.join(RAILS_ROOT, "db", "schema.rb")
-  if File.exist?(file_name)
-    content = File.read(file_name)
+	file_name = File.join(RAILS_ROOT, "db", "schema.rb")
+	if File.exist?(file_name)
+		content = File.read(file_name)
 		if content.include?('add_foreign_key')
-	    foreign_keys = content.split("add_foreign_key")
-	    foreign_keys.each do |foreign_key|
-	      elements = foreign_key.split(" ")
-	      association = elements[0].gsub(/[,"\[\]]/, '')
-	      association_column = elements[1].gsub(/[,"\"\[\]]/, '')
-	      association_reverse = elements[2].gsub(/[,"\"\[\]]/, '')
-	      association_reverse_column = elements[3].gsub(/[,"\"\[\]]/, '')
-			  # add_foreign_key "trainings_users", ["user_id"], "users", ["id"], :name => "trainings_users_ibfk_1"
-			  # add_foreign_key "trainings_users", ["training_id"], "trainings", ["id"], :name => "trainings_users_ibfk_2"
-	      if association == @model_instance.class.table_name
-	        %>	belongs_to :<%= association_column[0..-4] %>, :class_name => "<%= association_reverse.singularize.camelize %>", :foreign_key => "<%= association_column %>"
+			foreign_keys = content.split("add_foreign_key")
+			foreign_keys.each do |foreign_key|
+				elements = foreign_key.split(" ")
+				association = elements[0].gsub(/[,"\[\]]/, '')
+				association_column = elements[1].gsub(/[,"\"\[\]]/, '')
+				association_reverse = elements[2].gsub(/[,"\"\[\]]/, '')
+				association_reverse_column = elements[3].gsub(/[,"\"\[\]]/, '')
+				# add_foreign_key "trainings_users", ["user_id"], "users", ["id"], :name => "trainings_users_ibfk_1"
+				# add_foreign_key "trainings_users", ["training_id"], "trainings", ["id"], :name => "trainings_users_ibfk_2"
+				if association == @model_instance.class.table_name
+					%>	belongs_to :<%= association_column[0..-4] %>, :class_name => "<%= association_reverse.singularize.camelize %>", :foreign_key => "<%= association_column %>"
 <%
-	      end
-	      if association_reverse == @model_instance.class.table_name 
-	      	if association.include?(association_reverse)
+				end
+				if association_reverse == @model_instance.class.table_name 
+					if association.include?(association_reverse)
 						%>	has_and_belongs_to_many :<%= association.gsub(association_reverse, '').gsub(/^\_/, "").gsub(/\_$/, "") %>
 <%
 					else
 					%>	has_many :<%= association %>
 <%
 					end
-	      end
-	    end
+				end
+			end
 		else
-	    index_methods = content.split("add_index")
-	    index_methods.each do |index_method|
-	      elements = index_method.split(" ")
-	      association = elements[0].gsub(/[,"\[\]]/, '')
-	      association_column = elements[1].gsub(/[,"\"\[\]]/, '')
+			index_methods = content.split("add_index")
+			index_methods.each do |index_method|
+				elements = index_method.split(" ")
+				association = elements[0].gsub(/[,"\[\]]/, '')
+				association_column = elements[1].gsub(/[,"\"\[\]]/, '')
 				next unless association_column.include?('_id')
-	      association_reverse = association_column[0..-4].pluralize
-			  # add_index "organizations_users", ["organization_id", "user_id"], :name => "by_org_user", :unique => true
-			  # add_index "products", ["applicant_id"], :name => "index_products_on_applicant_id"
-	      if association == @model_instance.class.table_name
-	        %>	belongs_to :<%= association_column[0..-4] %>, :class_name => "<%= association_reverse.singularize.camelize %>", :foreign_key => "<%= association_column %>"
+				association_reverse = association_column[0..-4].pluralize
+				# add_index "organizations_users", ["organization_id", "user_id"], :name => "by_org_user", :unique => true
+				# add_index "products", ["applicant_id"], :name => "index_products_on_applicant_id"
+				if association == @model_instance.class.table_name
+					%>	belongs_to :<%= association_column[0..-4] %>, :class_name => "<%= association_reverse.singularize.camelize %>", :foreign_key => "<%= association_column %>"
 <%
-	      end
-	      if association_reverse == @model_instance.class.table_name 
-	      	if association.include?(association_reverse)
+				end
+				if association_reverse == @model_instance.class.table_name 
+					if association.include?(association_reverse)
 						%>	has_and_belongs_to_many :<%= association.gsub(association_reverse, '').gsub(/^\_/, "").gsub(/\_$/, "") %>
 <%
 					else
 					%>	has_many :<%= association %>
 <%
 					end
-	      end
-	    end
-    end
-  end
+				end
+			end
+		end
+	end
 %>
+<%= all_columns(@model_instance, @singular_name, { :sa_columns => true }) %>
 <%
-max_size = @model_instance.class.column_names.collect{|name| name.size}.max + 1
-@model_instance.class.columns.each do |col|
-  next if [:id, :created_at, :updated_at, :lock_version].include?(col.name.to_sym)
-	next if col.name.include?('_id') and col.name.last(3) == '_id'
-  attrs = []
-  attrs << "default(#{quote(col.default)})" if col.default
-  attrs << "not null" unless col.null
-  attrs << "primary key" if col.name == @model_instance.class.primary_key
-
-  col_type = col.type.to_s
-  if col_type == "decimal"
-    col_type << "(#{col.precision}, #{col.scale})"
-  else
-    col_type << "(#{col.limit})" if col.limit
-  end %>	attribute :<%= col.name %>, :is => :required  <%#= sprintf("# %s", col_type, attrs.join(", ")) %>
-<%
-end
-%><%
-  if @model_instance.class.content_columns.find {|c| [:name, :label, :title].include?(c.name.to_sym)}.nil? -%>  
+	if @model_instance.class.content_columns.find {|c| [:name, :label, :title].include?(c.name.to_sym)}.nil? -%>	
 	def to_label
-    "#{}" # :name, :label, :title columns not found. Put the Model's label column(s) here for example: first_name + " " + last_name
-  end
+		"#{}" # :name, :label, :title columns not found. Put the Model's label column(s) here for example: first_name + " " + last_name
+	end
 <% end -%>
 
-  # ===================
-  # = Authorize BEGIN =
-  # ===================
+	# ===================
+	# = Authorize BEGIN =
+	# ===================
 
-  def authorized_for_create?
-    current_user and current_user.permit?([:root, :super])
-  end
+	def authorized_for_create?
+		current_user and current_user.permit?([:root, :super])
+	end
 
-  def authorized_for_destroy?
-    current_user and current_user.permit?([:root, :super])
-  end
+	def authorized_for_destroy?
+		current_user and current_user.permit?([:root, :super])
+	end
 
-  def authorized_for_read?
-    current_user and current_user.permit?([:root, :super])
-  end
-  
-  def authorized_for_update?
-    current_user and current_user.permit?([:root, :super])
-  end
-  
-  # =================
-  # = Authorize END =
-  # =================
+	def authorized_for_read?
+		current_user and current_user.permit?([:root, :super])
+	end
+	
+	def authorized_for_update?
+		current_user and current_user.permit?([:root, :super])
+	end
+	
+	# =================
+	# = Authorize END =
+	# =================
