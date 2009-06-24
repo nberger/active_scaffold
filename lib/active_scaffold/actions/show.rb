@@ -1,7 +1,7 @@
 module ActiveScaffold::Actions
   module Show
     def self.included(base)
-      base.before_filter :show_authorized?, :only => :show
+      base.before_filter :show_authorized_filter, :only => :show
     end
 
     def show
@@ -43,7 +43,7 @@ module ActiveScaffold::Actions
       authorized_for?(:action => :read)
     end
     private 
-    def show_authorized?
+    def show_authorized_filter
       link = active_scaffold_config.show.link || active_scaffold_config.show.class.link
       raise ActiveScaffold::ActionNotAllowed unless self.send(link.security_method)
     end

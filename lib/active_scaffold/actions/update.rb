@@ -1,7 +1,7 @@
 module ActiveScaffold::Actions
   module Update
     def self.included(base)
-      base.before_filter :update_authorized?, :only => [:edit, :update]
+      base.before_filter :update_authorized_filter, :only => [:edit, :update]
       base.verify :method => [:post, :put],
                   :only => :update,
                   :redirect_to => { :action => :index }
@@ -116,7 +116,7 @@ module ActiveScaffold::Actions
       authorized_for?(:action => :update)
     end
     private
-    def update_authorized?
+    def update_authorized_filter
       link = active_scaffold_config.update.link || active_scaffold_config.update.class.link
       raise ActiveScaffold::ActionNotAllowed unless self.send(link.security_method)
     end

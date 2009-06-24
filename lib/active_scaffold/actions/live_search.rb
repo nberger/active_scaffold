@@ -1,7 +1,7 @@
 module ActiveScaffold::Actions
   module LiveSearch
     def self.included(base)
-      base.before_filter :search_authorized?, :only => :show_search
+      base.before_filter :search_authorized_filter, :only => :show_search
       base.before_filter :do_search
     end
 
@@ -46,7 +46,7 @@ module ActiveScaffold::Actions
       authorized_for?(:action => :read)
     end
     private
-    def search_authorized?
+    def search_authorized_filter
       link = active_scaffold_config.live_search.link || active_scaffold_config.live_search.class.link
       raise ActiveScaffold::ActionNotAllowed unless self.send(link.security_method)
     end

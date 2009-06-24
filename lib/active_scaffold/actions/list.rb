@@ -2,7 +2,7 @@ module ActiveScaffold::Actions
   module List
     include ActiveScaffold::Search
     def self.included(base)
-      base.before_filter :list_authorized?, :only => [:index, :table, :update_table, :row, :list]
+      base.before_filter :list_authorized_filter, :only => [:index, :table, :update_table, :row, :list]
     end
 
     def index
@@ -105,7 +105,7 @@ module ActiveScaffold::Actions
       authorized_for?(:action => :read)
     end
     private
-    def list_authorized?
+    def list_authorized_filter
       raise ActiveScaffold::ActionNotAllowed unless list_authorized?
     end
     def update_table_formats
