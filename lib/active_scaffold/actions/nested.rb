@@ -146,6 +146,22 @@ module ActiveScaffold::Actions::Nested
       return_to_main
     end
 
+    def destroy_existing_respond_to_js
+      render(:action => 'destroy')
+    end
+
+    def destroy_existing_respond_to_xml
+      render :xml => successful? ? "" : response_object.to_xml, :content_type => Mime::XML, :status => response_status
+    end
+
+    def destroy_existing_respond_to_json
+      render :text => successful? ? "" : response_object.to_json, :content_type => Mime::JSON, :status => response_status
+    end
+
+    def destroy_existing_respond_to_yaml
+      render :text => successful? ? "" : response_object.to_yaml, :content_type => Mime::YAML, :status => response_status
+    end
+
     def after_create_save(record)
       if params[:association_macro] == :has_and_belongs_to_many
         params[:associated_id] = record
@@ -177,6 +193,15 @@ module ActiveScaffold::Actions::Nested
         do_destroy
       end
     end
-
+    private
+    def new_existing_formats
+      (default_formats + active_scaffold_config.formats).uniq
+    end
+    def add_existing_formats
+      (default_formats + active_scaffold_config.formats).uniq
+    end
+    def destroy_existing_formats
+      (default_formats + active_scaffold_config.formats).uniq
+    end
   end
 end

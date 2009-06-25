@@ -69,11 +69,10 @@ module ActiveRecordPermissions
     # the actual permission methods can't be guaranteed to exist. And because we want to
     # intelligently combine multiple applicable methods.
     #
-    # options[:action] should be a CRUD verb (:create, :read, :update, :destroy)
+    # options[:action] should be a CRUD verb (:create, :read, :update, :destroy, :print)
     # options[:column] should be the name of a model attribute
     def authorized_for?(options = {})
-      # Ed - Let's try opening this up to allow for more than just CRUD
-      # raise ArgumentError, "unknown action #{options[:action]}" if options[:action] and ![:create, :read, :update, :destroy].include?(options[:action])
+      raise ArgumentError, "unknown action #{options[:action]}" if options[:action] and ![:create, :read, :update, :destroy, :print].include?(options[:action])
 
       # column_authorized_for_action? has priority over other methods,
       # you can disable an action and enable that action for a column
