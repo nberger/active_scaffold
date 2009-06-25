@@ -195,8 +195,6 @@ module ActiveScaffold
         record_select_options.merge!(active_scaffold_input_text_options)
         record_select_options.merge!(column.options)
 
-ActiveRecord::Base.logger.debug ">>>>>>>>form_column_helpers.rb:194: record_select_options = #{record_select_options.pretty_inspect}"
-
         if column.singular_association?
           record_select_field(options[:name], (@record.send(column.name) || column.association.klass.new), record_select_options)
         elsif column.plural_association?
