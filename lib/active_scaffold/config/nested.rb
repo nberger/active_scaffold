@@ -4,7 +4,7 @@ module ActiveScaffold::Config
 
     def initialize(core_config)
       @core = core_config
-	  self.shallow_delete = self.class.shallow_delete
+      self.shallow_delete = self.class.shallow_delete
     end
 
     # global level configuration

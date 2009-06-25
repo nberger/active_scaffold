@@ -4,7 +4,56 @@ module ActiveScaffold
     # Helpers that assist with the rendering of a List Column
     module ListColumnHelpers
       include ActionView::Helpers::JavaScriptMacrosHelper      
-      
+=begin
+      def get_column_value(record, column)
+        # check for an override helper
+        value = if column_override? column
+          # we only pass the record as the argument. we previously also passed the formatted_value,
+          # but mike perham pointed out that prohibited the usage of overrides to improve on the
+          # performance of our default formatting. see issue #138.
+          send(column_override(column), record)
+        # second, check if the dev has specified a valid list_ui for this column
+        elsif column.list_ui and override_column_ui?(column.list_ui)
+          send(override_column_ui(column.list_ui), column, record)
+
+        elsif column.inplace_edit and record.authorized_for?(:action => :update, :column => column.name)
+          active_scaffold_inplace_edit(record, column)
+        elsif column.column and override_column_ui?(column.column.type)
+          send(override_column_ui(column.column.type), column, record)
+        else
+          value = record.send(column.name)
+
+          if column.association.nil? or column_empty?(value)
+            formatted_value = clean_column_value(format_value(value, column.options))
+          else
+            case column.association.macro
+              when :has_one, :belongs_to
+                formatted_value = clean_column_value(format_value(value.to_label))
+
+              when :has_many, :has_and_belongs_to_many
+                if column.associated_limit.nil?
+                  firsts = value.collect { |v| v.to_label }
+                else
+                  firsts = value.first(column.associated_limit + 1).collect { |v| v.to_label }
+                  firsts[column.associated_limit] = '…' if firsts.length > column.associated_limit
+                end
+                if column.associated_limit == 0
+                  formatted_value = value.length if column.associated_number?
+                else
+                  formatted_value = clean_column_value(format_value(firsts.join(', ')))
+                  formatted_value << " (#{value.length})" if column.associated_number? and column.associated_limit and firsts.length > column.associated_limit
+                end
+                formatted_value
+            end
+          end
+
+          formatted_value
+        end
+
+        value = '&nbsp;' if value.nil? or (value.respond_to?(:empty?) and value.empty?) # fix for IE 6
+        return value
+      end
+=end
       def get_column_value(record, column)
         begin
           # check for an override helper
@@ -16,21 +65,18 @@ module ActiveScaffold
           # second, check if the dev has specified a valid list_ui for this column
           elsif column.list_ui and override_column_ui?(column.list_ui)
             send(override_column_ui(column.list_ui), column, record)
-
           elsif column.inplace_edit and record.authorized_for?(:action => :update, :column => column.name)
             active_scaffold_inplace_edit(record, column)
           elsif override_column_ui?(column.column.type)
             send(override_column_ui(column.column.type), column, record)
           else
             value = record.send(column.name)
-
             if column.association.nil? or column_empty?(value)
               formatted_value = clean_column_value(format_value(value))
             else
               case column.association.macro
                 when :has_one, :belongs_to
                   formatted_value = clean_column_value(format_value(value.to_label))
-
                 when :has_many, :has_and_belongs_to_many
 				          if column.associated_limit.nil?
                     firsts = value.collect { |v| v.to_label }
@@ -43,10 +89,8 @@ module ActiveScaffold
                   formatted_value
               end
             end
-
             formatted_value
           end
-
           value = '&nbsp;' if value.nil? or (value.respond_to?(:empty?) and value.empty?) # fix for IE 6
           return value
         rescue Exception => e

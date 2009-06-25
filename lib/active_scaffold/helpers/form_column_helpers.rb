@@ -322,7 +322,7 @@ module ActiveScaffold
       def is_subform?(column)
         column_renders_as(column) == :subform
       end
-      
+
       def column_scope(column)
         if column.plural_association?
           "[#{column.name}][#{@record.id || generate_temporary_id}]"
