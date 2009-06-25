@@ -181,8 +181,12 @@ module ActiveScaffold
         end
         remote_controller = active_scaffold_controller_for(column.association.klass).controller_path
 
-        # if the opposite association is a :belongs_to (in that case association in this class must be has_one or has_many)
-        # then only show records that have not been associated yet
+        # if the opposite association is a :belongs_to, then only show records that have not been associated yet
+        params = {:parent_id => @record.id, :parent_model => @record.class}
+        
+        # if the opposite association is a :belongs_to, then only show records that have not been associated yet
+        # robd 2008-06-29: is this code doing the right thing? doesn't seem to check :belongs_to...
+        # in any case, could we encapsulate this code on column in a method like .singular_association?
         if [:has_one, :has_many].include?(column.association.macro)
           params.merge!({column.association.primary_key_name => ''})
         end
@@ -190,6 +194,8 @@ module ActiveScaffold
         record_select_options = {:controller => remote_controller, :id => options[:id], :params => params}
         record_select_options.merge!(active_scaffold_input_text_options)
         record_select_options.merge!(column.options)
+
+ActiveRecord::Base.logger.debug ">>>>>>>>form_column_helpers.rb:194: record_select_options = #{record_select_options.pretty_inspect}"
 
         if column.singular_association?
           record_select_field(options[:name], (@record.send(column.name) || column.association.klass.new), record_select_options)
