@@ -65,7 +65,10 @@ module ActiveScaffold
       @active_scaffold_config = ActiveScaffold::Config::Core.new(model_id)
       self.active_scaffold_config.configure &block if block_given?
       self.active_scaffold_config._load_action_columns
+=begin
+This does not work. If I use AR security methods on a model, a refresh on the list will cause a nil.include? error in Lead.authorized_for_read?->AR.method_missing->define_attribute_methods->create_time_zone_conversion_attribute on the current_user.permit?([:root, :super]) call.
       self.links_for_associations
+=end
 
       # defines the attribute read methods on the model, so record.send() doesn't find protected/private methods instead
       klass = self.active_scaffold_config.model
