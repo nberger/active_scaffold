@@ -11,6 +11,7 @@ This fork's variances from the core repository:
 	- script/generate active_scaffold user
 - :config block additions
 		ActiveScaffold.set_defaults do |config| 
+			config.security.allowed_actions << :verify # Add your own actions to security
 			config.left_handed = true
 			config.upper_case_form_fields = true
 			config.secure_download_key = "DOWNLoadMyFileplease"
