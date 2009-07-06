@@ -68,7 +68,7 @@ class ScaffoldingSandbox
 			else
 				col_type << "(#{column.limit})" if column.limit
 			end
-"	attribute :#{column.name}, :is => :required" }
+"	attribute :#{column.name}, :is => :required" if defined?(SemanticAttributes::Attribute)}
 	end
 
 	def all_columns(record, record_name, options) 
