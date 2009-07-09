@@ -56,31 +56,31 @@
 <%= all_columns(@model_instance, @singular_name, { :sa_columns => true }) %>
 <%
 	if @model_instance.class.content_columns.find {|c| [:name, :label, :title].include?(c.name.to_sym)}.nil? -%>	
-	def to_label
-		"#{}" # :name, :label, :title columns not found. Put the Model's label column(s) here for example: first_name + " " + last_name
-	end
+  def to_label
+    "#{}" # :name, :label, :title columns not found. Put the Model's label column(s) here for example: first_name + " " + last_name
+    end
 <% end -%>
 
-	# ===================
-	# = Authorize BEGIN =
-	# ===================
+  # ===================
+  # = Authorize BEGIN =
+  # ===================
 
-	def authorized_for_create?
-		current_user and current_user.permit?([:root, :super])
-	end
+  def authorized_for_create?
+    current_user and current_user.permit?([:root, :super])
+  end
 
-	def authorized_for_destroy?
-		current_user and current_user.permit?([:root, :super])
-	end
+  def authorized_for_destroy?
+    current_user and current_user.permit?([:root, :super])
+  end
 
-	def authorized_for_read?
-		current_user and current_user.permit?([:root, :super])
-	end
-	
-	def authorized_for_update?
-		current_user and current_user.permit?([:root, :super])
-	end
-	
-	# =================
-	# = Authorize END =
-	# =================
+  def authorized_for_read?
+    current_user and current_user.permit?([:root, :super])
+  end
+
+  def authorized_for_update?
+    current_user and current_user.permit?([:root, :super])
+  end
+
+  # =================
+  # = Authorize END =
+  # =================

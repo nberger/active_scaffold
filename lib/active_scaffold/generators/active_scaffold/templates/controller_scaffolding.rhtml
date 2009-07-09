@@ -1,9 +1,9 @@
-	active_scaffold :<%=@singular_name.pluralize%> do |config|
-		config.actions << :customize
-		config.actions << :export_tool
-		config.actions << :print_list
-		config.actions.swap :field_search, :search
-		config.list.sorting = {:id => 'DESC'}<% cols = all_columns(@model_instance, @singular_name, { :as_columns => true, :exclude => %w(id created_on created_at updated_on updated_at lock_version) }) %>
-		config.columns = [<%= cols %>]
-		config.create.columns = config.update.columns = config.show.columns = config.list.columns = config.field_search.columns = [<%= cols %>]
-	end  
+  active_scaffold :<%=@singular_name.pluralize%> do |config|
+    config.actions << :customize
+    config.actions << :export_tool
+    config.actions << :print_list
+    config.actions.swap :field_search, :search
+    config.list.sorting = {:id => 'DESC'}<% cols = all_columns(@model_instance, @singular_name, { :as_columns => true, :exclude => %w(id created_on created_at updated_on updated_at lock_version) }) %>
+    config.columns = [<%= cols %>]
+    config.create.columns = config.update.columns = config.show.columns = config.list.columns = config.field_search.columns = [<%= cols %>]
+  end  
