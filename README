@@ -39,7 +39,7 @@ This fork's variances from the core repository:
 	- do_list_by_sql method - build your list with a sql statement
 	- Handle no_entries_message via t() method
 	- Stack user created row based actions - limits the width of action column
-	- Show that list is filtered by showing text in column header of action column
+	- Show that list is filtered by showing a link in column header of action column that allows for a quick reset.
 	- #make_available_method override method - specify in the model if value is available, useful when a field is dependent on other fields
 	- display and calculation formatters for:
 		- :usa_zip
