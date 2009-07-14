@@ -3,7 +3,7 @@ module ActiveScaffold::Actions
     include ActiveScaffold::Search
     def self.included(base)
       base.before_filter :search_authorized_filter, :only => :show_search
-	  base.before_filter :reset_search_session_info
+      base.before_filter :reset_search_session_info
       base.before_filter :do_search
     end
 
@@ -15,6 +15,10 @@ module ActiveScaffold::Actions
       respond_to_action(:field_search)
     end
 
+    def reset_search
+      update_table      
+    end
+    
     protected
     def field_search_respond_to_html
       render(:action => "field_search")
