@@ -116,7 +116,7 @@ module ActionView
         in_place_editor_options[:url][:id] ||= record.id
         loader_message = in_place_editor_options[:saving_text] || as_(:saving_)
         retval << form_remote_tag(:url => in_place_editor_options[:url],
-  				:method => in_place_editor_options[:http_method] || :post,
+          :method => in_place_editor_options[:http_method] || :post,
           :loading => "$('#{id_string}_form').hide(); $('loader_#{id_string}').show();",
           :complete => "$('loader_#{id_string}').hide();",
           :html => {:class => "in_place_editor_form", :id => "#{id_string}_form", :style => "display:none" } )
@@ -138,8 +138,8 @@ module ActionView
         case input_type
         when :textarea
           text_area_tag('value', record.send(column.name), options )
-        when :select
-          select_tag('value', record.send(column.name), options[:choices], {:selected => record.send(column.name)}.merge(options), htm_opts )
+        when :select          
+          select_tag('value', options_for_select(options.delete(:choices), record.send(column.name)), options.merge(htm_opts))
         # when :date_select
         #   calendar_date_select( :record, column.name, options)
         else

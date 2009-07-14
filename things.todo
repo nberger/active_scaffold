@@ -3,6 +3,27 @@ Check In:
 ========:
 = HIGH =:
 ========:
+- Fix AS localize
+  - core.rb
+    cattr_accessor :show_missing_translations
+    @@show_missing_translations = false
+  - column.rb
+      attr_writer :label
+      def labe
+        @label ||= name.to_sym
+        as_(@label, :default_label => active_record_class.human_attribute_name(name.to_s))
+      end
+  - localize.rb
+      class Object
+        def as_(key, options = {})
+          unless key.blank?
+            text = I18n.translate "#{key}", {:scope => [:active_scaffold], :default => (ActiveScaffold::Config::Core.show_missing_translations ? nil : options[:default_label] || key.to_s.titleize)}.merge(options)
+          end
+          text
+        end
+      end
+
+
 - Export is requiring fastercsv, I thought that was optional?
 - Support virtual columns and associations that are not tied to RecordSelect ie. there values may be strings. (Actions::FieldSearch#do_show_search)
 
