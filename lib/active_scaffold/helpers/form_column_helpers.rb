@@ -374,14 +374,14 @@ module ActiveScaffold
       end
 
       def active_scaffold_input_hidden(column, options)
-    		input(:record, column.name, options.merge(:type => :hidden))
+        input(:record, column.name, options.merge(:type => :hidden))
       end
 
       def active_scaffold_input_ssn(column, options)
         column.description ||= as_(:ssn_example)
         options = active_scaffold_input_text_options(options)
-    		text_field :record, column.name, options.merge(
-                      :value => usa_number_to_ssn(@record[column.name].to_s),
+        text_field :record, column.name, options.merge(
+                      :value => usa_number_to_ssn(@record.send(column.name).to_s),
                       :onblur => "SsnDashAdd(this);return true;")
       end
       alias active_scaffold_input_social_security_number active_scaffold_input_ssn
@@ -394,7 +394,7 @@ module ActiveScaffold
         column.description ||= as_(:percentage_example)
         options[:onblur] ||= "PercentageFormat(this);return true;"
         options = active_scaffold_input_text_options(options)
-    		text_field :record, column.name, options.merge(:value => number_to_percentage(@record[column.name].to_s, :precision => 1))
+        text_field :record, column.name, options.merge(:value => number_to_percentage(@record.send(column.name).to_s, :precision => 1))
       end
 
       # :usa_money requires some type casting help like the following in your Model
@@ -408,24 +408,24 @@ module ActiveScaffold
       def active_scaffold_input_usa_money(column, options)
         column.description ||= as_(:usa_money_example)
         options[:onblur] ||= "UsaMoney(this);return true;"
-        value = number_to_currency(@record[column.name].to_s) unless options[:blank_if_nil] == true
+        value = number_to_currency(@record.send(column.name).to_s) unless options[:blank_if_nil] == true
         value ||= "" 
         options = active_scaffold_input_text_options(options)
-    		text_field :record, column.name, options.merge(:value => value)
+        text_field :record, column.name, options.merge(:value => value)
       end
 
       def active_scaffold_input_usa_phone(column, options)
         column.description ||= as_(:usa_phone_example)
         options[:onblur] ||= "UsaPhoneDashAdd(this);return true;"
         options = active_scaffold_input_text_options(options)
-    		text_field :record, column.name, options.merge(:value => usa_number_to_phone(@record[column.name].to_s))
+        text_field :record, column.name, options.merge(:value => usa_number_to_phone(@record.send(column.name).to_s))
       end
 
       def active_scaffold_input_usa_zip(column, options)
         column.description ||= as_(:usa_zip_example)
         options[:onblur] ||= "UsaZipDashAdd(this);return true;"
         options = active_scaffold_input_text_options(options)
-    		text_field :record, column.name, options.merge(:value => usa_number_to_zip(@record[column.name].to_s))
+        text_field :record, column.name, options.merge(:value => usa_number_to_zip(@record.send(column.name).to_s))
       end
 
       def active_scaffold_input_yes_no_radio(column, options)

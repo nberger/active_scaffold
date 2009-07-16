@@ -258,23 +258,23 @@ module ActiveScaffold
       end
       
       def active_scaffold_column_percentage(column, record)
-        number_to_percentage(record[column.name].to_s, :precision => 1)
+        number_to_percentage(record.send(column.name).to_s.to_s, :precision => 1)
       end
 
       def active_scaffold_column_ssn(column, record)
-        usa_number_to_ssn(record[column.name].to_s)
+        usa_number_to_ssn(record.send(column.name).to_s.to_s)
       end
 
       def active_scaffold_column_usa_money(column, record)
-        number_to_currency(record[column.name].to_s)
+        number_to_currency(record.send(column.name).to_s.to_s)
       end
 
       def active_scaffold_column_usa_phone(column, record)
-        usa_number_to_phone(record[column.name].to_s)
+        usa_number_to_phone(record.send(column.name).to_s.to_s)
       end
 
       def active_scaffold_column_usa_zip(column, record)
-        usa_number_to_zip(record[column.name].to_s)
+        usa_number_to_zip(record.send(column.name).to_s.to_s)
       end
     end
   end
