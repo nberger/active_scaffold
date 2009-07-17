@@ -3,8 +3,8 @@
   <% make_available_method = "#{column.name}_make_available?" %>
   <% next if @record.respond_to?(make_available_method) and !@record.send(make_available_method) %>
   <% if column.is_a? ActiveScaffold::DataStructures::ActionColumns -%>
-    <dt><%= column.name -%></dt>
-    <dd><%= render :partial => 'show_columns' %></dd>
+    <dt><%= column.label -%></dt>
+    <dd><%= render :partial => 'show_columns', :locals => {:columns => column} %></dd>
   <% else -%>
     <dt><%= column.label -%></dt>
     <dd><%= show_column_value(@record, column) -%> &nbsp;</dd>

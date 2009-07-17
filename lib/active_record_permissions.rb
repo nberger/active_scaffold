@@ -23,6 +23,11 @@ module ActiveRecordPermissions
   def self.default_permission; @@default_permission; end
   @@default_permission = true
 
+  # Actions allowed. If you create a customized action add it to this list.
+  def self.allowed_actions=(v); @@allowed_actions = v; end
+  def self.allowed_actions; @@allowed_actions; end
+  @@allowed_actions = [:create, :read, :update, :destroy, :print]
+
   # This is a module aimed at making the current_user available to ActiveRecord models for permissions.
   module ModelUserAccess
     module Controller
@@ -69,17 +74,21 @@ module ActiveRecordPermissions
     # the actual permission methods can't be guaranteed to exist. And because we want to
     # intelligently combine multiple applicable methods.
     #
-    # options[:action] should be a CRUD verb (:create, :read, :update, :destroy)
+    # options[:action] should be a CRUD verb (:create, :read, :update, :destroy, :print)
     # options[:column] should be the name of a model attribute
     def authorized_for?(options = {})
-      # Ed - Let's try opening this up to allow for more than just CRUD
-      # raise ArgumentError, "unknown action #{options[:action]}" if options[:action] and ![:create, :read, :update, :destroy].include?(options[:action])
+      raise ArgumentError, "unknown action #{options[:action]}" if options[:action] and !ActiveRecordPermissions.allowed_actions.include?(options[:action])
+
+      # column_authorized_for_action? has priority over other methods,
+      # you can disable an action and enable that action for a column
+      # (for example, disable update and enable inplace_edit in a column)
+      method = column_and_action_security_method(options[:column], options[:action])
+      return send(method) if method and respond_to?(method)
 
       # collect the possibly-related methods that actually exist
       methods = [
         column_security_method(options[:column]),
         action_security_method(options[:action]),
-        column_and_action_security_method(options[:column], options[:action])
       ].compact.select {|m| respond_to?(m)}
 
       # first check if parent_record disallows action for this association

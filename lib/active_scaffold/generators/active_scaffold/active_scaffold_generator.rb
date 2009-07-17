@@ -15,7 +15,7 @@ class ScaffoldingSandbox
   end
   
   # def default_input_block
-  #   Proc.new { |record, column| "<p><label for=\"#{record}_#{column.name}\">#{column.human_name}</label><br/>\n#{input(record, column.name)}</p>\n" }
+  #    Proc.new { |record, column| "<p><label for=\"#{record}_#{column.name}\">#{column.human_name}</label><br/>\n#{input(record, column.name)}</p>\n" }
   # end
 
   def default_input_block
@@ -43,13 +43,42 @@ class ScaffoldingSandbox
     Proc.new { |record, column| 
       column_name = column.name
       column_name = column_name[0..-4] if column_name[-3, 3] == "_id"
-"      [:#{column_name} => {
+"       [:#{column_name} => {
         :exclude => [:field_search, :list]
       }]," }
   end
 
+  def default_as_block
+    Proc.new { |record, column| 
+      column_name = column.name
+      column_name = column_name[0..-4] if column_name[-3, 3] == "_id"
+":#{column_name}" }
+  end
+
+  def default_sa_block
+    Proc.new { |record, column| 
+      attrs = []
+      attrs << "default(#{quote(column.default)})" if column.default
+      attrs << "not null" unless column.null
+      attrs << "primary key" if column.name == @model_instance.class.primary_key
+
+      col_type = column.type.to_s
+      if col_type == "decimal"
+        col_type << "(#{column.precision}, #{column.scale})"
+      else
+        col_type << "(#{column.limit})" if column.limit
+      end
+"  attribute :#{column.name}, :is => :required"}
+  end
+
   def all_columns(record, record_name, options) 
-    if options[:has_columns]
+    join_str = "\n"
+    if options[:as_columns]
+      join_str = ', '
+      input_block = options[:input_block] || default_as_block
+    elsif options[:sa_columns]
+      input_block = options[:input_block] || default_sa_block
+    elsif options[:has_columns]
       input_block = options[:input_block] || default_column_block
     elsif options[:show_columns]
       input_block = options[:input_block] || default_show_block
@@ -59,11 +88,13 @@ class ScaffoldingSandbox
 
     if !options[:exclude].blank?
       filtered_content_columns = record.class.columns.reject { |column| options[:exclude].include?(column.name) }
+    elsif options[:sa_columns]
+      filtered_content_columns = record.class.columns.reject { |column| [:id, :created_at, :updated_at, :lock_version].include?(column.name.to_sym) or (column.name.include?('_id') and column.name.last(3) == '_id') }
     else
       filtered_content_columns = record.class.columns
     end
 
-    filtered_content_columns.collect{ |column| input_block.call(record_name, column) }.join("\n")
+    filtered_content_columns.collect{ |column| input_block.call(record_name, column) }.sort.join(join_str)
   end
   
 end
@@ -74,7 +105,7 @@ module ActionView::Helpers::ActiveRecordHelper
     input_block = options[:input_block] || default_input_block
     skip_columns = ["created_at", "lock_version", "created_on", "updated_at", "updated_on"]
     @results = record.class.content_columns.collect do |column|
-     unless skip_columns.detect{|c| c == column.name}  || column.name.last(3) == "id"
+     unless skip_columns.detect{|c| c == column.name}   || column.name.last(3) == "id"
        input_block.call(record_name, column) 
      end
     end
@@ -95,12 +126,12 @@ module ActionView::Helpers::ActiveRecordHelper
   
   def quote(value)
     case value
-      when NilClass                 then "NULL"
+      when NilClass                  then "NULL"
       when TrueClass                then "TRUE"
-      when FalseClass               then "FALSE"
+      when FalseClass                then "FALSE"
       when Float, Fixnum, Bignum    then value.to_s
       # BigDecimals need to be output in a non-normalized form and quoted.
-      when BigDecimal               then value.to_s('F')
+      when BigDecimal                then value.to_s('F')
       else
         value.inspect
     end
@@ -171,7 +202,7 @@ class ActionView::Helpers::InstanceTag
 end
 
 class ActiveScaffoldGenerator < Rails::Generator::NamedBase
-  attr_reader   :controller_name,
+  attr_reader    :controller_name,
                 :controller_class_path,
                 :controller_file_path,
                 :controller_class_nesting,
@@ -200,7 +231,7 @@ class ActiveScaffoldGenerator < Rails::Generator::NamedBase
   end
 
   # def controller_file_path
-  #   "/" + base_controller_file_path
+  #    "/" + base_controller_file_path
   # end
   # 
   def manifest
@@ -222,7 +253,7 @@ class ActiveScaffoldGenerator < Rails::Generator::NamedBase
       m.directory File.join('test/functional', controller_class_path)
 
       # Unit test, and fixtures.
-      m.template 'unit_test.rb',  File.join('test/unit', "#{singular_name}_test.rb")
+      # m.template 'unit_test.rb',  File.join('test/unit', "#{singular_name}_test.rb")
       # I use factories
       # m.template 'fixtures.yml',  File.join('test/fixtures', "#{singular_name}.yml")
 
@@ -254,7 +285,7 @@ class ActiveScaffoldGenerator < Rails::Generator::NamedBase
         :mark_id => singular_name) if less_dry_partial?
 
       # Controller class, functional test, helper, and views.
-      m.template('functional_test.rb', File.join('test/functional', controller_class_path, "#{controller_file_name}_controller_test.rb"))
+      # m.template('functional_test.rb', File.join('test/functional', controller_class_path, "#{controller_file_name}_controller_test.rb"))
       controller_template_name = 'controller_methods.rb'
       m.complex_template controller_template_name,
         File.join('app/controllers',

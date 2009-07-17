@@ -25,7 +25,7 @@ href = url_for(params_for(:action => :update_table, :escape => false).delete_if{
             <label for="<%= "search_#{column.name}" %>"><%= column.label %></label>
           </dt>
         <dd>
-        	<%= active_scaffold_search_for(column) -%>
+        <%= active_scaffold_search_for(column) %>
         </dd>
       </dl>
     </li>

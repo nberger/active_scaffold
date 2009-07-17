@@ -19,9 +19,11 @@ module ActiveScaffold::DataStructures
       @params ||= Set.new
     end
 
-    # the display-name of the column. this will be used, for instance, as the column title in the table and as the field name in the form. If left alone it will utilize human_attribute_name which includes localization
+    # the display-name of the column. this will be used, for instance, as the column title in the table and as the field name in the form.
+    # if left alone it will utilize human_attribute_name which includes localization
     attr_writer :label
-    def label
+    def label(options = {:count => 1})
+      # as_(@label, options)# || active_record_class.human_attribute_name(name.to_s)
       as_(@label) || active_record_class.human_attribute_name(name.to_s)
     end
 
@@ -229,7 +231,7 @@ module ActiveScaffold::DataStructures
       @associated_number = self.class.associated_number
       @show_blank_record = self.class.show_blank_record
       @actions_for_association_links = self.class.actions_for_association_links if @association
-      
+
       # default all the configurable variables
       self.css_class = ''
       if active_record_class.respond_to? :reflect_on_validations_for

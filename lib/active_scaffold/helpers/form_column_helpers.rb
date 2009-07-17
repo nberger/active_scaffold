@@ -4,6 +4,42 @@ module ActiveScaffold
     module FormColumnHelpers
       # This method decides which input to use for the given column.
       # It does not do any rendering. It only decides which method is responsible for rendering.
+=begin
+      def active_scaffold_input_for(column, scope = nil)
+        options = active_scaffold_input_options(column, scope)
+        # first, check if the dev has created an override for this specific field
+        if override_form_field?(column)
+          send(override_form_field(column), @record, options[:name])
+        # second, check if the dev has specified a valid form_ui for this column
+        elsif column.form_ui and override_input?(column.form_ui)
+          send(override_input(column.form_ui), column, options)
+        # fallback: we get to make the decision
+        else
+          if column.association
+            # if we get here, it's because the column has a form_ui but not one ActiveScaffold knows about.
+            raise "Unknown form_ui `#{column.form_ui}' for column `#{column.name}'"
+          elsif column.virtual?
+            active_scaffold_input_virtual(column, options)
+
+          else # regular model attribute column
+            # if we (or someone else) have created a custom render option for the column type, use that
+            if override_input?(column.column.type)
+              send(override_input(column.column.type), column, options)
+            # final ultimate fallback: use rails' generic input method
+            else
+              # for textual fields we pass different options
+              text_types = [:text, :string, :integer, :float, :decimal]
+              options = active_scaffold_input_text_options(options) if text_types.include?(column.column.type)
+              if column.column.type == :string && options[:maxlength].blank?
+                options[:maxlength] = column.column.limit
+                options[:size] ||= ActionView::Helpers::InstanceTag::DEFAULT_FIELD_OPTIONS["size"]
+              end
+              input(:record, column.name, options.merge(column.options))
+            end
+          end
+        end.to_s + javascript_for_update_column(column, scope, options)
+      end
+=end
       def active_scaffold_input_for(column, scope = nil, options = {})
         begin
           options = active_scaffold_input_options(column, scope, options)
@@ -72,7 +108,7 @@ module ActiveScaffold
       end
 
       def javascript_for_update_column(column, scope, options)
-        if column.options[:update_column]
+        if column.options.is_a?(Hash) && column.options[:update_column]
           url_params = {:action => 'render_field', :id => @record.id}
           url_params[:controller] = controller.class.active_scaffold_controller_for(@record.class).controller_path if scope
 
@@ -145,8 +181,12 @@ module ActiveScaffold
         end
         remote_controller = active_scaffold_controller_for(column.association.klass).controller_path
 
-        # if the opposite association is a :belongs_to (in that case association in this class must be has_one or has_many)
-        # then only show records that have not been associated yet
+        # if the opposite association is a :belongs_to, then only show records that have not been associated yet
+        params = {:parent_id => @record.id, :parent_model => @record.class}
+        
+        # if the opposite association is a :belongs_to, then only show records that have not been associated yet
+        # robd 2008-06-29: is this code doing the right thing? doesn't seem to check :belongs_to...
+        # in any case, could we encapsulate this code on column in a method like .singular_association?
         if [:has_one, :has_many].include?(column.association.macro)
           params.merge!({column.association.primary_key_name => ''})
         end
@@ -282,7 +322,7 @@ module ActiveScaffold
       def is_subform?(column)
         column_renders_as(column) == :subform
       end
-      
+
       def column_scope(column)
         if column.plural_association?
           "[#{column.name}][#{@record.id || generate_temporary_id}]"
@@ -334,14 +374,14 @@ module ActiveScaffold
       end
 
       def active_scaffold_input_hidden(column, options)
-    		input(:record, column.name, options.merge(:type => :hidden))
+        input(:record, column.name, options.merge(:type => :hidden))
       end
 
       def active_scaffold_input_ssn(column, options)
         column.description ||= as_(:ssn_example)
         options = active_scaffold_input_text_options(options)
-    		text_field :record, column.name, options.merge(
-                      :value => usa_number_to_ssn(@record[column.name].to_s),
+        text_field :record, column.name, options.merge(
+                      :value => usa_number_to_ssn(@record.send(column.name).to_s),
                       :onblur => "SsnDashAdd(this);return true;")
       end
       alias active_scaffold_input_social_security_number active_scaffold_input_ssn
@@ -354,7 +394,7 @@ module ActiveScaffold
         column.description ||= as_(:percentage_example)
         options[:onblur] ||= "PercentageFormat(this);return true;"
         options = active_scaffold_input_text_options(options)
-    		text_field :record, column.name, options.merge(:value => number_to_percentage(@record[column.name].to_s, :precision => 1))
+        text_field :record, column.name, options.merge(:value => number_to_percentage(@record.send(column.name).to_s, :precision => 1))
       end
 
       # :usa_money requires some type casting help like the following in your Model
@@ -368,24 +408,24 @@ module ActiveScaffold
       def active_scaffold_input_usa_money(column, options)
         column.description ||= as_(:usa_money_example)
         options[:onblur] ||= "UsaMoney(this);return true;"
-        value = number_to_currency(@record[column.name].to_s) unless options[:blank_if_nil] == true
+        value = number_to_currency(@record.send(column.name).to_s) unless options[:blank_if_nil] == true
         value ||= "" 
         options = active_scaffold_input_text_options(options)
-    		text_field :record, column.name, options.merge(:value => value)
+        text_field :record, column.name, options.merge(:value => value)
       end
 
       def active_scaffold_input_usa_phone(column, options)
         column.description ||= as_(:usa_phone_example)
         options[:onblur] ||= "UsaPhoneDashAdd(this);return true;"
         options = active_scaffold_input_text_options(options)
-    		text_field :record, column.name, options.merge(:value => usa_number_to_phone(@record[column.name].to_s))
+        text_field :record, column.name, options.merge(:value => usa_number_to_phone(@record.send(column.name).to_s))
       end
 
       def active_scaffold_input_usa_zip(column, options)
         column.description ||= as_(:usa_zip_example)
         options[:onblur] ||= "UsaZipDashAdd(this);return true;"
         options = active_scaffold_input_text_options(options)
-    		text_field :record, column.name, options.merge(:value => usa_number_to_zip(@record[column.name].to_s))
+        text_field :record, column.name, options.merge(:value => usa_number_to_zip(@record.send(column.name).to_s))
       end
 
       def active_scaffold_input_yes_no_radio(column, options)

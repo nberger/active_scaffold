@@ -2,7 +2,7 @@ module ActiveScaffold::Config
   class Subform < Base
     def initialize(core_config)
       @core = core_config
-      @layout = self.class.layout
+      @layout = self.class.layout || :horizontal
     end
 
     # global level configuration

@@ -3,6 +3,7 @@ module ActiveScaffold
   class DependencyFailure < RuntimeError; end
   class MalformedConstraint < RuntimeError; end
   class RecordNotAllowed < SecurityError; end
+  class ActionNotAllowed < SecurityError; end
   class ReverseAssociationRequired < RuntimeError; end
 
   def self.included(base)
@@ -64,8 +65,10 @@ module ActiveScaffold
       @active_scaffold_config = ActiveScaffold::Config::Core.new(model_id)
       self.active_scaffold_config.configure &block if block_given?
       self.active_scaffold_config._load_action_columns
+=begin
+This does not work. If I use AR security methods on a model, a refresh on the list will cause a nil.include? error in Lead.authorized_for_read?->AR.method_missing->define_attribute_methods->create_time_zone_conversion_attribute on the current_user.permit?([:root, :super]) call.
       self.links_for_associations
-
+=end
       # defines the attribute read methods on the model, so record.send() doesn't find protected/private methods instead
       klass = self.active_scaffold_config.model
       klass.define_attribute_methods unless klass.generated_methods?
@@ -82,6 +85,7 @@ module ActiveScaffold
       end
       active_scaffold_default_frontend_path = File.join(Rails.root, 'vendor', 'plugins', ActiveScaffold::Config::Core.plugin_directory, 'frontends', 'default' , 'views')
       @active_scaffold_frontends << active_scaffold_default_frontend_path
+      @active_scaffold_custom_paths = []
 
       # include the rest of the code into the controller: the action core and the included actions
       module_eval do
@@ -129,8 +133,13 @@ module ActiveScaffold
       end
     end
 
+    def add_active_scaffold_path(path)
+      @active_scaffold_paths = nil # Force active_scaffold_paths to rebuild
+      @active_scaffold_custom_paths << path
+    end
+
     def active_scaffold_paths
-      @active_scaffold_paths ||= ActionView::PathSet.new(@active_scaffold_overrides + @active_scaffold_frontends) unless @active_scaffold_overrides.nil? || @active_scaffold_frontends.nil?
+      @active_scaffold_paths ||= ActionView::PathSet.new(@active_scaffold_overrides + @active_scaffold_custom_paths + @active_scaffold_frontends) unless @active_scaffold_overrides.nil? || @active_scaffold_custom_paths.nil? || @active_scaffold_frontends.nil?
     end
 
     def active_scaffold_config

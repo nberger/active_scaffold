@@ -738,7 +738,7 @@ padding: 0 5px 0 1px;
 background: none;
 }
 
-.active-scaffold .sub-form label {
+.active-scaffold .horizontal-sub-form label {
 display: none;
 }
 
@@ -760,9 +760,10 @@ vertical-align: top;
 color: #999;
 }
 
-.active-scaffold .sub-form table td.actions {
+.active-scaffold .sub-form .actions {
 vertical-align: middle;
 background-color: transparent;
+clear: left;
 }
 
 .active-scaffold .sub-form .association-record a.destroy {

@@ -3,6 +3,7 @@
     :active_scaffold => {
       :add => 'Add',
       :add_existing => 'Add Existing',
+      :add_existing_model => 'Add Existing {{model}}',
       :are_you_sure => 'Are you sure?',
       :between => 'Between',
       :cancel => 'Cancel',
@@ -28,6 +29,7 @@
       :loading => 'Loading',
       :next => 'Next',
       :no_entries => 'No Entries',
+      :no_options => 'no options',
       :omit_header => 'Omit Header',
       :ok => 'Ok',
       :options => 'Options',
@@ -49,7 +51,14 @@
       :_to_  => ' to ',
       :update => 'Update',
       :update_model => 'Update {{model}}',
-      :updated_model => 'Updated {{model}}',
+      :udated_model => 'Updated {{model}}',
+      :'=' => '=',
+      :'>=' => '>=',
+      :'<=' => '<=',
+      :'>' => '>',
+      :'<' => '<',
+      :'!=' => '!=',
+      :between => 'Between',
 
       # error_messages
       :internal_error => 'Request Failed (code 500, Internal Error)',

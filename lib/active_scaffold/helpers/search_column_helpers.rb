@@ -4,10 +4,52 @@ module ActiveScaffold
     module SearchColumnHelpers
       # This method decides which input to use for the given column.
       # It does not do any rendering. It only decides which method is responsible for rendering.
+=begin
+      def active_scaffold_search_for(column)
+        options = active_scaffold_search_options(column)
+
+        # first, check if the dev has created an override for this specific field for search
+        if override_search_field?(column)
+          send(override_search_field(column), @record, options[:name])
+
+        # first, check if the dev has created an override for this specific field
+        elsif override_form_field?(column)
+          send(override_form_field(column), @record, options[:name])
+
+        # second, check if the dev has specified a valid search_ui for this column, using specific ui for searches
+        elsif column.search_ui and override_search?(column.search_ui)
+          send(override_search(column.search_ui), column, options)
+
+        # third, check if the dev has specified a valid search_ui for this column, using generic ui for forms
+        elsif column.search_ui and override_input?(column.search_ui)
+          send(override_input(column.search_ui), column, options)
+
+        # fallback: we get to make the decision
+        else
+          if column.association or column.virtual?
+            active_scaffold_search_text(column, options)
+
+          else # regular model attribute column
+            # if we (or someone else) have created a custom render option for the column type, use that
+            if override_search?(column.column.type)
+              send(override_search(column.column.type), column, options)
+            # if we (or someone else) have created a custom render option for the column type, use that
+            elsif override_input?(column.column.type)
+              send(override_input(column.column.type), column, options)
+            # final ultimate fallback: use rails' generic input method
+            else
+              # for textual fields we pass different options
+              text_types = [:text, :string, :integer, :float, :decimal]
+              options = active_scaffold_input_text_options(options) if text_types.include?(column.column.type)
+              input(:record, column.name, options.merge(column.options))
+            end
+          end
+        end
+      end
+=end
       def active_scaffold_search_for(column)
         begin
           options = active_scaffold_search_options(column)
-
           restore_column_value_from_search_session(column)
           
           # first, check if the dev has created an override for this specific field
@@ -65,7 +107,7 @@ module ActiveScaffold
 		return active_scaffold_search_select(column, options.merge(:multiple => true), select_options)
         associated_options = @record.send(column.association.name).collect {|r| [r.to_label, r.id]}
         select_options = associated_options | options_for_association(column.association, true)
-        return 'no options' if select_options.empty?
+        return as_(:no_options) if select_options.empty?
 
         html = "<ul class=\"checkbox-list\" id=\"#{options[:id]}\">"
 

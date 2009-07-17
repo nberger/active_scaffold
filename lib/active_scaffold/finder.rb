@@ -39,11 +39,11 @@ module ActiveScaffold
         else
           case search_ui
             when :boolean, :checkbox
-              ["#{column.search_sql} = ?", column.column.type_cast(value)]
+            ["#{column.search_sql} = ?", column.column.type_cast(value)]
             when :select
-              ["#{column.search_sql} = ?", value[:id]] unless value[:id].blank?
+            ["#{column.search_sql} = ?", value[:id]] unless value[:id].blank?
             when :multi_select
-              ["#{column.search_sql} in (?)", value.values.collect{|hash| hash[:id]}]
+            ["#{column.search_sql} in (?)", value.values.collect{|hash| hash[:id]}]
             else
               if column.column.nil? || column.column.text?
                 ["LOWER(#{column.search_sql}) LIKE ?", like_pattern.sub('?', value.downcase)]
@@ -162,7 +162,7 @@ module ActiveScaffold
     def self.included(klass)
       klass.extend ClassMethods
     end
-    
+
     protected
 
     attr_writer :active_scaffold_conditions
@@ -179,7 +179,7 @@ module ActiveScaffold
     def active_scaffold_habtm_joins
       @active_scaffold_habtm_joins ||= []
     end
-  
+    
     def all_conditions
       merge_conditions(
         active_scaffold_conditions,                   # from the search modules

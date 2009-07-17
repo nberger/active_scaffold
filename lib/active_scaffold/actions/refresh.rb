@@ -1,7 +1,7 @@
 module ActiveScaffold::Actions
   module Refresh
     def self.included(base)
-      base.before_filter :list_authorized?
+      base.before_filter :refresh_authorized?
     end
 
     def refresh
@@ -18,5 +18,14 @@ module ActiveScaffold::Actions
     
     protected
 
+    # The default security delegates to ActiveRecordPermissions.
+    # You may override the method to customize.
+    def refresh_authorized?
+      authorized_for?(:action => :read)
+    end
+    private
+    def refresh_authorized_filter
+      raise ActiveScaffold::ActionNotAllowed unless refresh_authorized?
+    end
   end
 end
