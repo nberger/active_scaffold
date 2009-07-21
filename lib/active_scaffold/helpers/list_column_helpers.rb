@@ -216,6 +216,12 @@ module ActiveScaffold
           column_value.to_s
         end
       end
+    
+      def convert_from_utf_to_ansi(value)
+        # gotta be careful with the weird parameters order: TO, FROM !
+        Iconv.iconv("LATIN1", "UTF-8", value)
+      end
+    
 =begin
 # This is in java_script_macros_helper
       # ==========
