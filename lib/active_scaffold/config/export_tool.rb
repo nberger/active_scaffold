@@ -18,7 +18,7 @@ module ActiveScaffold::Config
     # --------------------------
     # the ActionLink for this action
     cattr_reader :link
-    @@link = ActiveScaffold::DataStructures::ActionLink.new('show_export_tool', :label => :export, :type => :table, :security_method => :export_tool_authorized?)
+    @@link = ActiveScaffold::DataStructures::ActionLink.new('export_tool', :label => :export, :type => :table, :security_method => :export_tool_authorized?, :popup => true)
     
     cattr_accessor :empty_field_text
     @@empty_field_text = ''

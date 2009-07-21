@@ -3,7 +3,7 @@
   
   fcsv_options = {
     :row_sep => "\n",
-    :col_sep => active_scaffold_config.export_tool.delimiter,
+    :col_sep => active_scaffold_config.export_tool.delimiter || ',',
     :force_quotes => active_scaffold_config.export_tool.force_quotes
   }
   data = FasterCSV.generate(fcsv_options) do |csv|
@@ -13,7 +13,10 @@
         column.inplace_edit = false
         #TODO 2007-09-01 (EJM) Level=0 - This needs to be resolved inside active_scaffold_column_checkbox somehow
         column.list_ui = :boolean if column.list_ui and column.list_ui.to_sym == :checkbox
-        convert_from_utf_to_ansi(get_column_value(record, column).gsub('&nbsp;', '').gsub('&amp;', '&'))
+        val = get_column_value(record, column).gsub('&nbsp;', '').gsub('&amp;', '&').gsub('&quot;', '"').gsub('…', "...")
+        ansi_val = convert_from_utf_to_ansi(val)
+        #logger.debug "converted #{val} to #{ansi_val} for column #{column.name}"
+        ansi_val
       }
     end
   end

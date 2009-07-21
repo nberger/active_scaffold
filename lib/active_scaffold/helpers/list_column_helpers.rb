@@ -219,7 +219,7 @@ module ActiveScaffold
     
       def convert_from_utf_to_ansi(value)
         # gotta be careful with the weird parameters order: TO, FROM !
-        Iconv.iconv("LATIN1", "UTF-8", value)
+        Iconv.iconv("LATIN1", "UTF-8", value) rescue value
       end
     
 =begin
