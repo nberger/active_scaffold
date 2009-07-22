@@ -258,23 +258,35 @@ module ActiveScaffold
       end
       
       def active_scaffold_column_percentage(column, record)
-        number_to_percentage(record.send(column.name).to_s.to_s, :precision => 1)
+        number_to_percentage(record.send(column.name).to_s, :precision => 1)
       end
 
       def active_scaffold_column_ssn(column, record)
-        usa_number_to_ssn(record.send(column.name).to_s.to_s)
+        if record.respond_to?("#{column.name}_for_human")
+          record.send("#{column.name}_for_human")
+        else
+          usa_number_to_ssn(record.send(column.name).to_s)
+        end
       end
 
       def active_scaffold_column_usa_money(column, record)
-        number_to_currency(record.send(column.name).to_s.to_s)
+        number_to_currency(record.send(column.name).to_s)
       end
 
-      def active_scaffold_column_usa_phone(column, record)
-        usa_number_to_phone(record.send(column.name).to_s.to_s)
+      def active_scaffold_column_phone_number(column, record)
+        if record.respond_to?("#{column.name}_for_human")
+          record.send("#{column.name}_for_human")
+        else
+          usa_number_to_phone(record.send(column.name).to_s)
+        end
       end
 
-      def active_scaffold_column_usa_zip(column, record)
-        usa_number_to_zip(record.send(column.name).to_s.to_s)
+      def active_scaffold_column_usa_zip_code(column, record)
+        if record.respond_to?("#{column.name}_for_human")
+          record.send("#{column.name}_for_human")
+        else
+          usa_number_to_zip(record.send(column.name).to_s)
+        end
       end
     end
   end
