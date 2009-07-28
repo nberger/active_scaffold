@@ -8,6 +8,7 @@ module ActiveScaffold::Actions
         include ActiveScaffold::Actions::Nested::ChildMethods if active_scaffold_config.model.reflect_on_all_associations.any? {|a| a.macro == :has_and_belongs_to_many}
       end
       base.before_filter :include_habtm_actions
+      base.before_filter :links_for_associations
       base.helper_method :nested_habtm?
     end
 
@@ -27,6 +28,34 @@ module ActiveScaffold::Actions
     # May be overridden to customize the behavior
     def do_nested
       @record = find_if_allowed(params[:id], :read)
+    end
+
+    def links_for_associations
+      active_scaffold_config.list.columns.each do |column|
+        # if column.link == false we won't create a link. that's how a dev can suppress the auto links.
+        if column.association and column.link.nil?
+          if column.plural_association?
+            # note: we can't create nested scaffolds on :through associations because there's no reverse association.
+            column.set_link('nested', :parameters => {:associations => column.name.to_sym}) #unless column.through_association?
+          elsif not column.polymorphic_association?
+            model = column.association.klass
+            begin
+              controller = self.class.active_scaffold_controller_for(model)
+            rescue ActiveScaffold::ControllerNotFound
+              next
+            end
+
+            actions = controller.active_scaffold_config.actions
+            action = nil
+            if actions.include? :update and model.authorized_for? :action => :update
+              action = 'edit'
+            elsif actions.include? :show and model.authorized_for? :action => :read
+              action = 'show'
+            end
+            column.set_link(action, :controller => File.join('/', controller.controller_path), :parameters => {:parent_controller => params[:controller]}) if action
+          end
+        end
+      end
     end
 
     def include_habtm_actions

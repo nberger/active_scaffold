@@ -66,7 +66,8 @@ module ActiveScaffold
       self.active_scaffold_config.configure &block if block_given?
       self.active_scaffold_config._load_action_columns
 =begin
-This does not work. If I use AR security methods on a model, a refresh on the list will cause a nil.include? error in Lead.authorized_for_read?->AR.method_missing->define_attribute_methods->create_time_zone_conversion_attribute on the current_user.permit?([:root, :super]) call.
+# This does not work with authlogic - not sure why.
+# The before_filter :require_user is not called before the first call to self.links_for_associations on the refresh and current_user is not defined properly. I can pretty_inspect it but as soon as I try to access one of it's methods from inside authorized_for_read? I get an error, the object seems in tact for an object comparison but that is all. The whole mechanism of Model#current_user seems a bit timing dependent. Until I figure it out it is going back into nested.rb
       self.links_for_associations
 =end
       # defines the attribute read methods on the model, so record.send() doesn't find protected/private methods instead
@@ -105,6 +106,8 @@ This does not work. If I use AR security methods on a model, a refresh on the li
       end
     end
 
+=begin
+# See comment above...
     # Create the automatic column links. Note that this has to happen when configuration is *done*, because otherwise the Nested module could be disabled. Actually, it could still be disabled later, couldn't it?
     def links_for_associations
       return unless active_scaffold_config.actions.include? :list and active_scaffold_config.actions.include? :nested
@@ -132,6 +135,7 @@ This does not work. If I use AR security methods on a model, a refresh on the li
         end
       end
     end
+=end
 
     def add_active_scaffold_path(path)
       @active_scaffold_paths = nil # Force active_scaffold_paths to rebuild

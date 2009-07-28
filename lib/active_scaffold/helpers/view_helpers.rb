@@ -197,6 +197,16 @@ module ActiveScaffold
         calculation = active_scaffold_config.model.calculate(column.calculate, column.name, :conditions => controller.send(:all_conditions),
          :joins => controller.send(:joins_for_collection), :include => controller.send(:active_scaffold_joins))
       end
+      
+      def column_show_add_existing(column)
+        (!column.through_association? and options_for_association_count(column.association) > 0)
+      end
+      
+      def column_show_add_new(column, associated, action)
+        value = !column.through_association? and (column.plural_association? or (column.singular_association? and not associated.empty?))
+        value = false unless @record.class.authorized_for?(:action => action)
+        value
+      end
     end
   end
 end
