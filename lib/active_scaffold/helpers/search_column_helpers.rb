@@ -211,15 +211,16 @@ module ActiveScaffold
         options = {:name => "#{options[:name]}[from]", :help_string => "", :class => "range-input"}.merge(active_scaffold_input_text_options(:id => "#{id_name}_from", :size => 10))
         options[:value] = nil
         options[:value] = from_value
-        html << active_scaffold_input_calendar(column, options)
+        html << active_scaffold_input_calendar_date_select(column, options)
         options[:value] = nil
         options[:value] = to_value
         options[:name].gsub!('[from]', '[to]')
         options[:id].gsub!('_from', '_to')
-        html << content_tag(:span, ' - ' + active_scaffold_input_calendar(column, options),
+        html << content_tag(:span, ' - ' + active_scaffold_input_calendar_date_select(column, options),
                           :id => "#{id_name}_between", :style => to_value.blank? ? "display:none" : "")
         html * ' '
       end
+      alias_method :active_scaffold_search_calendar_date_select, :active_scaffold_search_dhtml_calendar
 
       def active_scaffold_search_usa_state(column, options)
         @record.send("#{column.name}=", search_session_column_multi_select_values(column))
