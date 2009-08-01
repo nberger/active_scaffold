@@ -80,6 +80,7 @@ module ActiveScaffold
           ["#{column.search_sql} #{value['opt']} ?", value['from']]
         end
       end
+      alias_method :condition_for_email_type, :condition_for_string_type
       alias_method :condition_for_text_type, :condition_for_string_type
 
       def condition_for_datetime_type(column, value, like_pattern = nil)
@@ -104,18 +105,13 @@ module ActiveScaffold
 
       def condition_for_dhtml_calendar_type(column, value, like_pattern = nil)
         return nil if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.include?(value['opt'])
-        tmp_model = column.active_record_class.new
-        time_from = time_to = ""
-        if column.column.type == :datetime
-          time_from = " 00:00:00"
-          time_to = " 23:59:59"
-        end
         if value['opt'] == 'BETWEEN'
-          ["#{column.search_sql} BETWEEN ? AND ?", tmp_model.cast_to_date(value[:from]) + time_from, tmp_model.cast_to_date(value[:to]) + time_to]
+          ["#{column.search_sql} BETWEEN ? AND ?", value[:from], value[:to]]
         else
-          ["#{column.search_sql} #{value['opt']} ?", tmp_model.cast_to_date(value[:from]) + time_from]
+          ["#{column.search_sql} #{value['opt']} ?", value[:from]]
         end
       end
+      alias_method :condition_for_calendar_date_select_type, :condition_for_dhtml_calendar_type
 
       def condition_for_exact_type(column, value, like_pattern = nil)
         ["#{column.search_sql} = ?", value]
