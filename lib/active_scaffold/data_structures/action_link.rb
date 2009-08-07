@@ -4,7 +4,7 @@ module ActiveScaffold::DataStructures
     def initialize(action, options = {})
       # set defaults
       self.action = action.to_s
-      self.label = action.to_s
+      self.label = action # No .to_s here to preserve localization code in #label method, relies on it being a symbol for #as_ lookup
       self.confirm = false
       self.type = :table
       self.inline = true

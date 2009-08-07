@@ -250,7 +250,7 @@ module ActiveScaffold
       # = AST =
       # =======
       def nested_label(association)
-        as_(:nested_for_model, :nested_model => active_scaffold_config_for(association.klass).label, :parent_model => format_value(@record.to_label))
+        as_(:nested_for_model, :nested_model => active_scaffold_config_for(association.klass).label(:count => 2), :parent_model => format_value(@record.to_label))
       end
       
       def list_action_authorized?(link, record)
