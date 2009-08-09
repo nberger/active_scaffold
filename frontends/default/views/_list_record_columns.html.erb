@@ -1,6 +1,18 @@
+<% if active_scaffold_config.one_column_list %>
+<td class="<%#= column_class(column, column_value) %>" >
+<% end -%>
 <% active_scaffold_tools_list_columns.each do |column| %>
   <% column_value = get_column_value(record, column) -%>
+  <% unless active_scaffold_config.one_column_list %>
   <td class="<%= column_class(column, column_value) %>" >
+  <% end -%>
     <%= render_list_column(column_value, column, record) %>
+  <% if active_scaffold_config.one_column_list %>
+&nbsp;
+  <% else %>
   </td>
+  <% end -%>
+<% end -%>
+<% if active_scaffold_config.one_column_list %>
+</td>
 <% end -%>

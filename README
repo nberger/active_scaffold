@@ -13,7 +13,7 @@ This fork's variances from the core repository:
 		ActiveScaffold.set_defaults do |config| 
 			config.security.allowed_actions << :verify # Add your own actions to security
 			config.left_handed = true
-			config.one_column_list = true # you must supply your own _list_record_columns
+			config.one_column_list = true
 			config.upper_case_form_fields = true
 			config.secure_download_key = "DOWNLoadMyFileplease"
     	config.subform.layout = :horizontal # Specify your preferred subform layout
