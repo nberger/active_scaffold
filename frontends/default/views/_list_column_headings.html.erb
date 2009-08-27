@@ -3,19 +3,21 @@ sorting = active_scaffold_config.list.user.sorting
 sorting_stages = ['reset', 'ASC', 'DESC']
 default_sorting = active_scaffold_config.list.sorting
 default_sorting_stages = ['ASC', 'DESC']
+href = url_for(params_for(:action => :reset_search, :escape => false).delete_if{|k,v| k == 'search'})
+link_to_reset_filter = link_to_remote(as_(:filtered__click_to_reset),
+  { :url => href,
+    :method => :get,
+    :before => "addActiveScaffoldPageToHistory('#{href}', '#{params[:controller]}')",
+    :after => "$('#{loading_indicator_id(:action => :table)}').style.visibility = 'visible';",
+    :complete => "$('#{loading_indicator_id(:action => :table)}').style.visibility = 'hidden';",
+    :failure => "ActiveScaffold.report_500_response('#{active_scaffold_id}')",
+    :update => active_scaffold_content_id},
+  { :href => href }) if @filtered
+show_actions_column = active_scaffold_config.show_actions_column and active_scaffold_config.action_links.any? {|link| link.type == :record }  
 -%>
-<% if active_scaffold_config.left_handed and active_scaffold_config.action_links.any? {|link| link.type == :record } -%>
+<% if active_scaffold_config.left_handed and show_actions_column -%>
 <th class="actions">
-  <% href = url_for(params_for(:action => :reset_search, :escape => false).delete_if{|k,v| k == 'search'}) -%>
-  <%= link_to_remote(as_(:filtered__click_to_reset),
-    { :url => href,
-      :method => :get,
-      :before => "addActiveScaffoldPageToHistory('#{href}', '#{params[:controller]}')",
-      :after => "$('#{loading_indicator_id(:action => :table)}').style.visibility = 'visible';",
-      :complete => "$('#{loading_indicator_id(:action => :table)}').style.visibility = 'hidden';",
-      :failure => "ActiveScaffold.report_500_response('#{active_scaffold_id}')",
-      :update => active_scaffold_content_id},
-    { :href => href }) if @filtered %>
+  <%= link_to_reset_filter %>
 </th>
 <% end %>
 <% if active_scaffold_config.one_column_list %>
@@ -46,7 +48,8 @@ default_sorting_stages = ['ASC', 'DESC']
    </th>
   <% end -%>
 <% end -%>
-<% unless active_scaffold_config.left_handed %>
+<% if !active_scaffold_config.left_handed and show_actions_column -%>
 <th class="actions">
+  <%= link_to_reset_filter %>
 </th>
 <% end -%>

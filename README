@@ -1,10 +1,10 @@
 This fork's variances from the core repository:
 - Added Actions:
-	- :export - (csv) uses customized selection of columns and the filter setup in search action
-	- :print - (html, pdf)
-	- :refresh - an ajax refresh of the list
-	- :customize - list column customization
-	- :revision - supports acts_as_revisionable
+  - :export - (csv) uses customized selection of columns and the filter setup in search action
+  - :print - (html, pdf)
+  - :refresh - an ajax refresh of the list
+  - :customize - list column customization
+  - :revision - supports acts_as_revisionable
 - Includes render_component. No need to install another plugin.
 - Localization is supported per Rails example - not in the plugin. Only 'en-us.rb' is included in plugin.
 - Migration #timestamps includes: 
@@ -13,76 +13,77 @@ This fork's variances from the core repository:
   - lock_version
     - t.timestamps :lock_version => false # If you don't want lock_version field
 - Generator support
-	- script/generate active_scaffold user
+  - script/generate active_scaffold user
 - :config block additions
-		ActiveScaffold.set_defaults do |config| 
-			config.security.allowed_actions << :verify # Add your own actions to security
-			config.left_handed = true
-			config.one_column_list = true
-			config.upper_case_form_fields = true
-			config.secure_download_key = "DOWNLoadMyFileplease"
-    	config.subform.layout = :horizontal # Specify your preferred subform layout
-		end
-	- secure_download - support for putting your file repository somewhere other than public and allow secure download
-		- Supply a secure_download_key in config block (see above)
-		- In active_scaffold config block:
-			column#options = {:secure_download => true},
-		- In your model (if using file_column plugin):
-		  file_column :package, :root_path => File.join(RAILS_ROOT, 'files')
+    ActiveScaffold.set_defaults do |config| 
+      config.security.allowed_actions << :verify # Add your own actions to security
+      config.left_handed = true
+      config.one_column_list = true # suppress the grid look, in favor of a free format per row
+      config.upper_case_form_fields = true
+      config.secure_download_key = "DOWNLoadMyFileplease"
+      config.show_actions_column = false # hide the action columns
+      config.subform.layout = :horizontal # Specify your preferred subform layout
+    end
+  - secure_download - support for putting your file repository somewhere other than public and allow secure download
+    - Supply a secure_download_key in config block (see above)
+    - In active_scaffold config block:
+      column#options = {:secure_download => true},
+    - In your model (if using file_column plugin):
+      file_column :package, :root_path => File.join(RAILS_ROOT, 'files')
 - :field_search additions:
-	- Filter operators for other data types including 'BETWEEN' for:
-	 	#condition_for_string_type
-		#condition_for_dhtml_calendar_type
-		#condition_for_exact_type
-		#condition_for_record_select_type
-		#condition_for_multi_select_type
-	- js :failure action is populated
-	- Loading indicator support
-	- default params for like_pattern param on all helper methods
-	- rid of active_scaffold_search_multi_select in favor of active_scaffold_search_select
+  - Filter operators for other data types including 'BETWEEN' for:
+     #condition_for_string_type
+    #condition_for_dhtml_calendar_type
+    #condition_for_exact_type
+    #condition_for_record_select_type
+    #condition_for_multi_select_type
+  - js :failure action is populated
+  - Loading indicator support
+  - default params for like_pattern param on all helper methods
+  - rid of active_scaffold_search_multi_select in favor of active_scaffold_search_select
 - :list additions:
-	- Left or Right-handed format (see config block above)
-	- do_list_by_sql method - build your list with a sql statement
-	- Handle no_entries_message via t() method
-	- Stack user created row based actions - limits the width of action column
-	- Show that list is filtered by showing a link in column header of action column that allows for a quick reset.
-	- #make_available_method override method - specify in the model if value is available, useful when a field is dependent on other fields
-	- display and calculation formatters for:
-		- :usa_zip
-		- :usa_phone
-		- :usa_money
-		- :percentage
-		- :ssn
+  - Left or Right-handed format (see config block above)
+  - do_list_by_sql method - build your list with a sql statement
+  - Handle no_entries_message via t() method
+  - Stack user created row based actions - limits the width of action column
+  - Show that list is filtered by showing a link in column header of action column that allows for a quick reset.
+  - #make_available_method override method - specify in the model if value is available, useful when a field is dependent on other fields
+  - display and calculation formatters for:
+    - :usa_zip
+    - :usa_phone
+    - :usa_money
+    - :percentage
+    - :ssn
 - :create/:update additions:
-	- Exception handling in active_scaffold_input_for. It is nice to know you just messed something up in the config block.
-	- Just in case you want to use it in a wizard-like fashion - params[:wizard_controller] is preserved throughout
-	- :boolean types are treated as checkboxes by default
-	- All helper methods include - ,options = {})
-	- #form_ui => :hidden
-	- Force all fields to be UPPER_CASE or
-		column#options = {upper_case_form_fields => false}
-	- Support :horizontal or :vertical sub-forms
-	- ActiveRecord Error messages display at the top and the bottom of forms - just in case you have a really long form and the browser does not auto-scroll to show you the top of the form on submit.
-	- A few helpers:
-		- active_scaffold_add_existing_label and active_scaffold_add_existing_input
-		- remote_image_submit_tag
-		- :form_ui supports additional types of:
-			- :yes_no_radio
-			- :true_false_radio
-			- :usa_zip
-			- :usa_phone
-			- :usa_money
-		- client-side js formating for:
-			- :usa_zip
-			- :usa_phone
-			- :usa_money
-			- :percentage
-			- :ssn
+  - Exception handling in active_scaffold_input_for. It is nice to know you just messed something up in the config block.
+  - Just in case you want to use it in a wizard-like fashion - params[:wizard_controller] is preserved throughout
+  - :boolean types are treated as checkboxes by default
+  - All helper methods include - ,options = {})
+  - #form_ui => :hidden
+  - Force all fields to be UPPER_CASE or
+    column#options = {upper_case_form_fields => false}
+  - Support :horizontal or :vertical sub-forms
+  - ActiveRecord Error messages display at the top and the bottom of forms - just in case you have a really long form and the browser does not auto-scroll to show you the top of the form on submit.
+  - A few helpers:
+    - active_scaffold_add_existing_label and active_scaffold_add_existing_input
+    - remote_image_submit_tag
+    - :form_ui supports additional types of:
+      - :yes_no_radio
+      - :true_false_radio
+      - :usa_zip
+      - :usa_phone
+      - :usa_money
+    - client-side js formating for:
+      - :usa_zip
+      - :usa_phone
+      - :usa_money
+      - :percentage
+      - :ssn
 - Specify action links with a symbol or a string
 - SemanticAttribute integration - inspect column type and required-ness from SemanticAttribute
 - RecordSelect integration - I use it all the time so I make sure it works.
-		
-		
+    
+    
 **********************************************************************************
 ** For all documentation see the project website: http://www.ActiveScaffold.com **
 **********************************************************************************

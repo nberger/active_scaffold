@@ -29,8 +29,11 @@ module ActiveScaffold::Config
     cattr_accessor :one_column_list
     @@one_column_list = false
 
-		cattr_accessor :show_missing_translations
-		@@show_missing_translations = false
+    cattr_accessor :show_actions_column
+    @@show_actions_column = true
+
+    cattr_accessor :show_missing_translations
+    @@show_missing_translations = false
 
     # Secure download
     #  - requires encrypted_strings plugin
@@ -91,7 +94,9 @@ module ActiveScaffold::Config
       @columns << val.collect {|c| c.to_sym unless @columns[c.to_sym]}.compact
     end
 
+    attr_accessor :left_handed
     attr_accessor :one_column_list
+    attr_accessor :show_actions_column
 
     # lets you override the global ActiveScaffold frontend for a specific controller
     attr_accessor :frontend
@@ -133,7 +138,9 @@ module ActiveScaffold::Config
       # inherit the global frontend
       @frontend = self.class.frontend
       @theme = self.class.theme
+      @left_handed = self.class.left_handed
       @one_column_list = self.class.one_column_list
+      @show_actions_column = self.class.show_actions_column
 
       # inherit from the global set of action links
       @action_links = self.class.action_links.clone

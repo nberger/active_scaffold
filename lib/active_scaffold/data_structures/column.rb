@@ -20,7 +20,7 @@ module ActiveScaffold::DataStructures
     end
 
     # the display-name of the column. this will be used, for instance, as the column title in the table and as the field name in the form.
-    # if left alone it will utilize human_attribute_name which includes localization
+    # if left alone it will utilize human_attribute_name which includes localization for :scope => [:activerecord, :attributes]
     attr_writer :label
     def label(options = {:count => 1})
       # as_(@label, options)# || active_record_class.human_attribute_name(name.to_s)
