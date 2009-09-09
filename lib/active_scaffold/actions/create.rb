@@ -79,10 +79,10 @@ module ActiveScaffold::Actions
     end
 
     def constraints_for_nested_create
-      if params[:parent_column] && params[:parent_id]
+      if params[:parent_column] && params[:as_parent_id]
         @old_eid = params[:eid]
         @remove_eid = true
-        constraints = {params[:parent_column].to_sym => params[:parent_id]}
+        constraints = {params[:parent_column].to_sym => params[:as_parent_id]}
         params[:eid] = Digest::MD5.hexdigest(params[:parent_controller] + params[:controller].to_s + constraints.to_s)
         session["as:#{params[:eid]}"] = {:constraints => constraints}
       end

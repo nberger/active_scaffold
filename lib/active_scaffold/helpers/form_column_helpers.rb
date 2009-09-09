@@ -180,12 +180,9 @@ module ActiveScaffold
           raise ArgumentError, "record_select can only work against associations (and #{column.name} is not).  A common mistake is to specify the foreign key field (like :user_id), instead of the association (:user)."
         end
         remote_controller = active_scaffold_controller_for(column.association.klass).controller_path
-
-        # if the opposite association is a :belongs_to, then only show records that have not been associated yet
-        params = {:parent_id => @record.id, :parent_model => @record.class}
+        params = {:as_parent_id => @record.id, :parent_model => @record.class}
         
         # if the opposite association is a :belongs_to, then only show records that have not been associated yet
-        # robd 2008-06-29: is this code doing the right thing? doesn't seem to check :belongs_to...
         # in any case, could we encapsulate this code on column in a method like .singular_association?
         if [:has_one, :has_many].include?(column.association.macro)
           params.merge!({column.association.primary_key_name => ''})
@@ -367,7 +364,7 @@ module ActiveScaffold
           action = @record.id ? :update : :create
           return observe_field(id_name,
                       :frequency => 0.2,
-                      :url => {:action => column.options[:observe_method], :parent_id => @record.id}, 
+                      :url => {:action => column.options[:observe_method], :as_parent_id => @record.id}, 
                       :with => "Form.serialize('#{element_form_id(:action => action)}')+'&='" ) unless !column.options[:observe_restrict_actions].nil? and column.options[:observe_restrict_actions].include?(action)
         end
         ''

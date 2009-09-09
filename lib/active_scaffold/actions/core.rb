@@ -80,7 +80,7 @@ module ActiveScaffold::Actions
         params[:eid] = nil
         params[:parent_model] = nil
         params[:parent_column] = nil
-        params[:parent_id] = nil
+        params[:as_parent_id] = nil
       end
       redirect_to params_for(:action => "index")
     end
