@@ -16,7 +16,7 @@ module ActiveScaffold::Actions
           render(:partial => 'print_list', :layout => false)
         }
         type.pdf {
-          @html = render_to_string(:partial => "print_list", :layout => false)
+          @html = render_to_string(:partial => "print_list.html.erb", :layout => false)
           prawnto :prawn => {:page_layout => :landscape}, :inline => true
           render :layout => false
         }
