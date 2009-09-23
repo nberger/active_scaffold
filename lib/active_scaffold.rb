@@ -64,6 +64,7 @@ module ActiveScaffold
       # run the configuration
       @active_scaffold_config = ActiveScaffold::Config::Core.new(model_id)
       self.active_scaffold_config.configure &block if block_given?
+      self.active_scaffold_config._configure_sti unless self.active_scaffold_config.sti_children.nil?
       self.active_scaffold_config._load_action_columns
 =begin
 This does not work. If I use AR security methods on a model, a refresh on the list will cause a nil.include? error in Lead.authorized_for_read?->AR.method_missing->define_attribute_methods->create_time_zone_conversion_attribute on the current_user.permit?([:root, :super]) call.
@@ -103,6 +104,7 @@ This does not work. If I use AR security methods on a model, a refresh on the li
           end
         end
       end
+      self.active_scaffold_config._add_sti_create_links if self.active_scaffold_config.add_sti_create_links?
     end
 
     # Create the automatic column links. Note that this has to happen when configuration is *done*, because otherwise the Nested module could be disabled. Actually, it could still be disabled later, couldn't it?
