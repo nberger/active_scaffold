@@ -331,10 +331,16 @@ module ActiveScaffold
     
     module FormColumnHelpers
       def active_scaffold_input_country(column, options)
-        priority = ["United States"]
         select_options = {:prompt => as_(:_select_)}
         select_options.merge!(options)
-        country_select(:record, column.name, column.options[:priority] || priority, select_options, column.options)
+        if defined?(localized_country_select)
+          priority = column.options[:priority] || [:US]
+          html_options = options.merge(column.options.except(:priority))
+          localized_country_select(:record, column.name, priority, select_options, html_options)
+        else
+          priority = column.options[:priority] || ["United States"]
+          country_select(:record, column.name, priority, select_options, column.options)
+        end
       end
 
       def active_scaffold_input_usa_state(column, options)
