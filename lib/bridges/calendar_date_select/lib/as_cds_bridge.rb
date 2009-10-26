@@ -26,8 +26,18 @@ module ActiveScaffold
     module FormColumnHelpers
       def active_scaffold_input_calendar_date_select(column, options)
         options[:class] = "#{options[:class]} text-input".strip
+        if column.options.is_a?(Hash) && column.options[:update_column]
+          options[:name].match(/record(\w+)\[/)
+          scope = $1
+          url_params = {:action => 'render_field'}
+          url_params[:controller] = controller.class.active_scaffold_controller_for(@record.class).controller_path
+          parameters = "column=#{column.name}"
+          parameters << "&scope=#{scope}" if scope
+          options[:onchange] = " new Ajax.Request(#{url_for(url_params).to_json}, {parameters: '#{parameters}&value=' + this.value, method: 'get'});"
+        end
         calendar_date_select("record", column.name, options.merge(column.options))
-      end      
+      end
+      
     end
   end
 end
@@ -49,5 +59,7 @@ module ActiveScaffold
       alias_method_chain :active_scaffold_javascripts, :calendar_date_select
       
     end
+
+
   end
 end
