@@ -131,14 +131,14 @@ module ActiveScaffold
         link_to_function link_text, "e = #{options[:of]}; e.toggle(); this.innerHTML = (e.style.display == 'none') ? '#{as_(:show)}' : '#{as_(:hide)}'", :class => 'visibility-toggle'
       end
 
-      def render_action_link(link, url_options)
+      def render_action_link(link, url_options, link_html_options = {})
         url_options = url_options.clone
         url_options[:action] = link.action
         url_options[:controller] = link.controller if link.controller
         url_options.delete(:search) if link.controller and link.controller.to_s != params[:controller]
         url_options.merge! link.parameters if link.parameters
 
-        html_options = link.html_options.merge({:class => link.action})
+        html_options = link.html_options.merge({:class => link.action}).merge(link_html_options)
         if link.inline?
           # NOTE this is in url_options instead of html_options on purpose. the reason is that the client-side
           # action link javascript needs to submit the proper method, but the normal html_options[:method]

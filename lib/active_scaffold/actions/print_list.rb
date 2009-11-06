@@ -4,7 +4,7 @@ module ActiveScaffold::Actions
     include ActiveScaffold::Actions::PrintBase
 
     def self.included(base)
-      base.before_filter :print_list_authorized?, :only => [:print_list]
+      base.before_filter :print_list_authorized_filter, :only => [:print_list]
       base.before_filter :store_params_into_search_session_info
     end
 
@@ -32,6 +32,12 @@ module ActiveScaffold::Actions
     # You may override the method to customize.
     def print_list_authorized?
       authorized_for?(:action => :read)
+    end
+
+    private
+
+    def print_list_authorized_filter
+      raise ActiveScaffold::ActionNotAllowed unless print_list_authorized?
     end
     
   end

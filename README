@@ -42,6 +42,7 @@ This fork's variances from the core repository:
   - default params for like_pattern param on all helper methods
   - rid of active_scaffold_search_multi_select in favor of active_scaffold_search_select
 - :list additions:
+  - render_action_link has additional param link_html_options = {}. This allows for example the ease of performing window.open in the onclick and redisplay row in one action link - like reading pdf generated email in a new window and marking it as read.
   - Left or Right-handed format (see config block above)
   - do_list_by_sql method - build your list with a sql statement
   - Handle no_entries_message via t() method

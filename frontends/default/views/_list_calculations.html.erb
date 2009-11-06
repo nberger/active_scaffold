@@ -1,6 +1,9 @@
-<% display_class = ( @records.kind_of?(Array) ? @records.first : @records ) -%>
+<% 
+  display_class = ( @records.kind_of?(Array) ? @records.first : @records )
+  show_actions_column = active_scaffold_config.show_actions_column and active_scaffold_config.action_links.any? {|link| link.type == :record }  
+-%>
 <tr id="<%= active_scaffold_calculations_id %>" class="active-scaffold-calculations">
-  <% if active_scaffold_config.left_handed and active_scaffold_config.action_links.any? {|link| link.type == :record } -%>
+  <% if active_scaffold_config.left_handed and show_actions_column -%>
     <td class="actions">&nbsp;</td>
   <% end -%>
   <% active_scaffold_tools_list_columns.each do |column| -%>
@@ -26,8 +29,8 @@
                             number_with_delimiter(calculation.to_s)
                         end
                       end
-        _erbout.concat calculation.to_s
         -%>
+        <%= calculation.to_s %>
       <% else -%>
         &nbsp;
       <% end -%>

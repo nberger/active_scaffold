@@ -134,6 +134,7 @@ module ActiveScaffold
         end
         ["#{column.search_sql} in (?)", values]
       end
+      alias_method :condition_for_usa_state_type, :condition_for_multi_select_type
     end
     
     NumericComparators = [
@@ -247,7 +248,7 @@ module ActiveScaffold
       case joins_for_collection
       when String
         # If it is a string then the :joins_for_collection needs to include everything find_page needs including what may be in active_scaffold_habtm_joins
-        joins_for_collection
+        [ joins_for_collection ]
       when Array
         joins_for_collection + active_scaffold_habtm_joins
       else

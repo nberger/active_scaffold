@@ -1,7 +1,7 @@
 module ActiveScaffold::Actions
   module Refresh
     def self.included(base)
-      base.before_filter :refresh_authorized?
+      base.before_filter :refresh_authorized_filter, :only => [:index, :list]
     end
 
     def refresh

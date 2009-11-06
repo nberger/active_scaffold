@@ -10,10 +10,11 @@
         <div id="<%= active_scaffold_messages_id -%>">
           <%= render :partial => 'messages' %>
         </div>
-				<!-- I don't care for this mechanism -->
-        <!-- <p class="filtered-message" <%#= ' style="display:none;" ' unless @filtered %>>
-          <%#= as_(:filtered_message) %>
-        </p> -->
+        <% unless active_scaffold_config.show_actions_column %>
+        <p class="filtered-message" <%= ' style="display:none;" ' unless @filtered %>>
+          <%= @link_to_reset_filter %>
+        </p>
+        <% end %>
         <p id="<%= empty_message_id %>" class="empty-message" <%= ' style="display:none;" ' unless @page.items.empty? %>>
           <%= as_(:no_entries) %>
         </p>

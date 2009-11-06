@@ -1,9 +1,8 @@
-#TODO 2007-11-16 (EJM) Level=0 - Ignore lock_version
 module ActiveScaffold::Actions
   module Customize
     include ActiveScaffold::Actions::PrintBase
     def self.included(base)
-      base.before_filter :customize_authorized?, :only => [:customize]
+      base.before_filter :customize_authorized_filter, :only => [:customize]
       base.before_filter :store_custum_list
       base.before_filter :do_customize
     end
@@ -50,5 +49,11 @@ module ActiveScaffold::Actions
       end
     end
 
+    private
+
+    def customize_authorized_filter
+      link = active_scaffold_config.customize.link || active_scaffold_config.customize.class.link
+      raise ActiveScaffold::ActionNotAllowed unless self.send(link.security_method)
+    end
   end
 end

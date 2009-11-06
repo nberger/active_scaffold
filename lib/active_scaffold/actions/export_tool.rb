@@ -2,7 +2,7 @@ module ActiveScaffold::Actions
   module ExportTool
     include ActiveScaffold::Actions::PrintBase
     def self.included(base)
-      base.before_filter :export_tool_authorized?, :only => [:export_tool]
+      base.before_filter :export_tool_authorized_filter, :only => [:export_tool]
       base.before_filter :store_params_into_search_session_info
     end
     
@@ -37,5 +37,12 @@ module ActiveScaffold::Actions
     def export_tool_authorized?
       authorized_for?(:action => :read)
     end
+
+    private
+
+    def export_tool_authorized_filter
+      raise ActiveScaffold::ActionNotAllowed unless export_tool_authorized?
+    end
+    
   end
 end
