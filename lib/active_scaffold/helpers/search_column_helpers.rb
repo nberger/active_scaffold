@@ -50,7 +50,6 @@ module ActiveScaffold
       def active_scaffold_search_for(column)
         begin
           options = active_scaffold_search_options(column)
-          restore_column_value_from_search_session(column)
           
           # first, check if the dev has created an override for this specific field
           if override_search_field?(column)
@@ -269,26 +268,12 @@ module ActiveScaffold
         end   
       end
       
-      def restore_column_value_from_search_session(column)
-        begin
-          search_ui = column.search_ui || column.column.type
-          return if search_ui.nil?
-          value = @search_session_info[column.name] unless @search_session_info.nil?
-          # ActiveRecord is tooooo painful to make complex values work so we do it inside the html helper methods
-          return if column.association or value.is_a?(Hash) or value.is_a?(Array)
-          # To avoid column defaults in model we try to do an assignment to the column regardless
-          @record.send("#{column.name}=", value)
-        rescue   Exception => e
-          logger.error Time.now.to_s + "Sorry, we are not that smart yet. Attempted to restore search values to search fields but instead got -- #{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
-          # raise e
-        end
-      end
-
       def search_session_column_range_values(column)
         search_ui = column.search_ui || column.column.type
         return nil if @search_session_info.nil? or search_ui.nil?
         values = @search_session_info[column.name]
         return nil, nil, nil if values.blank?
+        return nil, values, nil unless values.is_a?(Array)
         return values[:opt], values[:from], values[:to]
       end
 

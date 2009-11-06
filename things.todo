@@ -1,5 +1,4 @@
 Check In:
-- add Finder#condition_for_usa_state_type, so that you don't have to specify #search_ui = :multi_select
 
 ========:
 = HIGH =:

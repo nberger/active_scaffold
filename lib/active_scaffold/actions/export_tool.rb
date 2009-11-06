@@ -3,7 +3,6 @@ module ActiveScaffold::Actions
     include ActiveScaffold::Actions::PrintBase
     def self.included(base)
       base.before_filter :export_tool_authorized_filter, :only => [:export_tool]
-      base.before_filter :store_params_into_search_session_info
     end
     
     def show_export_tool
