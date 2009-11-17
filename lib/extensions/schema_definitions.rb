@@ -4,7 +4,7 @@ module ActiveRecord
       def timestamps(*args)
         options = args.extract_options!
         lock_version = options.delete(:lock_version).nil?
-        deleted_at = options.delete(:deleted_at).nil?
+        deleted_at = options.delete(:deleted_at)
         column(:created_at, :datetime, options)
         column(:deleted_at, :datetime, options) if deleted_at
         column(:updated_at, :datetime, options)

@@ -1,8 +1,11 @@
 Check In:
-
 ========:
 = HIGH =:
 ========:
+- dhtm_history.js is causing the following in Safari:
+  Unmatched </head> encountered.  Ignoring tag.
+  fcra:31Extra <body> encountered.  Migrating attributes back to the original <body> element and ignoring the tag.
+
 - Fix AS localize
   - core.rb
     cattr_accessor :show_missing_translations
