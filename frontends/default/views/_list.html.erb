@@ -10,7 +10,7 @@
         <div id="<%= active_scaffold_messages_id -%>">
           <%= render :partial => 'messages' %>
         </div>
-        <% unless active_scaffold_config.show_actions_column %>
+        <% if !active_scaffold_config.show_actions_column and active_scaffold_config.list.show_search_reset %>
         <p class="filtered-message" <%= ' style="display:none;" ' unless @filtered %>>
           <%= @link_to_reset_filter %>
         </p>

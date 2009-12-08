@@ -3,7 +3,7 @@ module ActiveScaffold::Actions
     include ActiveScaffold::Search
     def self.included(base)
       base.before_filter :field_search_authorized_filter, :only => :show_search
-      base.before_filter :do_search
+      base.before_filter :do_search, :except => :reset_search
     end
 
     # FieldSearch uses params[:search] and not @record because search conditions do not always pass the Model's validations.
@@ -16,7 +16,7 @@ module ActiveScaffold::Actions
 
     def reset_search
       reset_search_session_info
-      update_table      
+      update_table
     end
     
     protected

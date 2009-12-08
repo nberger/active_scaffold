@@ -156,7 +156,7 @@ module ActiveScaffold
           html_options[:method] = link.method
         end
 
-        html_options[:confirm] = link.confirm if link.confirm?
+        html_options[:confirm] = as_(link.confirm) if link.confirm?
         html_options[:position] = link.position if link.position and link.inline?
         html_options[:class] += ' action' if link.inline?
         html_options[:popup] = true if link.popup?

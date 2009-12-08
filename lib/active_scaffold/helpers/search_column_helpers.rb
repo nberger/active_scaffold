@@ -164,7 +164,7 @@ module ActiveScaffold
       def active_scaffold_search_range(column, options)
         opt_value, from_value, to_value = search_session_column_range_values(column)
         html = []
-        select_options = [:string].include?(column.column.type) ? ActiveScaffold::Finder::StringComparators : ActiveScaffold::Finder::NumericComparators.collect {|comp| [as_(comp.titleize), comp]}
+        select_options = [:string].include?(column.column.type) ? ActiveScaffold::Finder::StringComparators.collect {|title, comp| [as_(title), comp]} : ActiveScaffold::Finder::NumericComparators.collect {|comp| [as_(comp), comp]}
         html << select_tag("#{options[:name]}[opt]",
               options_for_select(select_options, opt_value),
               :id => "#{options[:id]}_opt",

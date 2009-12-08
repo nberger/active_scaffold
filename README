@@ -9,7 +9,7 @@ This fork's variances from the core repository:
 - Localization is supported per Rails example - not in the plugin. Only 'en-us.rb' is included in plugin.
 - Migration #timestamps includes: 
   - deleted_at
-    - t.timestamps :deleted_at => false # If you don't want deleted_at field
+    - t.timestamps :deleted_at => true # If you want a deleted_at field
   - lock_version
     - t.timestamps :lock_version => false # If you don't want lock_version field
 - Generator support

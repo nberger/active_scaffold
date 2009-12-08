@@ -8,6 +8,8 @@ module ActiveScaffold::Config
       # inherit from global scope
       # full configuration path is: defaults => global table => local table
       @per_page = self.class.per_page
+      
+      @show_search_reset = true
 
       # originates here
       @sorting = ActiveScaffold::DataStructures::Sorting.new(@core.columns)
@@ -80,6 +82,8 @@ module ActiveScaffold::Config
     def always_show_search
       @always_show_search && !search_partial.blank?
     end
+    
+    attr_accessor :show_search_reset
     
     def search_partial
       return "search" if @core.actions.include?(:search)
