@@ -301,6 +301,8 @@ module ActiveScaffold
 
         def to_country_select_tag(priority_countries, options, html_options)
           html_options = html_options.stringify_keys
+          html_options['name'] = options[:name]
+          html_options['id'] = options[:id]
           add_default_name_and_id(html_options)
           value = value(object)
           content_tag("select",
@@ -313,6 +315,8 @@ module ActiveScaffold
 
         def to_usa_state_select_tag(priority_states, options, html_options)
           html_options = html_options.stringify_keys
+          html_options['name'] = options[:name]
+          html_options['id'] = options[:id]
           add_default_name_and_id(html_options)
           value = value(object) if method(:value).arity > 0
           if html_options[:name.to_s].include?('search')
@@ -327,10 +331,16 @@ module ActiveScaffold
     
     module FormColumnHelpers
       def active_scaffold_input_country(column, options)
-        priority = ["United States"]
         select_options = {:prompt => as_(:_select_)}
         select_options.merge!(options)
-        country_select(:record, column.name, column.options[:priority] || priority, select_options, column.options)
+        if defined?(localized_country_select)
+          priority = column.options[:priority] || [:US]
+          html_options = options.merge(column.options.except(:priority))
+          localized_country_select(:record, column.name, priority, select_options, html_options)
+        else
+          priority = column.options[:priority] || ["United States"]
+          country_select(:record, column.name, priority, select_options, column.options)
+        end
       end
 
       def active_scaffold_input_usa_state(column, options)
