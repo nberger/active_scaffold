@@ -23,6 +23,8 @@ module ActiveScaffold::Actions
     def export_tool
       do_print_list(active_scaffold_config.export_tool)
       active_scaffold_config.export_tool.delimiter = params[:delimiter]
+      # fastercsv doesn't work with a nil delimiter
+      active_scaffold_config.export_tool.delimiter = ',' if active_scaffold_config.export_tool.delimiter.empty?
       active_scaffold_config.export_tool.skip_header = params[:skip_header]
       response.headers['Cache-Control'] = 'max-age=60' # IE 6 needs this!
       response.headers['Content-Disposition'] = "attachment; filename=\"#{self.controller_name}.csv\""
