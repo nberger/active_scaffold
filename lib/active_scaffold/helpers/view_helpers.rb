@@ -199,7 +199,7 @@ module ActiveScaffold
       end
       
       def column_show_add_existing(column)
-        (!column.through_association? and options_for_association_count(column.association) > 0)
+        (column.allow_add_existing and !column.through_association? and options_for_association_count(column.association) > 0)
       end
       
       def column_show_add_new(column, associated, action)

@@ -56,6 +56,7 @@ This fork's variances from the core repository:
     - :percentage
     - :ssn
 - :create/:update additions:
+  - Column#allow_add_existing (Disable add existing controls on subform)
   - Exception handling in active_scaffold_input_for. It is nice to know you just messed something up in the config block.
   - Just in case you want to use it in a wizard-like fashion - params[:wizard_controller] is preserved throughout
   - :boolean types are treated as checkboxes by default

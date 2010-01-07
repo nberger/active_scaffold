@@ -51,7 +51,7 @@ module ActiveScaffold
           # second, check if the dev has specified a valid form_ui for this column
           elsif column.form_ui and override_input?(column.form_ui)
             html = send(override_input(column.form_ui), column, options)
-            html << active_scaffold_observe(column, options[:id])
+            html << active_scaffold_observe(column, scope, options)
             html
           # fallback: we get to make the decision
           else
@@ -73,7 +73,7 @@ module ActiveScaffold
                 html = input(:record, column.name, options.merge(column.options))
               end
             end
-            html << active_scaffold_observe(column, options[:id])
+            html << active_scaffold_observe(column, scope, options)
             html
           end
         rescue Exception => e
@@ -100,13 +100,20 @@ module ActiveScaffold
         options[:class] ||= "#{column.name}-input"
         name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
 
-        # Fix for keeping unique IDs in subform
-        id_control = "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"
-        id_control += scope.gsub(/(\[|\])/, '_').gsub('__', '_').gsub(/_$/, '') if scope
+        id_control = active_scaffold_id_control(column, scope)
+        # # Fix for keeping unique IDs in subform
+        # id_control = "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"
+        # id_control += scope.gsub(/(\[|\])/, '_').gsub('__', '_').gsub(/_$/, '') if scope
 
         { :name => name, :id => id_control}.merge(options)
       end
 
+      def active_scaffold_id_control(column, scope = nil)
+        # Fix for keeping unique IDs in subform
+        id_control = "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"
+        id_control += scope.gsub(/(\[|\])/, '_').gsub('__', '_').gsub(/_$/, '') if scope
+      end
+      
       def javascript_for_update_column(column, scope, options)
         if column.options.is_a?(Hash) && column.options[:update_column]
           url_params = {:action => 'render_field', :id => @record.id}
@@ -359,12 +366,15 @@ module ActiveScaffold
         end
       end
 
-      def active_scaffold_observe(column, id_name)
+      def active_scaffold_observe(column, scope = nil, options = {})
         if column.options[:observe_method]
           action = @record.id ? :update : :create
-          return observe_field(id_name,
+          action = :update
+          href_options = {:action => column.options[:observe_method], :id => @record.id, :as_parent_id => params[:id], :scope => scope}
+          href_options[:controller] = column.options[:observe_controller] if column.options[:observe_controller]
+          return observe_field(active_scaffold_id_control(column, scope),
                       :frequency => 0.2,
-                      :url => {:action => column.options[:observe_method], :as_parent_id => @record.id}, 
+                      :url => params_for(href_options), 
                       :with => "Form.serialize('#{element_form_id(:action => action)}')+'&='" ) unless !column.options[:observe_restrict_actions].nil? and column.options[:observe_restrict_actions].include?(action)
         end
         ''
