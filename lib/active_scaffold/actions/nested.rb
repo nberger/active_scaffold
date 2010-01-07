@@ -64,7 +64,7 @@ module ActiveScaffold::Actions
         active_scaffold_config.action_links.add('new_existing', :label => :add_existing, :type => :table, :security_method => :add_existing_authorized?) unless active_scaffold_config.action_links['new_existing']
         if active_scaffold_config.nested.shallow_delete
           active_scaffold_config.action_links.add('destroy_existing', :label => :remove, :type => :record, :confirm => 'are_you_sure', :method => :delete, :position => false, :security_method => :delete_existing_authorized?) unless active_scaffold_config.action_links['destroy_existing']
-          active_scaffold_config.action_links.delete("destroy") if active_scaffold_config.action_links['destroy']
+          active_scaffold_config.action_links.delete("delete") if active_scaffold_config.action_links['delete']
         end
       else
         # Production mode is caching this link into a non nested scaffold
@@ -72,7 +72,7 @@ module ActiveScaffold::Actions
         
         if active_scaffold_config.nested.shallow_delete
           active_scaffold_config.action_links.delete("destroy_existing") if active_scaffold_config.action_links['destroy_existing']
-          active_scaffold_config.action_links.add('destroy', :label => :delete, :type => :record, :confirm => 'are_you_sure', :method => :delete, :position => false, :security_method => :delete_authorized?) unless active_scaffold_config.action_links['destroy']
+          active_scaffold_config.action_links.add(ActiveScaffold::Config::Delete.link) unless active_scaffold_config.action_links['delete']
         end
         
       end
@@ -191,6 +191,13 @@ module ActiveScaffold::Actions::Nested
       render :text => successful? ? "" : response_object.to_yaml, :content_type => Mime::YAML, :status => response_status
     end
 
+    def add_existing_authorized?
+      true
+    end
+    def delete_existing_authorized?
+      true
+    end
+ 
     def after_create_save(record)
       if params[:association_macro] == :has_and_belongs_to_many
         params[:associated_id] = record

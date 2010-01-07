@@ -67,22 +67,23 @@ module ActiveScaffold::Config
       @label ? as_(@label, :count => :many) : @core.label(:count => :many)
     end
 
-    # We are handling these via as_() and localization
-    # attr_writer :no_entries_message
-    # def no_entries_message
-    #   @no_entries_message ? as_(@no_entries_message) : 'No Entries'
-    # end
-    # 
-    # attr_writer :filtered_message
-    # def filtered_message
-    #   @filtered_message ? as_(@filtered_message) : :filtered
-    # end
+    # EJM - We are handling these via as_() and localization - see list.html.erb
+    attr_writer :no_entries_message
+    def no_entries_message
+      @no_entries_message ? as_(@no_entries_message) : 'No Entries'
+    end
+
+    attr_writer :filtered_message
+    def filtered_message
+      @filtered_message ? as_(@filtered_message) : 'Filtered List'
+    end
     
     attr_writer :always_show_search
     def always_show_search
       @always_show_search && !search_partial.blank?
     end
     
+    # EJM - My doing
     attr_accessor :show_search_reset
     
     def search_partial

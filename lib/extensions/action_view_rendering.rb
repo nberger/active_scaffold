@@ -52,8 +52,7 @@ module ActionView #:nodoc:
         constraints = options[:constraints]
         conditions = options[:conditions]
         eid = Digest::MD5.hexdigest(params[:controller] + remote_controller.to_s + constraints.to_s + conditions.to_s)
-        as_session = session['active_scaffold'] ||= {}
-        as_session[eid] = {:constraints => constraints, :conditions => conditions, :list => {:label => args.first[:label]}}
+        session["as:#{eid}"] = {:constraints => constraints, :conditions => conditions, :list => {:label => args.first[:label]}}
         options[:params] ||= {}
         options[:params].merge! :eid => eid
 
@@ -75,9 +74,11 @@ module ActionView #:nodoc:
     # This is the template finder logic, keep it updated with however we find stuff in rails
     # currently this very similar to the logic in ActionBase::Base.render for options file
     # TODO: Work with rails core team to find a better way to check for this.
-    def template_exists?(template_name)
+    def template_exists?(template_name, lookup_overrides = false)
       begin
-        self.view_paths.find_template_without_active_scaffold(template_name, @template_format)
+        method = 'find_template'
+        method << '_without_active_scaffold' unless lookup_overrides
+        self.view_paths.send(method, template_name, @template_format)
         return true
       rescue ActionView::MissingTemplate => e
         return false
