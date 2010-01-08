@@ -29,21 +29,9 @@ module ActiveScaffold
   def active_scaffold_session_storage
     id = params[:eid] || params[:controller]
     session_index = "as:#{id}"
-    # AST support reset_active_scaffold_session
-    as_session = session['active_scaffold'] ||= {}
-    as_session[session_index] ||= {}
-    as_session[session_index]
-    # AST end
+    session[session_index] ||= {}
+    session[session_index]
   end
-
-  # AST Begin
-  def reset_active_scaffold_session
-    id = params[:eid] || params[:controller]
-    session_index = "as:#{id}"
-    as_session = session['active_scaffold'] ||= {}
-    as_session.delete_if {|key, value| session_index != key}
-  end
-  # AST end
 
   # at some point we need to pass the session and params into config. we'll just take care of that before any particular action occurs by passing those hashes off to the UserSettings class of each action.
   def handle_user_settings
@@ -78,6 +66,7 @@ module ActiveScaffold
       self.active_scaffold_config.configure &block if block_given?
       self.active_scaffold_config._configure_sti unless self.active_scaffold_config.sti_children.nil?
       self.active_scaffold_config._load_action_columns
+
       # defines the attribute read methods on the model, so record.send() doesn't find protected/private methods instead
       klass = self.active_scaffold_config.model
       klass.define_attribute_methods unless klass.generated_methods?

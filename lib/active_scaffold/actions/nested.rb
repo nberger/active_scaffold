@@ -95,7 +95,6 @@ module ActiveScaffold::Actions
     end
 
     def nested_association
-      ActiveRecord::Base.logger.debug ">>>>>>>>nested.rb:98: active_scaffold_constraints.keys = #{active_scaffold_constraints.keys.pretty_inspect}"
       return active_scaffold_constraints.keys.to_s.to_sym if nested?
       nil
     end

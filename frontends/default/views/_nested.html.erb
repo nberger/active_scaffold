@@ -32,7 +32,7 @@
       rescue ActiveScaffold::ControllerNotFound => error
         concat "#{error.class} - #{error.message}"
       else
-		# AST wizard_controller and active_record.name works better
+        # AST wizard_controller and active_record.name works better
         concat render(:active_scaffold => controller.controller_path,
           :constraints => @constraints,
           :conditions => association.options[:conditions],
