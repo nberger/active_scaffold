@@ -131,6 +131,38 @@ module ActiveScaffold
       alias_method :active_scaffold_search_decimal, :active_scaffold_search_integer
       alias_method :active_scaffold_search_float, :active_scaffold_search_integer
 
+      # AST Begin
+      def search_session_column_range_values(column)
+        search_ui = column.search_ui || column.column.type
+        return nil if @search_session_info.nil? or search_ui.nil?
+        values = @search_session_info[column.name]
+        return nil, nil, nil if values.blank?
+        return nil, values, nil unless values.is_a?(Array)
+        return values[:opt], values[:from], values[:to]
+      end
+
+      def active_scaffold_search_range(column, options)
+        opt_value, from_value, to_value = search_session_column_range_values(column)
+        html = []
+        select_options = [:string].include?(column.column.type) ? ActiveScaffold::Finder::StringComparators : ActiveScaffold::Finder::NumericComparators.collect {|comp| [as_(comp.titleize), comp]}
+        html << select_tag("#{options[:name]}[opt]",
+              options_for_select(select_options, opt_value),
+              :id => "#{options[:id]}_opt",
+              :onchange => "Element[this.value == 'BETWEEN' ? 'show' : 'hide']('#{options[:id]}_between');")
+        html << text_field_tag("#{options[:name]}[from]", from_value, active_scaffold_input_text_options(:id => options[:id], :size => 10))
+        html << content_tag(:span, ' - ' + text_field_tag("#{options[:name]}[to]", to_value,
+              active_scaffold_input_text_options(:id => "#{options[:id]}_to", :size => 10)),
+              :id => "#{options[:id]}_between", :style => to_value.blank? ? "display:none" : "")
+        html * ' '
+      end
+      alias_method :active_scaffold_search_integer, :active_scaffold_search_range
+      alias_method :active_scaffold_search_decimal, :active_scaffold_search_range
+      alias_method :active_scaffold_search_float, :active_scaffold_search_range
+      alias_method :active_scaffold_search_usa_money, :active_scaffold_search_range
+      alias_method :active_scaffold_search_string, :active_scaffold_search_range
+      alias_method :active_scaffold_search_text, :active_scaffold_search_range
+      # AST End
+
       def active_scaffold_search_datetime(column, options)
         options = column.options.merge(options)
         helper = "select_#{'date' unless options[:discard_date]}#{'time' unless options[:discard_time]}"

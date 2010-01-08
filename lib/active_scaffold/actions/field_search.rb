@@ -17,7 +17,6 @@ module ActiveScaffold::Actions
 
     # AST begin
     def reset_search
-      reset_search_session_info
       update_table
     end
     # AST end
@@ -50,7 +49,7 @@ module ActiveScaffold::Actions
         active_scaffold_config.list.user.page = nil
       end
 =end
-      store_params_into_search_session_info
+      (params[:action] == 'reset_search') ? reset_search_session_info : store_params_into_search_session_info
       unless search_session_info.empty?
         like_pattern = active_scaffold_config.field_search.full_text_search? ? '%?%' : '?%'
         search_conditions = []
