@@ -7,24 +7,26 @@ module ActiveScaffold
       def active_scaffold_search_for(column)
         options = active_scaffold_search_options(column)
 
-        # first, check if the dev has created an override for this specific field for search
+        # check if the dev has created an override for this specific field for search
         if override_search_field?(column)
           # AST - I like column and options as params
           send(override_search_field(column), @record, column, options)
 
-        # first, check if the dev has created an override for this specific field
-        elsif override_form_field?(column)
-          # AST - I like column and options as params
-          send(override_form_field(column), @record, column, options)
-
-        # second, check if the dev has specified a valid search_ui for this column, using specific ui for searches
+        # check if the dev has specified a valid search_ui for this column, using specific ui for searches
         elsif column.search_ui and override_search?(column.search_ui)
           send(override_search(column.search_ui), column, options)
 
-        # third, check if the dev has specified a valid search_ui for this column, using generic ui for forms
+        # check if the dev has specified a valid search_ui for this column, using generic ui for forms
         elsif column.search_ui and override_input?(column.search_ui)
           send(override_input(column.search_ui), column, options)
 
+        # AST - my prefered order
+        # check if the dev has created an override for this specific field
+        elsif override_form_field?(column)
+          # AST - I like column and options as params
+          send(override_form_field(column), @record, column, options)
+        # AST End 
+        
         # fallback: we get to make the decision
         else
           if column.association or column.virtual?
@@ -58,6 +60,9 @@ module ActiveScaffold
       ##
 
       def active_scaffold_search_multi_select(column, options)
+        # AST not a big fan of checkboxes
+        return active_scaffold_search_select(column, options.merge(:multiple => true), select_options)
+        # AST End
         associated_options = @record.send(column.association.name).collect {|r| [r.to_label, r.id]}
         select_options = associated_options | options_for_association(column.association, true)
         return as_(:no_options) if select_options.empty?
@@ -111,7 +116,11 @@ module ActiveScaffold
         select_options << [as_(:true), true]
         select_options << [as_(:false), false]
 
-        select_tag(options[:name], options_for_select(select_options, @record.send(column.name)))
+        # AST Begin
+        value = @record.send(column.name)
+        value = value.blank? ? nil : (value ? 1 : 0)
+        select_tag(options[:name], options_for_select(select_options, value))
+        # AST End
       end
       # we can't use checkbox ui because it's not possible to decide whether search for this field or not
       alias_method :active_scaffold_search_checkbox, :active_scaffold_search_boolean
@@ -144,7 +153,8 @@ module ActiveScaffold
       def active_scaffold_search_range(column, options)
         opt_value, from_value, to_value = search_session_column_range_values(column)
         html = []
-        select_options = [:string].include?(column.column.type) ? ActiveScaffold::Finder::StringComparators : ActiveScaffold::Finder::NumericComparators.collect {|comp| [as_(comp.titleize), comp]}
+        # AST - give StringComparators labels
+        select_options = [:string].include?(column.column.type) ? ActiveScaffold::Finder::StringComparators.collect {|title, comp| [as_(title), comp]} : ActiveScaffold::Finder::NumericComparators.collect {|comp| [as_(comp), comp]}
         html << select_tag("#{options[:name]}[opt]",
               options_for_select(select_options, opt_value),
               :id => "#{options[:id]}_opt",
@@ -161,6 +171,91 @@ module ActiveScaffold
       alias_method :active_scaffold_search_usa_money, :active_scaffold_search_range
       alias_method :active_scaffold_search_string, :active_scaffold_search_range
       alias_method :active_scaffold_search_text, :active_scaffold_search_range
+      
+      def active_scaffold_search_dhtml_calendar(column, options)
+        opt_value, from_value, to_value = search_session_column_range_values(column)
+        id_name = options[:id]
+        html = []
+        html << select_tag("#{options[:name]}[opt]",
+              options_for_select(ActiveScaffold::Finder::NumericComparators.collect {|comp| [as_(comp.titleize), comp]}, opt_value),
+              :id => "#{id_name}_opt",
+              :onchange => "Element[this.value == 'BETWEEN' ? 'show' : 'hide']('#{id_name}_between');")
+        options = {:name => "#{options[:name]}[from]", :help_string => "", :class => "range-input"}.merge(active_scaffold_input_text_options(:id => "#{id_name}_from", :size => 10))
+        options[:value] = nil
+        options[:value] = from_value
+        html << active_scaffold_input_calendar_date_select(column, options)
+        options[:value] = nil
+        options[:value] = to_value
+        options[:name].gsub!('[from]', '[to]')
+        options[:id].gsub!('_from', '_to')
+        html << content_tag(:span, ' - ' + active_scaffold_input_calendar_date_select(column, options),
+                          :id => "#{id_name}_between", :style => to_value.blank? ? "display:none" : "")
+        html * ' '
+      end
+      alias_method :active_scaffold_search_calendar_date_select, :active_scaffold_search_dhtml_calendar
+
+      def active_scaffold_search_usa_state(column, options)
+        @record.send("#{column.name}=", search_session_column_multi_select_values(column))
+        select_options = options
+        select_options.delete(:size)
+        options.delete([:prompt, :priority])
+        usa_state_select(:record, column.name, column.options[:priority], select_options, column.options.merge!(options))
+      end
+
+      def active_scaffold_search_record_select(column, options)
+        begin
+          value = @search_session_info[column.name] unless @search_session_info.nil?
+          if column.plural_association?
+            value.collect! {|id|  Float(id) rescue nil ? id.to_i : id}.flatten if value
+            @record.send("#{column.name}=", column.association.klass.find(value)) if value
+          else
+            if value.blank?
+              value = nil
+            else
+              value = Float(value) rescue nil ? value.to_i : value
+              value = column.association.klass.find(value)
+            end
+            @record.send("#{column.name}=", value)
+          end
+        rescue   Exception => e
+          logger.error Time.now.to_s + "Sorry, we are not that smart yet. Attempted to restore search values to search fields but instead got -- #{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
+          raise e
+        end
+
+        unless column.association
+          raise ArgumentError, "record_select can only work against associations (and #{column.name} is not).  A common mistake is to specify the foreign key field (like :user_id), instead of the association (:user)."
+        end
+        remote_controller = File.join('/', active_scaffold_controller_for(column.association.klass).controller_path)
+
+        # if the opposite association is a :belongs_to, then only show records that have not been associated yet
+        params = {:parent_model => @record.class}
+
+        record_select_options = {:controller => remote_controller, :id => options[:id], :params => params}
+        record_select_options.merge!(active_scaffold_input_text_options)
+        record_select_options.merge!(column.options)
+
+        if column.singular_association?
+          record_select_field(options[:name], (@record.send(column.name) || column.association.klass.new), record_select_options)
+        elsif column.plural_association?
+          record_multi_select_field(options[:name], @record.send(column.name), record_select_options)
+        end   
+      end
+      
+      def search_session_column_multi_select_values(column)
+        begin
+          value = @search_session_info[column.name] unless @search_session_info.nil?
+          if value.is_a?(Hash)
+            value = Float(value[:id]) rescue nil ? value[:id].to_i : value[:id] if value.has_key?(:id)
+          else
+            value.collect! {|id|  Float(id) rescue nil ? id.to_i : id}.flatten if value
+          end
+          value
+        rescue   Exception => e
+          logger.error Time.now.to_s + "Sorry, we are not that smart yet. Attempted to restore search values to search fields but instead got -- #{e.inspect} -- on the ActiveScaffold column = :#{column.name} in #{@controller.class}"
+          # raise e
+        end
+      end
+
       # AST End
 
       def active_scaffold_search_datetime(column, options)
