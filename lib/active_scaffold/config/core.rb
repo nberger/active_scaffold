@@ -173,6 +173,34 @@ module ActiveScaffold::Config
       end
     end
 
+    # To be called after your finished configuration
+    def _configure_sti
+      column = self.model.inheritance_column
+      if sti_create_links
+        self.columns[column].form_ui ||= :hidden
+      else
+        self.columns[column].form_ui ||= :select
+        self.columns[column].options ||= {}
+        self.columns[column].options[:options] = self.sti_children.collect do |model_name|
+          [model_name.to_s.camelize.constantize.human_name, model_name.to_s.camelize]
+        end
+      end
+    end
+
+    # To be called after include action modules
+    def _add_sti_create_links
+      new_action_link = @action_links['new']
+      unless new_action_link.nil?
+        @action_links.delete('new')
+        self.sti_children.each do |child| 
+          new_sti_link = Marshal.load(Marshal.dump(new_action_link)) # deep clone
+          new_sti_link.label = as_(:create_model, :model => child.to_s.camelize.constantize.human_name)
+          new_sti_link.parameters = {model.inheritance_column => child}
+          @action_links.add(new_sti_link)
+        end
+      end
+    end
+
     # configuration routing.
     # we want to route calls named like an activated action to that action's global or local Config class.
     # ---------------------------

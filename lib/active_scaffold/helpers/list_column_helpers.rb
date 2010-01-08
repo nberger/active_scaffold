@@ -349,48 +349,39 @@ module ActiveScaffold
     end
   end
   # AST Begin
-      # =======
-      # = AST =
-      # =======
-      def nested_label(association)
-        as_(:nested_for_model, :nested_model => active_scaffold_config_for(association.klass).label(:count => 2), :parent_model => format_value(@record.to_label))
-      end
-      
-      def list_action_authorized?(link, record)
-       !(controller.respond_to?(link.security_method) and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, link)))) and record.authorized_for?(:action => link.crud_type)
-      end
-      
-      def active_scaffold_column_percentage(column, record)
-        number_to_percentage(record.send(column.name).to_s, :precision => 1)
-      end
+  def nested_label(association)
+    as_(:nested_for_model, :nested_model => active_scaffold_config_for(association.klass).label(:count => 2), :parent_model => format_value(@record.to_label))
+  end
+  
+  def active_scaffold_column_percentage(column, record)
+    number_to_percentage(record.send(column.name).to_s, :precision => 1)
+  end
 
-      def active_scaffold_column_ssn(column, record)
-        if record.respond_to?("#{column.name}_for_human")
-          record.send("#{column.name}_for_human")
-        else
-          usa_number_to_ssn(record.send(column.name).to_s)
-        end
-      end
+  def active_scaffold_column_ssn(column, record)
+    if record.respond_to?("#{column.name}_for_human")
+      record.send("#{column.name}_for_human")
+    else
+      usa_number_to_ssn(record.send(column.name).to_s)
+    end
+  end
 
-      def active_scaffold_column_usa_money(column, record)
-        number_to_currency(record.send(column.name).to_s)
-      end
+  def active_scaffold_column_usa_money(column, record)
+    number_to_currency(record.send(column.name).to_s)
+  end
 
-      def active_scaffold_column_phone_number(column, record)
-        if record.respond_to?("#{column.name}_for_human")
-          record.send("#{column.name}_for_human")
-        else
-          usa_number_to_phone(record.send(column.name).to_s)
-        end
-      end
+  def active_scaffold_column_phone_number(column, record)
+    if record.respond_to?("#{column.name}_for_human")
+      record.send("#{column.name}_for_human")
+    else
+      usa_number_to_phone(record.send(column.name).to_s)
+    end
+  end
 
-      def active_scaffold_column_usa_zip_code(column, record)
-        if record.respond_to?("#{column.name}_for_human")
-          record.send("#{column.name}_for_human")
-        else
-          usa_number_to_zip(record.send(column.name).to_s)
-        end
-      end
+  def active_scaffold_column_usa_zip_code(column, record)
+    if record.respond_to?("#{column.name}_for_human")
+      record.send("#{column.name}_for_human")
+    else
+      usa_number_to_zip(record.send(column.name).to_s)
     end
   end
   # AST End

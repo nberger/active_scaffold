@@ -5,9 +5,9 @@
 <%=
 if request.xhr?
   if active_scaffold_config.create.multipart? # file_uploads
-    <!-- AST Begin -->
+    # AST Begin
     submit_options = {:onclick => "$('#{loading_indicator_id(:action => :create, :id => params[:id])}').style.visibility = 'visible';this.form.submit();"}
-    <!-- AST End -->  
+    # AST End  
     form_remote_upload_tag url_options.merge({:iframe => true}),
                            :onsubmit => onsubmit,
                            :id => element_form_id(:action => :create),

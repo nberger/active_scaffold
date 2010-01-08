@@ -16,7 +16,6 @@
         </td>
       <!-- AST Begin -->
       <% else %>
-        <% next unless list_action_authorized?(link, record) %>
         <% html_actions << render_action_link(link, url_options) %>
       <% end %>
     <% end -%>

@@ -10,7 +10,8 @@ module ActiveScaffold
         options = javascript_for_update_column(column, scope, options)
         # first, check if the dev has created an override for this specific field
         if override_form_field?(column)
-          send(override_form_field(column), @record, options[:name])
+          # AST - I like column and options as params
+          send(override_form_field(column), @record, column, options)
         # second, check if the dev has specified a valid form_ui for this column
         elsif column.form_ui and override_input?(column.form_ui)
           send(override_input(column.form_ui), column, options)
@@ -337,136 +338,134 @@ module ActiveScaffold
     end
   end
   # AST Begin
-      def active_scaffold_add_existing_input(options)
-        if controller.respond_to?(:record_select_config)
-          remote_controller = active_scaffold_controller_for(record_select_config.model).controller_path
-          record_select_options = {:controller => remote_controller, :params => {:parent_model => record_select_config.model}}
-          record_select_options.merge!(active_scaffold_input_text_options)
-          record_select_field(options[:name], @record, record_select_options)
-          # record_select_field(
-          #   "#{options[:name]}",
-          #   active_scaffold_config.model.new,
-          #   {:controller => remote_controller, :params => options[:url_options].merge(:parent_model => record_select_config.model)}.merge(active_scaffold_input_text_options))        
-        else
-          # select_options = options_for_select(options_for_association(nested_association)) unless column.through_association?
-          select_options ||= options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
-          unless select_options.empty?
-            select_tag 'associated_id', '<option value="">' + as_(:_select_) + '</option>' + select_options
-          end  
-        end
-      end
-
-      def active_scaffold_add_existing_label
-        if controller.respond_to?(:record_select_config)
-          record_select_config.model.to_s.underscore.humanize
-        else
-          active_scaffold_config.model.to_s.underscore.humanize
-        end
-      end
-
-      def active_scaffold_observe(column, scope = nil, options = {})
-        if column.options[:observe_method]
-          action = @record.id ? :update : :create
-          action = :update
-          href_options = {:action => column.options[:observe_method], :id => @record.id, :as_parent_id => params[:id], :scope => scope}
-          href_options[:controller] = column.options[:observe_controller] if column.options[:observe_controller]
-          return observe_field(active_scaffold_id_control(column, scope),
-                      :frequency => 0.2,
-                      :url => params_for(href_options), 
-                      :with => "Form.serialize('#{element_form_id(:action => action)}')+'&='" ) unless !column.options[:observe_restrict_actions].nil? and column.options[:observe_restrict_actions].include?(action)
-        end
-        ''
-      end
-
-      def active_scaffold_input_hidden(column, options)
-        input(:record, column.name, options.merge(:type => :hidden))
-      end
-
-      def active_scaffold_input_ssn(column, options)
-        column.description ||= as_(:ssn_example)
-        options = active_scaffold_input_text_options(options)
-        if @record.respond_to?("#{column.name}_for_human")
-          value = @record.send("#{column.name}_for_human")
-        else
-          value = usa_number_to_ssn(@record.send(column.name).to_s)
-        end
-        text_field :record, column.name, options.merge(
-                      :value => value,
-                      :onblur => "SsnDashAdd(this);return true;")
-      end
-      alias active_scaffold_input_social_security_number active_scaffold_input_ssn
-      
-      def active_scaffold_input_timezone(column, options)
-        time_zone_select(:record, column.name)
-      end
-
-      def active_scaffold_input_percentage(column, options)
-        column.description ||= as_(:percentage_example)
-        options[:onblur] ||= "PercentageFormat(this);return true;"
-        options = active_scaffold_input_text_options(options)
-        text_field :record, column.name, options.merge(:value => number_to_percentage(@record.send(column.name).to_s, :precision => 1))
-      end
-
-      # :usa_money requires some type casting help like the following in your Model
-      #
-      # def write_attribute(attr, value)
-      #   if column_for_attribute(attr).precision
-      #    value = BigDecimal(value.gsub(",", "").gsub("$", "")) if value.is_a?(String)
-      #   end
-      #   super
-      # end
-      def active_scaffold_input_usa_money(column, options)
-        column.description ||= as_(:usa_money_example)
-        options[:onblur] ||= "UsaMoney(this);return true;"
-        value = number_to_currency(@record.send(column.name).to_s) unless options[:blank_if_nil] == true
-        value ||= ""
-        options = active_scaffold_input_text_options(options)
-        text_field :record, column.name, options.merge(:value => value)
-      end
-
-      def active_scaffold_input_phone_number(column, options)
-        column.description ||= as_(:phone_example)
-        options[:onblur] ||= "PhoneDashAdd(this);return true;"
-        options = active_scaffold_input_text_options(options)
-        if @record.respond_to?("#{column.name}_for_human")
-          value = @record.send("#{column.name}_for_human")
-        else
-          value = usa_number_to_phone(@record.send(column.name).to_s)
-        end
-        text_field :record, column.name, options.merge(:value => value)
-      end
-
-      def active_scaffold_input_usa_zip_code(column, options)
-        column.description ||= as_(:usa_zip_example)
-        options[:onblur] ||= "UsaZipDashAdd(this);return true;"
-        options = active_scaffold_input_text_options(options)
-        if @record.respond_to?("#{column.name}_for_human")
-          value = @record.send("#{column.name}_for_human")
-        else
-          value = usa_number_to_zip(@record.send(column.name).to_s)
-        end
-        text_field :record, column.name, options.merge(:value => value)
-      end
-
-      def active_scaffold_input_yes_no_radio(column, options)
-        render :partial => '/yes_no_radio', :locals => {:column_name => column.name, :options => options}
-      end
-
-      def active_scaffold_input_true_false_radio(column, options)
-        render :partial => '/true_false_radio', :locals => {:column_name => column.name, :options => options, :question_text => column.description, :question_type => :yes_or_no}
-      end
-
-      def remote_image_submit_tag(source, options)
-        options[:with] ||= 'Form.serialize(this.form)'
-
-        options[:html] ||= {}
-        options[:html][:type] = 'image'
-        options[:html][:onclick] = "#{remote_function(options)}; return false;"
-        options[:html][:src] = image_path(source)
-
-        tag("input", options[:html], false)
-      end      
-    end      
+  def active_scaffold_add_existing_input(options)
+    if controller.respond_to?(:record_select_config)
+      remote_controller = active_scaffold_controller_for(record_select_config.model).controller_path
+      record_select_options = {:controller => remote_controller, :params => {:parent_model => record_select_config.model}}
+      record_select_options.merge!(active_scaffold_input_text_options)
+      record_select_field(options[:name], @record, record_select_options)
+      # record_select_field(
+      #   "#{options[:name]}",
+      #   active_scaffold_config.model.new,
+      #   {:controller => remote_controller, :params => options[:url_options].merge(:parent_model => record_select_config.model)}.merge(active_scaffold_input_text_options))        
+    else
+      # select_options = options_for_select(options_for_association(nested_association)) unless column.through_association?
+      select_options ||= options_for_select(active_scaffold_config.model.find(:all).collect {|c| [h(c.to_label), c.id]})
+      unless select_options.empty?
+        select_tag 'associated_id', '<option value="">' + as_(:_select_) + '</option>' + select_options
+      end  
+    end
   end
+
+  def active_scaffold_add_existing_label
+    if controller.respond_to?(:record_select_config)
+      record_select_config.model.to_s.underscore.humanize
+    else
+      active_scaffold_config.model.to_s.underscore.humanize
+    end
+  end
+
+  def active_scaffold_observe(column, scope = nil, options = {})
+    if column.options[:observe_method]
+      action = @record.id ? :update : :create
+      action = :update
+      href_options = {:action => column.options[:observe_method], :id => @record.id, :as_parent_id => params[:id], :scope => scope}
+      href_options[:controller] = column.options[:observe_controller] if column.options[:observe_controller]
+      return observe_field(active_scaffold_id_control(column, scope),
+                  :frequency => 0.2,
+                  :url => params_for(href_options), 
+                  :with => "Form.serialize('#{element_form_id(:action => action)}')+'&='" ) unless !column.options[:observe_restrict_actions].nil? and column.options[:observe_restrict_actions].include?(action)
+    end
+    ''
+  end
+
+  def active_scaffold_input_hidden(column, options)
+    input(:record, column.name, options.merge(:type => :hidden))
+  end
+
+  def active_scaffold_input_ssn(column, options)
+    column.description ||= as_(:ssn_example)
+    options = active_scaffold_input_text_options(options)
+    if @record.respond_to?("#{column.name}_for_human")
+      value = @record.send("#{column.name}_for_human")
+    else
+      value = usa_number_to_ssn(@record.send(column.name).to_s)
+    end
+    text_field :record, column.name, options.merge(
+                  :value => value,
+                  :onblur => "SsnDashAdd(this);return true;")
+  end
+  alias active_scaffold_input_social_security_number active_scaffold_input_ssn
+  
+  def active_scaffold_input_timezone(column, options)
+    time_zone_select(:record, column.name)
+  end
+
+  def active_scaffold_input_percentage(column, options)
+    column.description ||= as_(:percentage_example)
+    options[:onblur] ||= "PercentageFormat(this);return true;"
+    options = active_scaffold_input_text_options(options)
+    text_field :record, column.name, options.merge(:value => number_to_percentage(@record.send(column.name).to_s, :precision => 1))
+  end
+
+  # :usa_money requires some type casting help like the following in your Model
+  #
+  # def write_attribute(attr, value)
+  #   if column_for_attribute(attr).precision
+  #    value = BigDecimal(value.gsub(",", "").gsub("$", "")) if value.is_a?(String)
+  #   end
+  #   super
+  # end
+  def active_scaffold_input_usa_money(column, options)
+    column.description ||= as_(:usa_money_example)
+    options[:onblur] ||= "UsaMoney(this);return true;"
+    value = number_to_currency(@record.send(column.name).to_s) unless options[:blank_if_nil] == true
+    value ||= ""
+    options = active_scaffold_input_text_options(options)
+    text_field :record, column.name, options.merge(:value => value)
+  end
+
+  def active_scaffold_input_phone_number(column, options)
+    column.description ||= as_(:phone_example)
+    options[:onblur] ||= "PhoneDashAdd(this);return true;"
+    options = active_scaffold_input_text_options(options)
+    if @record.respond_to?("#{column.name}_for_human")
+      value = @record.send("#{column.name}_for_human")
+    else
+      value = usa_number_to_phone(@record.send(column.name).to_s)
+    end
+    text_field :record, column.name, options.merge(:value => value)
+  end
+
+  def active_scaffold_input_usa_zip_code(column, options)
+    column.description ||= as_(:usa_zip_example)
+    options[:onblur] ||= "UsaZipDashAdd(this);return true;"
+    options = active_scaffold_input_text_options(options)
+    if @record.respond_to?("#{column.name}_for_human")
+      value = @record.send("#{column.name}_for_human")
+    else
+      value = usa_number_to_zip(@record.send(column.name).to_s)
+    end
+    text_field :record, column.name, options.merge(:value => value)
+  end
+
+  def active_scaffold_input_yes_no_radio(column, options)
+    render :partial => '/yes_no_radio', :locals => {:column_name => column.name, :options => options}
+  end
+
+  def active_scaffold_input_true_false_radio(column, options)
+    render :partial => '/true_false_radio', :locals => {:column_name => column.name, :options => options, :question_text => column.description, :question_type => :yes_or_no}
+  end
+
+  def remote_image_submit_tag(source, options)
+    options[:with] ||= 'Form.serialize(this.form)'
+
+    options[:html] ||= {}
+    options[:html][:type] = 'image'
+    options[:html][:onclick] = "#{remote_function(options)}; return false;"
+    options[:html][:src] = image_path(source)
+
+    tag("input", options[:html], false)
+  end      
   # AST End
 end

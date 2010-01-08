@@ -1,8 +1,8 @@
 <%
 # We have to remove search form params before the url_for method call, otherwise it throughs it on
-<!-- AST Begin -->
+# AST Begin
 # search_params = params[:search] this is not needed anymore
-<!-- AST End -->  
+# AST End
 params.merge!(:search => nil)
 href = url_for(params_for(:action => :update_table, :escape => false).delete_if{|k,v| k == 'search'})
 -%>
