@@ -1,12 +1,17 @@
 <% url_options = params_for(:action => :update) -%>
+<!-- AST Begin -->
 <% submit_options = {} -%>
+<!-- AST End -->
 <%=
 if request.xhr?
   if active_scaffold_config.update.multipart?  # file_uploads
+    <!-- AST Begin -->
     submit_options = {:onclick => "$('#{loading_indicator_id(:action => :update, :id => params[:id])}').style.visibility = 'visible';this.form.submit();"}
+    <!-- AST End -->
     form_remote_upload_tag url_options.merge({:iframe => true}),
                            :onsubmit => onsubmit,
                            :id => element_form_id(:action => :update),
+                           :loading => "$('#{loading_indicator_id(:action => :update, :id => params[:id])}').style.visibility = 'visible';",
                            :class => 'update',
                            :method => :put
   else
@@ -34,18 +39,19 @@ end
 
   <h4><%= @record.to_label.nil? ? active_scaffold_config.update.label : as_(:update_model, :model => clean_column_value(@record.to_label)) %></h4>
 
-  <% if request.xhr? -%>
-    <div id="<%= element_messages_id(:action => :update) %>" class="messages-container"><%= error_messages_for :record %></div>
-  <% else -%>
+  <div id="<%= element_messages_id(:action => :update) %>" class="messages-container">
+<% if request.xhr? -%>
+    <%= error_messages_for :record, :object_name => @record.class.human_name.downcase %>
+<% else -%>
     <%= render :partial => 'form_messages' %>
-  <% end -%>
+<% end -%>
+  </div>
 
+  <!-- AST @form_name -->
   <%= render :partial => @form_name || 'form', :locals => { :columns => active_scaffold_config.update.columns } %>
 
-  <% if request.xhr? -%>
-    <div id="footer_<%= element_messages_id(:action => :update) %>" class="messages-container"></div>
-  <% end -%>  
   <p class="form-footer">
+    <!-- AST update_form_submit -->
 		<%= render :partial => 'update_form_submit', :locals => {:submit_options => submit_options} %>
     <%= loading_indicator_tag(:action => :update, :id => params[:id]) %>
   </p>

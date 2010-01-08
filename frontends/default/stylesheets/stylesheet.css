@@ -122,11 +122,11 @@ background-image: url(../../../images/active_scaffold/default/add.gif);
 .active-scaffold-header div.actions a.show_search {
 background-image: url(../../../images/active_scaffold/default/magnifier.png);
 }
-
+/* AST Begin */
 .active-scaffold-header div.actions a.refresh {
 background-image: url(../../../images/active_scaffold/default/arrow_refresh.png);
 }
-
+/* AST End */
 .blue-theme .active-scaffold-header div.actions a:hover {
 background-color: #378CDF;
 }
@@ -158,7 +158,7 @@ display: block;
 background-color: #555;
 }
 
-.active-scaffold th a {
+.active-scaffold th a, .active-scaffold th a:visited {
 color: #fff;
 padding: 2px 15px 2px 5px;
 }
@@ -236,7 +236,7 @@ text-align: right;
 .active-scaffold tr.record td.actions {
 border-right: solid 1px #ccc;
 padding: 0;
-width: 1%;
+min-width: 1%;
 }
 
 .active-scaffold tr.record td.actions table {
@@ -295,6 +295,10 @@ background-color: #1F7F00;
 background: transparent;
 }
 
+.active-scaffold .active-scaffold .active-scaffold-header {
+margin-right: 15px;
+}
+
 .active-scaffold .active-scaffold .active-scaffold-header h2 {
 font-size: 12px;
 font-weight: bold;
@@ -305,25 +309,31 @@ font-weight: bold;
 color: #444;
 }
 
+.active-scaffold .active-scaffold .active-scaffold-header div.actions {
+top: 0px;
+right: 0px;
+}
+
 .active-scaffold .active-scaffold .active-scaffold-header div.actions a {
 font: bold 11px verdana, sans-serif;
 padding: 0 2px 1px 17px;
 }
 
-.blue-theme .active-scaffold .active-scaffold-header div.actions a {
+.blue-theme .active-scaffold .active-scaffold-header div.actions a,
+.blue-theme .active-scaffold .active-scaffold-header div.actions a:visited {
 color: #06c;
 }
 
 .blue-theme .active-scaffold .active-scaffold-header div.actions a:hover {
 background-color: #ff8;
 }
-
+/* AST Begin - 3 levels of nesting */
 .active-scaffold .active-scaffold .view {
 background-color: transparent;
 padding: 0px;
 border: none;
 }
-
+/* AST End */
 .active-scaffold .active-scaffold  td {
 background-color: #ECFFE7;
 border-bottom: solid 1px #CDF7C5;
@@ -336,14 +346,14 @@ padding: 4px;
 border: solid 1px #DDDF37;
 border-top: none;
 }
-
+/* AST Begin - 3 levels of nesting */
 .active-scaffold .active-scaffold .active-scaffold td.inline-adapter-cell {
 background-color: #DAFFCD;
 padding: 4px;
 border: solid 1px #7FcF00;
 border-top: none;
 }
-
+/* AST End */
 .active-scaffold .active-scaffold .active-scaffold-footer {
 font-size: 11px;
 }
@@ -386,7 +396,8 @@ margin: 0 -2px;
 font: bold 12px arial, sans-serif;
 }
 
-.blue-theme .active-scaffold-footer a {
+.blue-theme .active-scaffold-footer a,
+.blue-theme .active-scaffold-footer a:visited {
 color: #fff;
 }
 
@@ -509,7 +520,7 @@ background-color: transparent;
    ============================== */
 
 .active-scaffold .loading-indicator {
-vertical-align: bottom;
+vertical-align: text-bottom;
 width: 16px;
 margin: 0;
 }
@@ -651,7 +662,8 @@ border: solid 1px #1F7F00;
 padding: 2px;
 }
 
-.active-scaffold .fieldWithErrors input.text-input,
+.active-scaffold .fieldWithErrors input,
+.active-scaffold .fieldWithErrors textarea,
 .active-scaffold .fieldWithErrors select {
 border: solid 1px #f00;
 }
@@ -670,7 +682,9 @@ background-color: #ffc;
 }
 
 .active-scaffold textarea {
+/* AST Begin */
 height: 65px;
+/* AST End */
 font-family: Arial, sans-serif;
 font-size: 12px;
 padding: 1px;
@@ -751,7 +765,7 @@ padding: 0 5px 0 1px;
 background: none;
 }
 
-.active-scaffold .horizontal-sub-form label {
+.active-scaffold .horizontal-sub-form td label {
 display: none;
 }
 
@@ -827,6 +841,7 @@ font-size: 100%;
 .active-scaffold-found {
   float:left;
 }
+/* AST Begin */
 .active-scaffold-header div.actions a.show_customize,
 .active-scaffold-header div.actions a.print_list,
 .active-scaffold-header div.actions a.show_export_tool {
@@ -1041,3 +1056,4 @@ border: solid 1px #1F7F00;
 	text-align: left;
   width: auto;
 }
+/* AST End */

@@ -9,11 +9,12 @@ module ActiveScaffold::Config
       # full configuration path is: defaults => global table => local table
       @per_page = self.class.per_page
       
+      # AST show_search_reset
       @show_search_reset = true
 
       # originates here
       @sorting = ActiveScaffold::DataStructures::Sorting.new(@core.columns)
-      @sorting.add @core.model.primary_key, 'ASC'
+      @sorting.set_default_sorting(@core.model)
 
       # inherit from global scope
       @empty_field_text = self.class.empty_field_text
@@ -64,10 +65,10 @@ module ActiveScaffold::Config
     # the label for this List action. used for the header.
     attr_writer :label
     def label
-      @label ? as_(@label, :count => :many) : @core.label(:count => :many)
+      @label ? as_(@label, :count => 2) : @core.label(:count => 2)
     end
 
-    # EJM - We are handling these via as_() and localization - see list.html.erb
+    # AST Begin - We are handling these via as_() and localization - see list.html.erb
     attr_writer :no_entries_message
     def no_entries_message
       @no_entries_message ? as_(@no_entries_message) : 'No Entries'
@@ -77,13 +78,14 @@ module ActiveScaffold::Config
     def filtered_message
       @filtered_message ? as_(@filtered_message) : 'Filtered List'
     end
+    # AST End
     
     attr_writer :always_show_search
     def always_show_search
       @always_show_search && !search_partial.blank?
     end
     
-    # EJM - My doing
+    # AST show_search_reset
     attr_accessor :show_search_reset
     
     def search_partial

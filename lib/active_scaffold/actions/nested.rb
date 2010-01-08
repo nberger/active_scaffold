@@ -8,6 +8,7 @@ module ActiveScaffold::Actions
         include ActiveScaffold::Actions::Nested::ChildMethods if active_scaffold_config.model.reflect_on_all_associations.any? {|a| a.macro == :has_and_belongs_to_many}
       end
       base.before_filter :include_habtm_actions
+      # AST links_for_associations
       base.before_filter :links_for_associations
       base.helper_method :nested_habtm?
     end
@@ -30,6 +31,7 @@ module ActiveScaffold::Actions
       @record = find_if_allowed(params[:id], :read)
     end
 
+    # AST links_for_associations
     def links_for_associations
       active_scaffold_config.list.columns.each do |column|
         # if column.link == false we won't create a link. that's how a dev can suppress the auto links.
@@ -113,6 +115,7 @@ module ActiveScaffold::Actions::Nested
 
     def self.included(base)
       super
+      # AST - TODO - Are we still having issues here?
       # This .verify method call is clashing with other non .add_existing actions. How do we do this correctly? Can we make it action specific.
       # base.verify :method => :post,
       #             :only => :add_existing,

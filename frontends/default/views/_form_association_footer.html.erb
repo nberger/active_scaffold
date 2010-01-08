@@ -4,9 +4,10 @@ begin
 rescue ActiveScaffold::ControllerNotFound
   remote_controller = nil
 end
-
+<!-- AST column_show_add_existing -->
 show_add_existing = column_show_add_existing(column)
 
+<!-- AST column_show_add_new -->  
 show_add_new = column_show_add_new(column, associated, :create)
 
 edit_associated_url = url_for(:action => 'edit_associated', :id => parent_record.id, :association => column.name, :associated_id => '--ID--', :escape => false, :eid => params[:eid], :parent_controller => params[:parent_controller], :as_parent_id => params[:as_parent_id])
@@ -18,6 +19,7 @@ return unless show_add_new or show_add_existing
 <div class="footer-wrapper">
   <div class="footer">
     <% if show_add_new -%>
+    <!-- AST :create_another_model -->  
     <% add_label = column.plural_association? ? as_(:create_another_model, :model => column.label(:count => 1)) : as_(:replace_with_new) -%>
     <%= button_to_function add_label, "new Ajax.Request(#{add_new_url.to_json}, {asynchronous: true, method: 'get', evalScripts: true, onFailure: function(){ActiveScaffold.report_500_response(#{active_scaffold_id.to_json})}})" %>
     <% end -%>

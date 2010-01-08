@@ -118,6 +118,7 @@ module ActiveScaffold
         "#{controller_id}-#{options[:action]}-#{options[:id]}-iframe"
       end
 
+      # AST Begin
       def customize_form_id
         "#{controller_id}-customize-form"
       end
@@ -138,7 +139,8 @@ module ActiveScaffold
       def field_error_id(column)
         "field_error_#{column.name}_#{params[:eid] || params[:id]}"
       end
-
+      # AST End
+      
       private
 
       # whitelists id-safe characters

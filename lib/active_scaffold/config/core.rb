@@ -9,7 +9,7 @@ module ActiveScaffold::Config
     def self.actions=(val)
       @@actions = ActiveScaffold::DataStructures::Actions.new(*val)
     end
-    self.actions = [:refresh, :create, :list, :search, :update, :delete, :show, :nested, :subform]
+    self.actions = [:create, :list, :search, :update, :delete, :show, :nested, :subform]
 
     # configures where the ActiveScaffold plugin itself is located. there is no instance version of this.
     cattr_accessor :plugin_directory
@@ -23,6 +23,7 @@ module ActiveScaffold::Config
     cattr_accessor :theme
     @@theme = :default
 
+    # AST Begin
     cattr_accessor :left_handed
     @@left_handed = false
 
@@ -45,6 +46,7 @@ module ActiveScaffold::Config
 
     cattr_accessor :upper_case_form_fields
     @@upper_case_form_fields = false
+    # AST End
 
     # lets you disable the DHTML history
     def self.dhtml_history=(val)
@@ -77,6 +79,9 @@ module ActiveScaffold::Config
     end
     @@ignore_columns = ActiveScaffold::DataStructures::Set.new
 
+    # lets you specify whether add a create link for each sti child
+    cattr_accessor :sti_create_links
+
     # instance-level configuration
     # ----------------------------
 
@@ -104,6 +109,12 @@ module ActiveScaffold::Config
     # lets you override the global ActiveScaffold theme for a specific controller
     attr_accessor :theme
 
+    # lets you specify whether add a create link for each sti child for a specific controller
+    attr_accessor :sti_create_links
+    def add_sti_create_links?
+      self.sti_create_links and not self.sti_children.nil?
+    end
+
     # action links are used by actions to tie together. they appear as links for each record, or general links for the ActiveScaffold.
     attr_reader :action_links
 
@@ -113,6 +124,9 @@ module ActiveScaffold::Config
       # ActiveRecord supports I18 via :scope => activerecord.models
       as_(@label, options) || model.human_name(options.merge(options[:count].to_i == 1 ? {} : {:default => model.name.pluralize}))
     end
+
+    # STI children models, use an array of model names
+    attr_accessor :sti_children
 
     ##
     ## internal usage only below this point
@@ -141,6 +155,7 @@ module ActiveScaffold::Config
       @left_handed = self.class.left_handed
       @one_column_list = self.class.one_column_list
       @show_actions_column = self.class.show_actions_column
+	  @sti_create_links = self.class.sti_create_links
 
       # inherit from the global set of action links
       @action_links = self.class.action_links.clone

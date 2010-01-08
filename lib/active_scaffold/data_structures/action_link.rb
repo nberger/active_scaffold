@@ -4,7 +4,7 @@ module ActiveScaffold::DataStructures
     def initialize(action, options = {})
       # set defaults
       self.action = action.to_s
-      self.label = action # No .to_s here to preserve localization code in #label method, relies on it being a symbol for #as_ lookup
+      self.label = action
       self.confirm = false
       self.type = :table
       self.inline = true
@@ -63,6 +63,10 @@ module ActiveScaffold::DataStructures
     attr_writer :security_method
     def security_method
       @security_method || "#{self.label.underscore.downcase.gsub(/ /, '_')}_authorized?"
+    end
+
+    def security_method_set?
+      !!@security_method
     end
 
     # the crud type of the (eventual?) action. different than :method, because this crud action may not be imminent.

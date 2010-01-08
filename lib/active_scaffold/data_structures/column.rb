@@ -17,6 +17,7 @@ module ActiveScaffold::DataStructures
     # Whether this column set is collapsed by default in contexts where collapsing is supported
     attr_accessor :collapsed
     
+    # AST allow_add_existing
     # Whether to enable add_existing for this column
     attr_accessor :allow_add_existing
     @allow_add_existing = true
@@ -26,10 +27,11 @@ module ActiveScaffold::DataStructures
       # lazy initialize
       @params ||= Set.new
     end
-
+    
     # the display-name of the column. this will be used, for instance, as the column title in the table and as the field name in the form.
     # if left alone it will utilize human_attribute_name which includes localization for :scope => [:activerecord, :attributes]
     attr_writer :label
+    # AST - still figuring out just exactly how to do this
     def label(options = {:count => 1})
       # as_(@label, options)# || active_record_class.human_attribute_name(name.to_s)
       as_(@label) || active_record_class.human_attribute_name(name.to_s)
@@ -274,6 +276,7 @@ module ActiveScaffold::DataStructures
       self.sort = true
       self.search_sql = true
       
+      # AST Begin
       if defined?(SemanticAttributes::Attribute)
         #TODO 2009-05-08 (EJM) Level=0 - This isn't picking up the condition require with_options block
         self.required = !active_record_class.semantic_attributes[self.name].predicates.find {|p| p.allow_empty? == false }.nil?
@@ -283,7 +286,7 @@ module ActiveScaffold::DataStructures
           @form_ui = sem_type
         end
       end
-      
+      # AST End
       self.includes = (association and not polymorphic_association?) ? [association.name] : []
     end
 

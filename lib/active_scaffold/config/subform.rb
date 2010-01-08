@@ -2,11 +2,13 @@ module ActiveScaffold::Config
   class Subform < Base
     def initialize(core_config)
       @core = core_config
+      # AST - don't force me to set :vertical on every scaffold
       @layout = self.class.layout || :horizontal
     end
 
     # global level configuration
     # --------------------------
+    # AST :layout
     cattr_accessor :layout
     @@per_page = :horizontal
 

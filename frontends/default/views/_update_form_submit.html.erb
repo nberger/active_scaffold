@@ -1,2 +1,2 @@
 <%= submit_tag as_(:update), submit_options.merge(:class => "submit") %>
-<%= link_to as_(:cancel), params_for(:controller => params[:parent_controller] ? params[:parent_controller] : params[:controller], :action => 'list'), :class => 'cancel' %>
+<%= link_to as_(:cancel), main_path_to_return, :class => 'cancel' %>

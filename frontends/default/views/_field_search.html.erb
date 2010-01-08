@@ -1,6 +1,8 @@
 <%
 # We have to remove search form params before the url_for method call, otherwise it throughs it on
+<!-- AST Begin -->
 # search_params = params[:search] this is not needed anymore
+<!-- AST End -->  
 params.merge!(:search => nil)
 href = url_for(params_for(:action => :update_table, :escape => false).delete_if{|k,v| k == 'search'})
 -%>
@@ -15,10 +17,12 @@ href = url_for(params_for(:action => :update_table, :escape => false).delete_if{
 
   <ol class="form">
     <% active_scaffold_config.field_search.columns.each do |column| -%>
+      <!-- AST Begin -->
       <% next unless column.search_sql or column.virtual? -%>
 
 
 
+      <!-- AST End -->  
       <li class="form-element">
         <dl>
           <dt>
@@ -33,6 +37,7 @@ href = url_for(params_for(:action => :update_table, :escape => false).delete_if{
   </ol>
   <p class="form-footer">
     <%= submit_tag as_(:search), :class => "submit" %>
+    <!-- AST Begin -->
     <% if active_scaffold_config.list.show_search_reset %>
       <!-- <a href="javascript:void(0)" class="cancel" onclick="f = this.up('form'); f.reset(); f.onsubmit();"><%= as_(:reset) -%></a> -->
       <% href = url_for(params_for(:action => :reset_search, :escape => false)) %>
@@ -42,6 +47,7 @@ href = url_for(params_for(:action => :update_table, :escape => false).delete_if{
                                 :update => active_scaffold_content_id}, {:class => "cancel"} %>
     <% end %>
     <%= loading_indicator_tag(:action => :search, :id => params[:id]) %>
+    <!-- AST End -->  
   </p>
 </form>
 

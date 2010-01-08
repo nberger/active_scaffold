@@ -11,6 +11,7 @@ module ActiveScaffold
       include ActiveScaffold::Helpers::FormColumnHelpers
       include ActiveScaffold::Helpers::CountryHelpers
       include ActiveScaffold::Helpers::SearchColumnHelpers
+      # AST
       include ActiveScaffold::Helpers::NumberHelpers
 
       ##
@@ -91,16 +92,20 @@ module ActiveScaffold
       
       # Provides stylesheets to include with +stylesheet_link_tag+
       def active_scaffold_stylesheets(frontend = :default)
+        # AST Begin
         css = [ActiveScaffold::Config::Core.asset_path("stylesheet.css", frontend)]
         css << ActiveScaffold::Config::Core.asset_path('tools-left-handed-stylesheet.css', frontend) if ActiveScaffold::Config::Core.left_handed
         css
+        # AST End
       end
 
       # Provides stylesheets for IE to include with +stylesheet_link_tag+ 
       def active_scaffold_ie_stylesheets(frontend = :default)
+        # AST Begin
         css = [ActiveScaffold::Config::Core.asset_path("stylesheet-ie.css", frontend)]
         css << ActiveScaffold::Config::Core.asset_path('tools-left-handed-stylesheet-ie.css', frontend) if ActiveScaffold::Config::Core.left_handed
         css
+        # AST End
       end
 
       # easy way to include ActiveScaffold assets
@@ -137,6 +142,7 @@ module ActiveScaffold
         (link.security_method_set? or controller.respond_to? link.security_method) and !controller.send(link.security_method)
       end
 
+      # AST link_html_options = {}
       def render_action_link(link, url_options, link_html_options = {})
         url_options = url_options.clone
         url_options[:action] = link.action
@@ -144,6 +150,7 @@ module ActiveScaffold
         url_options.delete(:search) if link.controller and link.controller.to_s != params[:controller]
         url_options.merge! link.parameters if link.parameters
 
+        # AST link_html_options
         html_options = link.html_options.merge({:class => link.action}).merge(link_html_options)
         if link.inline?
           # NOTE this is in url_options instead of html_options on purpose. the reason is that the client-side
@@ -162,6 +169,7 @@ module ActiveScaffold
           html_options[:method] = link.method
         end
 
+        # AST need to as_
         html_options[:confirm] = as_(link.confirm) if link.confirm?
         html_options[:position] = link.position if link.position and link.inline?
         html_options[:class] += ' action' if link.inline?
@@ -203,6 +211,7 @@ module ActiveScaffold
          :joins => controller.send(:joins_for_collection), :include => controller.send(:active_scaffold_joins))
       end
       
+      # AST Begin
       def column_show_add_existing(column)
         (column.allow_add_existing and !column.through_association? and options_for_association_count(column.association) > 0)
       end
@@ -212,6 +221,7 @@ module ActiveScaffold
         value = false unless @record.class.authorized_for?(:action => action)
         value
       end
+      # AST End
     end
   end
 end
