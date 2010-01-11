@@ -60,13 +60,20 @@ module ActiveScaffold
       def active_scaffold_input_options(column, scope = nil)
         name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
 
-        # Fix for keeping unique IDs in subform
-        id_control = "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"
-        id_control += scope.gsub(/(\[|\])/, '_').gsub('__', '_').gsub(/_$/, '') if scope
+        id_control = active_scaffold_id_control(column, scope)
+        # # Fix for keeping unique IDs in subform
+        # id_control = "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"
+        # id_control += scope.gsub(/(\[|\])/, '_').gsub('__', '_').gsub(/_$/, '') if scope
 
         { :name => name, :class => "#{column.name}-input", :id => id_control}
       end
 
+      def active_scaffold_id_control(column, scope = nil)
+        # Fix for keeping unique IDs in subform
+        id_control = "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"
+        id_control += scope.gsub(/(\[|\])/, '_').gsub('__', '_').gsub(/_$/, '') if scope
+      end
+      
       def javascript_for_update_column(column, scope, options)
         if column.options.is_a?(Hash) && column.options[:update_column]
           form_action = :create
@@ -368,7 +375,6 @@ module ActiveScaffold
   def active_scaffold_observe(column, scope = nil, options = {})
     if column.options[:observe_method]
       action = @record.id ? :update : :create
-      action = :update
       href_options = {:action => column.options[:observe_method], :id => @record.id, :as_parent_id => params[:id], :scope => scope}
       href_options[:controller] = column.options[:observe_controller] if column.options[:observe_controller]
       return observe_field(active_scaffold_id_control(column, scope),

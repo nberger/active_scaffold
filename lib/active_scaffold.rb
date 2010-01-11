@@ -105,9 +105,6 @@ module ActiveScaffold
       self.active_scaffold_config._add_sti_create_links if self.active_scaffold_config.add_sti_create_links?
     end
 
-=begin
-# AST
-# See comment above...
     # Create the automatic column links. Note that this has to happen when configuration is *done*, because otherwise the Nested module could be disabled. Actually, it could still be disabled later, couldn't it?
     def links_for_associations
       return unless active_scaffold_config.actions.include? :list and active_scaffold_config.actions.include? :nested
@@ -135,7 +132,6 @@ module ActiveScaffold
         end
       end
     end
-=end
 
     def add_active_scaffold_path(path)
       @active_scaffold_paths = nil # Force active_scaffold_paths to rebuild

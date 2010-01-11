@@ -28,8 +28,8 @@ show_actions_column = active_scaffold_config.show_actions_column and active_scaf
     <%= show_actions_column ? '&nbsp' : @link_to_reset_filter || '&nbsp;' %>
   </p></th>
 <% else -%>
+<% active_scaffold_tools_list_columns.each do |column| -%>
 <!-- AST End -->
-<% active_scaffold_config.list.columns.each do |column| -%>
   <%
   stages = default_sorting.sorts_on?(column) ? default_sorting_stages : sorting_stages
   column_sort_direction = stages.after(sorting.direction_of(column)) || 'ASC'

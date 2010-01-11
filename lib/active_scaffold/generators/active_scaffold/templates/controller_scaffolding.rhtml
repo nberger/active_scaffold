@@ -1,3 +1,4 @@
+  # map.resources :<%=@singular_name.pluralize%>, :active_scaffold => true, :collection => {:browse => :get}, :member => {:select => :post}
   active_scaffold :<%=@singular_name.pluralize%> do |config|
     config.actions << :customize
     config.actions << :export_tool

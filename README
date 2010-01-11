@@ -1,3 +1,6 @@
+Since Rails 2.3, render_component plugin is needed for nested and embbeded scaffolds. It works with rails-2.3 branch from ewildgoose repository:
+script/plugin install GIT://GITHUB.COM/EWILDGOOSE/RENDER_COMPONENT.GIT -R RAILS-2.3
+
 This fork's variances from the core repository:
 - Added Actions:
   - :export - (csv) uses customized selection of columns and the filter setup in search action
@@ -5,7 +8,6 @@ This fork's variances from the core repository:
   - :refresh - an ajax refresh of the list
   - :customize - list column customization
   - :revision - supports acts_as_revisionable
-- Includes render_component. No need to install another plugin.
 - Localization is supported per Rails example - not in the plugin. Only 'en-us.rb' is included in plugin.
 - Migration #timestamps includes: 
   - deleted_at
