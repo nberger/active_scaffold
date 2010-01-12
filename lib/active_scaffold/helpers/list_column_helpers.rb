@@ -52,7 +52,7 @@ module ActiveScaffold
             return text if link.crud_type.nil?
             if link.crud_type == :create
               url_options[:link] = as_(:create_new)
-              url_options[:as_parent_id] = record.id
+              url_options[:parent_id] = record.id
               url_options[:parent_column] = column.association.reverse
               url_options[:parent_model] = record.class.name # needed for polymorphic associations
               url_options.delete :id

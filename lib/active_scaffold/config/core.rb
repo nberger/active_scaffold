@@ -229,44 +229,6 @@ module ActiveScaffold::Config
     # some utility methods
     # --------------------
 
-    def columns_by_key_value(*args)
-      val = args.collect {|a| a.collect {|value| value.is_a?(Array) ? value.first.keys.to_s.to_sym : value.to_sym}}
-      val.flatten!
-      locking_column_in_args = val.include?(@columns.active_record_class.locking_column.to_sym) 
-      model_has_locking_column = @columns.active_record_class.columns_hash.include?(@columns.active_record_class.locking_column)
-      # Optimistic locking doesn't work without it being included
-      val << @columns.active_record_class.locking_column unless locking_column_in_args or !model_has_locking_column
-      self.columns = val
-      [:field_search, :list, :live_search, :search, :show].each {|action| eval("#{action}.columns.exclude @columns.active_record_class.locking_column") if @actions.include?(action.to_sym)} unless locking_column_in_args
-      args.flatten!
-      args.each do |arg|
-        if arg.is_a?(Hash)
-          arg.each do |column_name, values|
-            if values.is_a?(Hash)
-              values.each do |attr, value|
-                attr = :form_ui if attr == :type
-                case attr
-                when :exclude, :except
-                  if value.is_a?(Array)
-                    value.each do |v| 
-                      eval("#{v}.columns.exclude column_name") if @actions.include?(v.to_sym)
-                    end
-                  else
-                    eval "#{value}.columns.exclude column_name" if @actions.include?(v.to_sym)
-                  end
-                when :reverse
-                  @columns[column_name].association.send "#{attr}=", value 
-                else
-                  @columns[column_name].send "#{attr}=", value
-                end
-              end
-            end
-          end
-        end
-      end
-    end
-    alias_method :has_columns, :columns_by_key_value
-
     def model_id
       @model_id
     end

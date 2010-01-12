@@ -375,7 +375,7 @@ module ActiveScaffold
   def active_scaffold_observe(column, scope = nil, options = {})
     if column.options[:observe_method]
       action = @record.id ? :update : :create
-      href_options = {:action => column.options[:observe_method], :id => @record.id, :as_parent_id => params[:id], :scope => scope}
+      href_options = {:action => column.options[:observe_method], :id => @record.id, :parent_id => params[:id], :scope => scope}
       href_options[:controller] = column.options[:observe_controller] if column.options[:observe_controller]
       return observe_field(active_scaffold_id_control(column, scope),
                   :frequency => 0.2,

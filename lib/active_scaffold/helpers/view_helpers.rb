@@ -169,18 +169,17 @@ module ActiveScaffold
           html_options[:method] = link.method
         end
 
-        # AST need to as_
         html_options[:confirm] = as_(link.confirm) if link.confirm?
         html_options[:position] = link.position if link.position and link.inline?
         html_options[:class] += ' action' if link.inline?
         html_options[:popup] = true if link.popup?
-        html_options[:id] = action_link_id("#{id_from_controller(url_options[:controller]) + '-' if url_options[:parent_controller]}" + "#{url_options[:associations].to_s + '-' if url_options[:associations]}" + url_options[:action],url_options[:id] || url_options[:as_parent_id])
+        html_options[:id] = action_link_id("#{id_from_controller(url_options[:controller]) + '-' if url_options[:parent_controller]}" + "#{url_options[:associations].to_s + '-' if url_options[:associations]}" + url_options[:action],url_options[:id] || url_options[:parent_id])
 
         if link.dhtml_confirm?
           html_options[:class] += ' action' if !link.inline?
           html_options[:page_link] = 'true' if !link.inline?
           html_options[:dhtml_confirm] = link.dhtml_confirm.value
-          html_options[:onclick] = link.dhtml_confirm.onclick_function(controller,action_link_id(url_options[:action],url_options[:id] || url_options[:as_parent_id]))
+          html_options[:onclick] = link.dhtml_confirm.onclick_function(controller,action_link_id(url_options[:action],url_options[:id] || url_options[:parent_id]))
         end
         html_options[:class] += " #{link.html_options[:class]}" unless link.html_options[:class].blank?
 

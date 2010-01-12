@@ -33,7 +33,7 @@ module ActiveScaffold::Config
       # set list_ui first because it gets its default value from form_ui
       self.columns[field].list_ui ||= self.model.field_has_image_version?(field, "thumb") ? :thumbnail : :download_link_with_filename
       self.columns[field].form_ui ||= :file_column
-
+      
       # these 2 parameters are necessary helper attributes for the file column that must be allowed to be set to the model by active scaffold.
       self.columns[field].params.add "#{field}_temp", "delete_#{field}"
       
