@@ -1,6 +1,9 @@
 Since Rails 2.3, render_component plugin is needed for nested and embbeded scaffolds. It works with rails-2.3 branch from ewildgoose repository:
 script/plugin install GIT://GITHUB.COM/EWILDGOOSE/RENDER_COMPONENT.GIT -R RAILS-2.3
 
+If you want localization check out:
+  http://github.com/edwinmoss/active_scaffold_localize
+
 This fork's variances from the core repository:
 - Added Actions:
   - :export - (csv) uses customized selection of columns and the filter setup in search action

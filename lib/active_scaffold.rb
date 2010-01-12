@@ -56,12 +56,7 @@ module ActiveScaffold
       # run the configuration
       @active_scaffold_config = ActiveScaffold::Config::Core.new(model_id)
       @active_scaffold_config_block = block
-=begin 
-# AST
-# This does not work with authlogic - not sure why.
-# The before_filter :require_user is not called before the first call to self.links_for_associations on the refresh and current_user is not defined properly. I can pretty_inspect it but as soon as I try to access one of it's methods from inside authorized_for_read? I get an error, the object seems in tact for an object comparison but that is all. The whole mechanism of Model#current_user seems a bit timing dependent. Until I figure it out it is going back into nested.rb
       self.links_for_associations
-=end
       self.active_scaffold_superclasses_blocks.each {|superblock| self.active_scaffold_config.configure &superblock}
       self.active_scaffold_config.configure &block if block_given?
       self.active_scaffold_config._configure_sti unless self.active_scaffold_config.sti_children.nil?

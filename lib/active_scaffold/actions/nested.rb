@@ -29,6 +29,10 @@ module ActiveScaffold::Actions
       @record = find_if_allowed(params[:id], :read)
     end
 
+    def nested_authorized?
+      true
+    end
+
     def include_habtm_actions
       if nested_habtm?
         # Production mode is ok with adding a link everytime the scaffold is nested - we ar not ok with that.
@@ -66,11 +70,6 @@ module ActiveScaffold::Actions
     def nested_association
       return active_scaffold_constraints.keys.to_s.to_sym if nested?
       nil
-    end
-
-    # You may override the method to customize.
-    def nested_authorized?
-      true
     end
 
     def nested_parent_id
