@@ -30,7 +30,7 @@ module ActiveScaffold
       def condition_for_column(column, value, like_pattern = '%?%')
         # we must check false or not blank because we want to search for false but false is blank
         return unless column and column.search_sql and not value.blank?
-        # AST Begin - TODO - ist this still needed?
+        # AST Begin - TODO - is this still needed?
         return if (value.is_a?(Array) and value.join.blank?)
         # AST End
         search_ui = column.search_ui || column.column.type
@@ -110,16 +110,6 @@ module ActiveScaffold
       alias_method :condition_for_timestamp_type, :condition_for_datetime_type
 
       # AST Begin
-      def condition_for_dhtml_calendar_type(column, value, like_pattern = nil)
-        return nil if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.include?(value['opt'])
-        if value['opt'] == 'BETWEEN'
-          ["#{column.search_sql} BETWEEN ? AND ?", value[:from], value[:to]]
-        else
-          ["#{column.search_sql} #{value['opt']} ?", value[:from]]
-        end
-      end
-      alias_method :condition_for_calendar_date_select_type, :condition_for_dhtml_calendar_type
-
       def condition_for_exact_type(column, value, like_pattern = nil)
         ["#{column.search_sql} = ?", value]
       end

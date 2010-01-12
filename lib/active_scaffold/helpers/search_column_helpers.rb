@@ -172,28 +172,6 @@ module ActiveScaffold
       alias_method :active_scaffold_search_string, :active_scaffold_search_range
       alias_method :active_scaffold_search_text, :active_scaffold_search_range
       
-      def active_scaffold_search_dhtml_calendar(column, options)
-        opt_value, from_value, to_value = search_session_column_range_values(column)
-        id_name = options[:id]
-        html = []
-        html << select_tag("#{options[:name]}[opt]",
-              options_for_select(ActiveScaffold::Finder::NumericComparators.collect {|comp| [as_(comp.titleize), comp]}, opt_value),
-              :id => "#{id_name}_opt",
-              :onchange => "Element[this.value == 'BETWEEN' ? 'show' : 'hide']('#{id_name}_between');")
-        options = {:name => "#{options[:name]}[from]", :help_string => "", :class => "range-input"}.merge(active_scaffold_input_text_options(:id => "#{id_name}_from", :size => 10))
-        options[:value] = nil
-        options[:value] = from_value
-        html << active_scaffold_input_calendar_date_select(column, options)
-        options[:value] = nil
-        options[:value] = to_value
-        options[:name].gsub!('[from]', '[to]')
-        options[:id].gsub!('_from', '_to')
-        html << content_tag(:span, ' - ' + active_scaffold_input_calendar_date_select(column, options),
-                          :id => "#{id_name}_between", :style => to_value.blank? ? "display:none" : "")
-        html * ' '
-      end
-      alias_method :active_scaffold_search_calendar_date_select, :active_scaffold_search_dhtml_calendar
-
       def active_scaffold_search_usa_state(column, options)
         @record.send("#{column.name}=", search_session_column_multi_select_values(column))
         select_options = options
