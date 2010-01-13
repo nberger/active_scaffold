@@ -32,8 +32,7 @@ end -%>
     <%= render :partial => 'form_messages' %>
   <% end -%>
 
-  <!-- AST @form_name -->
-  <%= render :partial => @form_name || 'form', :locals => { :columns => active_scaffold_config.create.columns } %>
+  <%= render :partial => 'form', :locals => { :columns => active_scaffold_config.create.columns } %>
 
   <p class="form-footer">
     <!-- AST create_form_submit -->  

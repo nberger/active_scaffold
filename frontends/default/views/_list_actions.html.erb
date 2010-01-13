@@ -9,7 +9,7 @@
     <% active_scaffold_config.action_links.each :record do |link| -%>
       <% next if skip_action_link(link) -%>
       <!-- AST Begin -->
-      <% if [:destroy, :show, :edit].include?(link.action.to_sym) %>
+      <% if [:delete, :show, :edit].include?(link.action.to_sym) %>
       <!-- AST End -->  
         <td>
           <%= record.authorized_for?(:action => link.crud_type) ? render_action_link(link, url_options) : "<a class='disabled #{link.action}'>#{link.label}</a>" -%>

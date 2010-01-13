@@ -47,8 +47,7 @@ end
 <% end -%>
   </div>
 
-  <!-- AST @form_name -->
-  <%= render :partial => @form_name || 'form', :locals => { :columns => active_scaffold_config.update.columns } %>
+  <%= render :partial => 'form', :locals => { :columns => active_scaffold_config.update.columns } %>
 
   <p class="form-footer">
     <!-- AST update_form_submit -->

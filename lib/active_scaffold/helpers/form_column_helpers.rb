@@ -60,18 +60,11 @@ module ActiveScaffold
       def active_scaffold_input_options(column, scope = nil)
         name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
 
-        id_control = active_scaffold_id_control(column, scope)
-        # # Fix for keeping unique IDs in subform
-        # id_control = "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"
-        # id_control += scope.gsub(/(\[|\])/, '_').gsub('__', '_').gsub(/_$/, '') if scope
-
-        { :name => name, :class => "#{column.name}-input", :id => id_control}
-      end
-
-      def active_scaffold_id_control(column, scope = nil)
         # Fix for keeping unique IDs in subform
         id_control = "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"
         id_control += scope.gsub(/(\[|\])/, '_').gsub('__', '_').gsub(/_$/, '') if scope
+
+        { :name => name, :class => "#{column.name}-input", :id => id_control}
       end
       
       def javascript_for_update_column(column, scope, options)
@@ -342,8 +335,7 @@ module ActiveScaffold
           "[#{column.name}]"
         end
       end
-    end
-  end
+  
   # AST Begin
   def active_scaffold_add_existing_input(options)
     if controller.respond_to?(:record_select_config)
@@ -377,7 +369,7 @@ module ActiveScaffold
       action = @record.id ? :update : :create
       href_options = {:action => column.options[:observe_method], :id => @record.id, :parent_id => params[:id], :scope => scope}
       href_options[:controller] = column.options[:observe_controller] if column.options[:observe_controller]
-      return observe_field(active_scaffold_id_control(column, scope),
+      return observe_field(active_scaffold_input_options(column, scope)[:id],
                   :frequency => 0.2,
                   :url => params_for(href_options), 
                   :with => "Form.serialize('#{element_form_id(:action => action)}')+'&='" ) unless !column.options[:observe_restrict_actions].nil? and column.options[:observe_restrict_actions].include?(action)
@@ -474,4 +466,6 @@ module ActiveScaffold
     tag("input", options[:html], false)
   end      
   # AST End
+end
+  end
 end
