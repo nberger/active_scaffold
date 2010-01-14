@@ -37,7 +37,7 @@ module ActiveScaffold
                 options[:size] ||= ActionView::Helpers::InstanceTag::DEFAULT_FIELD_OPTIONS["size"]
               end
               options.update(:value => format_number_value(@record.send(column.name), column.options)) if column.column.number?
-              input(:record, column.name, options.merge(column.options))
+              input(:record, column.name, options.merge(column.options)) + active_scaffold_observe(column, scope, options)
             end
           end
         end
