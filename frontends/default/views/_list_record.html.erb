@@ -9,11 +9,11 @@ show_actions_column = active_scaffold_config.show_actions_column and active_scaf
 -%>
 
 <tr class="record <%= tr_class %>" id="<%= element_row_id(:action => :list, :id => record.id) %>">
-  <!-- AST Begin -->
+  <% # AST Begin -%>
   <%= render :partial => 'list_record_actions', :locals => {:record => record, :url_options => url_options} if active_scaffold_config.left_handed  and show_actions_column %>
   <%= render :partial => 'list_record_columns', :locals => {:record => record, :url_options => url_options} %>
   <%= render :partial => 'list_record_actions', :locals => {:record => record, :url_options => url_options} if !active_scaffold_config.left_handed  and show_actions_column %>
-  <!-- AST End -->
+  <% # AST End -%>
 </tr>
 
 <% target_id = element_row_id(:action => :list, :id => record.id) -%>

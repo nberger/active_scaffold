@@ -1,29 +1,29 @@
 <% if active_scaffold_config.action_links.any? { |link| link.type == :table } -%>
   <div class="actions">
-    <!-- AST Begin -->
+    <% # AST Begin -%>
     <% if active_scaffold_config.left_handed %>
       <div style="float: left;"><h2>  <%= active_scaffold_config.list.user.label %></h2></div>
     <% end %>
-    <!-- AST End -->
+    <% # AST End -%>
     <% new_params = params_for(:action => :table) %>
     <% active_scaffold_config.action_links.each :table do |link| -%>
       <% next if skip_action_link(link) -%>
-      <!-- AST Begin -->
+      <% # AST Begin -%>
       <% next if link.action == 'new' && params[:nested].nil? && active_scaffold_config.list.always_show_create %>
       <% next if link.action == 'show_search' && active_scaffold_config.list.always_show_search %>
-      <!-- AST End -->
+      <% # AST End -%>
       <%= render_action_link(link, new_params) -%>
     <% end -%>
 
     <%= loading_indicator_tag(:action => :table) %>
   </div>
 <% end %>
-<!-- AST Begin -->
+<% # AST Begin -%>
 <% if active_scaffold_config.left_handed %>
 <div style="clear: both;"></div>
 <% else -%>
-<!-- AST End -->
+<% # AST End -%>
 <h2><%= active_scaffold_config.list.user.label %></h2>
-<!-- AST Begin -->
+<% # AST Begin -%>
 <% end -%>
-<!-- AST End -->
+<% # AST End -%>

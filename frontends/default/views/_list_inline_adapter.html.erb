@@ -3,7 +3,7 @@
 <tr class="inline-adapter" id="<%= nested_id  %>">
   <td colspan="99" class="inline-adapter-cell">
     <div class="<%= "#{params[:action]}-view" if params[:action] %> <%= "#{params[:associations] ? params[:associations] : params[:controller]}-view" %> view">
-      <!-- AST left-handed -->
+      <% # AST left-handed -%>
       <a href="" class="inline-adapter-close" title="<%= as_(:close) %>"><%= as_(:close) unless active_scaffold_config.left_handed %></a>
       <%= payload -%>
     </div>

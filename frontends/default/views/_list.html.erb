@@ -10,16 +10,16 @@
         <div id="<%= active_scaffold_messages_id -%>">
           <%= render :partial => 'messages' %>
         </div>
-        <!-- AST show_actions_column -->
+        <% # AST show_actions_column -%>
         <% if !active_scaffold_config.show_actions_column and active_scaffold_config.list.show_search_reset %>
         <p class="filtered-message" <%= ' style="display:none;" ' unless @filtered %>>
-          <!-- AST link_to_reset_filter -->
+          <% # AST link_to_reset_filter -%>
           <%= @link_to_reset_filter %>
         </p>
-        <!-- AST End -->
+        <% # AST End -%>
         <% end %>
         <p id="<%= empty_message_id %>" class="empty-message" <%= ' style="display:none;" ' unless @page.items.empty? %>>
-          <!-- AST :no_entries -->
+          <% # AST :no_entries -%>
           <%= as_(:no_entries) %>
         </p>
       </td>
