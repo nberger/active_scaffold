@@ -15,12 +15,6 @@ module ActiveScaffold::Actions
       respond_to_action(:field_search)
     end
 
-    # AST begin
-    def reset_search
-      update_table
-    end
-    # AST end
-    
     protected
     def field_search_respond_to_html
       render(:action => "field_search")

@@ -29,6 +29,7 @@ This fork's variances from the core repository:
       config.show_actions_column = false # hide the action columns
       config.subform.layout = :horizontal # Specify your preferred subform layout
     end
+  - options[:observe_method] and options[:observe_controller]
   - secure_download - support for putting your file repository somewhere other than public and allow secure download
     - Supply a secure_download_key in config block (see above)
     - In active_scaffold config block:

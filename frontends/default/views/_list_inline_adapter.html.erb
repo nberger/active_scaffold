@@ -1,5 +1,6 @@
 <%= update_page_tag { |page| page.replace_html active_scaffold_messages_id, :partial => 'messages' } %>
-<tr class="inline-adapter">
+<% # AST nested_id, allows us to remove a nested scaffold programmatically, transfer participant to another workshop %>
+<tr class="inline-adapter" id="<%= nested_id  %>">
   <td colspan="99" class="inline-adapter-cell">
     <div class="<%= "#{params[:action]}-view" if params[:action] %> <%= "#{params[:associations] ? params[:associations] : params[:controller]}-view" %> view">
       <!-- AST left-handed -->

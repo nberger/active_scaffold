@@ -1,5 +1,7 @@
 module ActiveScaffold::Actions
   module LiveSearch
+    # AST
+    include ActiveScaffold::Search
     def self.included(base)
       base.before_filter :search_authorized_filter, :only => :show_search
       base.before_filter :do_search

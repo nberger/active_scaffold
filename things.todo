@@ -1,7 +1,12 @@
 Check In:
+
 ==========:
 = URGENT =:
 ==========:
+- Change all:
+ <-- AST 
+ to 
+ <% # AST
 ========:
 = HIGH =:
 ========:
