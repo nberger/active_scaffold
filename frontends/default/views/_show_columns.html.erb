@@ -1,19 +1,19 @@
 <dl>
 <% columns.each :for => @record do |column| %>
-  <% # AST Begin -%>
+  <%# AST Begin -%>
   <% make_available_method = "#{column.name}_make_available?" %>
   <% next if @record.respond_to?(make_available_method) and !@record.send(make_available_method) %>
-  <% # AST End -%>
+  <%# AST End -%>
 <% if column.is_a? ActiveScaffold::DataStructures::ActionColumns -%>
-  <% # AST Put stuff in dd/dt -%>
+  <%# AST Put stuff in dd/dt -%>
     <dt><%= column.label -%></dt>
     <dd><%= render :partial => 'show_columns', :locals => {:columns => column} %></dd>
-    <% # AST End -%>
+    <%# AST End -%>
 <% else -%>
-  <% # AST Put stuff in dd/dt -%>
+  <%# AST Put stuff in dd/dt -%>
     <dt><%= column.label -%></dt>
     <dd><%= show_column_value(@record, column) -%> &nbsp;</dd>
-    <% # AST End -%>
+    <%# AST End -%>
 <% end -%>
 <% end -%>
 </dl>

@@ -10,11 +10,11 @@
     <%= render :partial => form_partial_for_column(column), :locals => { :column => column } -%>
   </li>
   <% else -%>
-  <% # AST Begin -%>
+  <%# AST Begin -%>
   <% next if active_scaffold_tools_form_columns_to_ignore(column)  %>
   <% make_available_method = "#{column.name}_make_available?" %>
   <% next if @record.respond_to?(make_available_method) and !@record.send(make_available_method) %>
-  <% # AST End -%>  
+  <%# AST End -%>  
   <li class="form-element <%= 'required' if column.required? %> <%= column.css_class unless column.css_class.nil? %>">
     <%= render :partial => form_partial_for_column(column), :locals => { :column => column } -%>
   </li>

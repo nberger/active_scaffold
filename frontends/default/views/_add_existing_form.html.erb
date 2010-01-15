@@ -20,10 +20,10 @@
   <% else -%>
     <%= render :partial => 'form_messages' %>
   <% end -%>
-  <% # AST Begin -%>
+  <%# AST Begin -%>
   <label for="<%= "record_#{active_scaffold_config.model}" %>"><%= active_scaffold_add_existing_label %></label>
   <%= active_scaffold_add_existing_input(:name => 'associated_id', :url_options => url_options) %>
-  <% # AST End -%>  
+  <%# AST End -%>  
   <p class="form-footer">
     <%= submit_tag as_(:add), :class => "submit" %>
     <%= link_to as_(:cancel), main_path_to_return, :class => 'cancel' %>

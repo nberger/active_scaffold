@@ -1,5 +1,5 @@
 <% href = url_for(params_for(:action => :update_table, :escape => false).delete_if{|k,v| k == 'search'}) -%>
-<% # AST loading_indicator_id uses params[:id] -%>
+<%# AST loading_indicator_id uses params[:id] -%>
 <%= form_remote_tag :url => href,
                     :method => :get,
                     :before => "addActiveScaffoldPageToHistory('#{href}', '#{params[:controller]}')",

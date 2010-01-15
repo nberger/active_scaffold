@@ -3,18 +3,18 @@
     <td class="indicator-container">
       <%= loading_indicator_tag(:action => :record, :id => record.id) %>
     </td>
-    <% # AST Begin -%>
+    <%# AST Begin -%>
     <% html_actions = [] %>
-    <% # AST End -%>  
+    <%# AST End -%>  
     <% active_scaffold_config.action_links.each :record do |link| -%>
       <% next if skip_action_link(link) -%>
-      <% # AST Begin -%>
+      <%# AST Begin -%>
       <% if [:delete, :show, :edit].include?(link.action.to_sym) %>
-      <% # AST End -%>  
+      <%# AST End -%>  
         <td>
           <%= record.authorized_for?(:action => link.crud_type) ? render_action_link(link, url_options) : "<a class='disabled #{link.action}'>#{link.label}</a>" -%>
         </td>
-      <% # AST Begin -%>
+      <%# AST Begin -%>
       <% else %>
         <% html_actions << render_action_link(link, url_options) %>
       <% end %>
@@ -24,6 +24,6 @@
         <%= html_actions.join('<br>') %>
       </td>
     <% end %>
-    <% # AST End -%>  
+    <%# AST End -%>  
   </tr>
 </table>

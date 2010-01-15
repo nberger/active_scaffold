@@ -1,7 +1,7 @@
 <% url_options = params_for(:action => :update) -%>
-<% # AST Begin -%>
+<%# AST Begin -%>
 <% submit_options = {} -%>
-<% # AST End -%>
+<%# AST End -%>
 <%=
 if request.xhr?
   if active_scaffold_config.update.multipart?  # file_uploads
@@ -50,7 +50,7 @@ end
   <%= render :partial => 'form', :locals => { :columns => active_scaffold_config.update.columns } %>
 
   <p class="form-footer">
-    <% # AST update_form_submit -%>
+    <%# AST update_form_submit -%>
 		<%= render :partial => 'update_form_submit', :locals => {:submit_options => submit_options} %>
     <%= loading_indicator_tag(:action => :update, :id => params[:id]) %>
   </p>
