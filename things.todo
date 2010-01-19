@@ -3,7 +3,7 @@ Check In:
 ==========:
 = URGENT =:
 ==========:
-
+- migrate javascript_helpers to list_column_helpers
 ========:
 = HIGH =:
 ========:

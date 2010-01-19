@@ -257,7 +257,8 @@ module ActiveScaffold::DataStructures
       @associated_number = self.class.associated_number
       @show_blank_record = self.class.show_blank_record
       @actions_for_association_links = self.class.actions_for_association_links.clone if @association
-      @search_ui = :select if @association and not polymorphic_association?
+      # AST - this means I have to set my search_ui value for every field that uses record_select
+      # @search_ui = :select if @association and not polymorphic_association?
       @options = {:format => :i18n_number} if @column.try(:number?)
 
       # default all the configurable variables

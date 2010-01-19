@@ -4,9 +4,11 @@ module ActiveScaffold
     module FormColumnHelpers
       # This method decides which input to use for the given column.
       # It does not do any rendering. It only decides which method is responsible for rendering.
-      def active_scaffold_input_for(column, scope = nil)
+      # AST - (cf - verify_request), options param
+      def active_scaffold_input_for(column, scope = nil, options = {})
         begin
-        options = active_scaffold_input_options(column, scope)
+        # AST - (cf - verify_request), options
+        options = active_scaffold_input_options(column, scope, options)
         options = javascript_for_update_column(column, scope, options)
         # first, check if the dev has created an override for this specific field
         if override_form_field?(column)
@@ -57,14 +59,24 @@ module ActiveScaffold
       end
 
       # the standard active scaffold options used for class, name and scope
-      def active_scaffold_input_options(column, scope = nil)
+      # AST - (cf - verify_request), options param
+      def active_scaffold_input_options(column, scope = nil, options = {})
+        # AST Begin - upper_case_form_fields
+        if active_scaffold_config.upper_case_form_fields and column.column and [:text, :string].include?(column.column.type) and column.form_ui.nil? and (!column.options.has_key?(:upper_case_form_fields) or column.options[:upper_case_form_fields] != false)
+          options[:onchange] ||= ''
+          options.merge!(:onchange => options[:onchange] + "ToUpper(this);") 
+        end
+        # Allow override of :class
+        options[:class] ||= "#{column.name}-input"
+        # AST End
         name = scope ? "record#{scope}[#{column.name}]" : "record[#{column.name}]"
 
         # Fix for keeping unique IDs in subform
         id_control = "record_#{column.name}_#{[params[:eid], params[:id]].compact.join '_'}"
         id_control += scope.gsub(/(\[|\])/, '_').gsub('__', '_').gsub(/_$/, '') if scope
 
-        { :name => name, :class => "#{column.name}-input", :id => id_control}
+        # AST - cf - verify_request, options
+        { :name => name, :class => "#{column.name}-input", :id => id_control}.merge(options)
       end
       
       def javascript_for_update_column(column, scope, options)
