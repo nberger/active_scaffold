@@ -31,6 +31,7 @@ module ActiveScaffold
         # we must check false or not blank because we want to search for false but false is blank
         return unless column and column.search_sql and not value.blank?
         # AST Begin - TODO - is this still needed?
+        begin
         return if (value.is_a?(Array) and value.join.blank?)
         # AST End
         search_ui = column.search_ui || column.column.type
@@ -54,6 +55,10 @@ module ActiveScaffold
               end
           end
         end
+        rescue Exception => e
+          logger.error Time.now.to_s + "#{e.inspect} -- on the ActiveScaffold column = :#{column.name}, search_ui = #{search_ui} in #{@controller.class}"
+          raise e
+      end
       end
 
       # AST why require like_pattern
