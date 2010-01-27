@@ -154,7 +154,8 @@ module ActiveScaffold
       def format_column_value(record, column)
         value = record.send(column.name)
         if value && column.association # cache association size before calling column_empty?
-          associated_size = value.size if column.plural_association? and column.associated_number? # get count before cache association
+          # AST - Had problems with has_many through when the relationship was empty - AR is creating  WHERE ((`trade_days`.id = )). Tried value.empty? but that caused the same problem so we are using (value.length > 0)
+          associated_size = value.size if column.plural_association? and (value.length > 0) and column.associated_number? # get count before cache association
           cache_association(value, column)
         end
         if column.association.nil? or column_empty?(value)
@@ -348,43 +349,49 @@ module ActiveScaffold
         javascript_tag(function)
       end
 
-    end
-  end
-  # AST Begin
-  def nested_label(association)
-    as_(:nested_for_model, :nested_model => active_scaffold_config_for(association.klass).label(:count => 2), :parent_model => format_value(@record.to_label))
-  end
+      # AST Begin
+      def nested_label(association)
+        as_(:nested_for_model, :nested_model => active_scaffold_config_for(association.klass).label(:count => 2), :parent_model => format_value(@record.to_label))
+      end
   
-  def active_scaffold_column_percentage(column, record)
-    number_to_percentage(record.send(column.name).to_s, :precision => 1)
-  end
+      def active_scaffold_column_percentage(column, record)
+        number_to_percentage(record.send(column.name).to_s, :precision => 1)
+      end
 
-  def active_scaffold_column_ssn(column, record)
-    if record.respond_to?("#{column.name}_for_human")
-      record.send("#{column.name}_for_human")
-    else
-      usa_number_to_ssn(record.send(column.name).to_s)
+      def active_scaffold_column_ssn(column, record)
+        if record.respond_to?("#{column.name}_for_human")
+          record.send("#{column.name}_for_human")
+        else
+          usa_number_to_ssn(record.send(column.name).to_s)
+        end
+      end
+
+      def active_scaffold_column_usa_money(column, record)
+        value = record.send(column.name)
+        formatted_value = number_to_currency(value.abs.to_s) if value
+        if value and value < 0.0
+          "(#{formatted_value})"
+        else
+          formatted_value
+      end
+      end
+
+      def active_scaffold_column_phone_number(column, record)
+        if record.respond_to?("#{column.name}_for_human")
+          record.send("#{column.name}_for_human")
+        else
+          usa_number_to_phone(record.send(column.name).to_s)
+        end
+      end
+
+      def active_scaffold_column_usa_zip_code(column, record)
+        if record.respond_to?("#{column.name}_for_human")
+          record.send("#{column.name}_for_human")
+        else
+          usa_number_to_zip(record.send(column.name).to_s)
+        end
+      end
+      # AST End
     end
   end
-
-  def active_scaffold_column_usa_money(column, record)
-    number_to_currency(record.send(column.name).to_s)
-  end
-
-  def active_scaffold_column_phone_number(column, record)
-    if record.respond_to?("#{column.name}_for_human")
-      record.send("#{column.name}_for_human")
-    else
-      usa_number_to_phone(record.send(column.name).to_s)
-    end
-  end
-
-  def active_scaffold_column_usa_zip_code(column, record)
-    if record.respond_to?("#{column.name}_for_human")
-      record.send("#{column.name}_for_human")
-    else
-      usa_number_to_zip(record.send(column.name).to_s)
-    end
-  end
-  # AST End
 end

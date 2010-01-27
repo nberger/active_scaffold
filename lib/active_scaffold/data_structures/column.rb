@@ -200,7 +200,8 @@ module ActiveScaffold::DataStructures
 
     # methods for automatic links in singular association columns
     cattr_accessor :actions_for_association_links
-    @@actions_for_association_links = [:new, :edit, :show]
+    # AST - I like to default to :show only
+    @@actions_for_association_links = [:show]
     attr_accessor :actions_for_association_links
 
     # ----------------------------------------------------------------- #
