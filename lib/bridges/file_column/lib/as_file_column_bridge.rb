@@ -47,3 +47,29 @@ module ActiveScaffold::Config
     
   end
 end
+
+module ActionController #:nodoc:
+  class Base
+    # In your controller:
+    #   :options => {:secure_download => true}
+    #   def show
+    #     active_scaffold_render_secure_download(File.join(RAILS_ROOT, 'files'))
+    #   end
+    # In your model:
+    #   file_column :package, :root_path => File.join(RAILS_ROOT, 'files')
+    def active_scaffold_render_secure_download(file_root)
+      raise if params[:download].nil?
+      # AST Not sure we need to assume encryption responsibility - seems like of authentication is not needed to download the files then the dev can override methods needed to encrypt/decrypt file location on the server.
+      file_path = params[:download]#.decrypt!(:symmetric, :key => active_scaffold_config.secure_download_key)
+      ext = File.extname(file_path).downcase.sub(/^\./, '')
+      case ext
+      when 'pdf'
+        response.headers["Content-Type"] = 'application/pdf'
+      else
+        response.headers["Content-Type"] = "text/#{ext}"
+      end
+      response.headers["Content-disposition:"] = "inline; filename=\"#{params[:download]}\""
+      render :text => File.read(File.join(file_root, file_path))
+    end
+ end 
+end

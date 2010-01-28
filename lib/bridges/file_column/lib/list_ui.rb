@@ -26,7 +26,7 @@ module ActiveScaffold
       
       # AST - active_scaffold_column_download_link_url_options
       def active_scaffold_column_download_link_url_options(column, record)
-        {:controller => active_scaffold_config.secure_download_controller, :action => "show", :id => record.id, :download => url_for_file_column(record, column.name.to_s).encrypt!(:symmetric, :key => active_scaffold_config.secure_download_key)}
+        {:controller => active_scaffold_config.secure_download_controller, :action => "show", :id => record.id, :download => url_for_file_column(record, column.name.to_s)}#.encrypt!(:symmetric, :key => active_scaffold_config.secure_download_key)}
       end
       
       def active_scaffold_column_thumbnail(column, record)
