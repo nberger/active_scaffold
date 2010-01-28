@@ -27,7 +27,6 @@ This fork's variances from the core repository:
     end
   - options[:observe_method] and options[:observe_controller]
   - secure_download - support for putting your file repository somewhere other than public and allow authenticated download access only
-    - Supply a secure_download_key in config block (see above)
     - In active_scaffold config block:
       column#options = {:secure_download => true},
     - In your model (if using file_column plugin):
