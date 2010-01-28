@@ -22,12 +22,11 @@ This fork's variances from the core repository:
       config.left_handed = true
       config.one_column_list = true # suppress the grid look, in favor of a free format per row
       config.upper_case_form_fields = true
-      config.secure_download_key = "DOWNLoadMyFileplease"
       config.show_actions_column = false # hide the action columns
       config.subform.layout = :horizontal # Specify your preferred subform layout
     end
   - options[:observe_method] and options[:observe_controller]
-  - secure_download - support for putting your file repository somewhere other than public and allow secure download
+  - secure_download - support for putting your file repository somewhere other than public and allow authenticated download access only
     - Supply a secure_download_key in config block (see above)
     - In active_scaffold config block:
       column#options = {:secure_download => true},
