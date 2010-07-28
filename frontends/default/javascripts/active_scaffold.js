@@ -361,11 +361,9 @@ ActiveScaffold.ActionLink.Record.prototype = Object.extend(new ActiveScaffold.Ac
 
   /* it might simplify things to just override the close function. then the Record and Table links could share more code ... wouldn't need custom close_handler functions, for instance */
   close_with_refresh: function() {
-    if(this.refresh_method.match('_method=get')){
+    var refresh_method = this.method;
+    if(this.refresh_url.match('_method=get'))
       refresh_method = 'get';
-    } else {
-      refresh_method = this.method;
-    }
     new Ajax.Request(this.refresh_url, {
       asynchronous: true,
       evalScripts: true,
