@@ -103,15 +103,14 @@ module ActiveScaffold
       alias_method :condition_for_time_type, :condition_for_datetime_type
       alias_method :condition_for_timestamp_type, :condition_for_datetime_type
 
-      def condition_for_dhtml_calendar_type(column, value, like_pattern = nil)
+      def condition_for_calendar_date_select_type(column, value, like_pattern = nil)
         return nil if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.include?(value['opt'])
         if value['opt'] == 'BETWEEN'
-          ["#{column.search_sql} BETWEEN ? AND ?", value[:from], value[:to]]
+          ["#{column.search_sql} BETWEEN ? AND ?", value[:from].to_date, value[:to].to_date]
         else
-          ["#{column.search_sql} #{value['opt']} ?", value[:from]]
+          ["#{column.search_sql} #{value['opt']} ?", value[:from].to_date]
         end
       end
-      alias_method :condition_for_calendar_date_select_type, :condition_for_dhtml_calendar_type
 
       def condition_for_exact_type(column, value, like_pattern = nil)
         ["#{column.search_sql} = ?", value]
