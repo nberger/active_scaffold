@@ -74,7 +74,7 @@ function PercentageFormat(textElement)
   }
 }
 
-function UsaPhoneDashAdd(textElement)
+function PhoneDashAdd(textElement)
 {
 	var strTemp = textElement.value; 
 	strTemp = NumberCleanUp(textElement.value);

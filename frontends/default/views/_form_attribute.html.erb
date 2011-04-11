@@ -1,16 +1,24 @@
 <% scope ||= nil %>
+<%# AST Begin -%>
 <% if column.form_ui == :hidden %>
   <%= active_scaffold_input_for column, scope %>
 <% else %>
-<dl class="<%= column.css_class unless column.css_class.nil? %>">
+<%# AST End -%>  
+<dl>
   <dt>
     <label for="<%= active_scaffold_input_options(column, scope)[:id] %>"><%= column.label %></label>
   </dt>
+  <%# AST highlight dd tag with red if error on the field -%>
   <dd id="<%= field_error_id(column) %>">
     <%= active_scaffold_input_for column, scope %>
+    <% if column.options.is_a?(Hash) && column.options[:update_column] -%>
+      <%= loading_indicator_tag(:action => :render_field, :id => params[:id]) %>
+    <% end -%>
     <% if column.description -%>
-      <span class="description"><%= column.description %></span>
+      <span class="description"><%= as_(column.description) %></span>
     <% end -%>
   </dd>
 </dl>
+<%# AST Begin -%>
 <% end %>
+<%# AST End -%>  

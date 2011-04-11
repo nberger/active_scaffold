@@ -2,8 +2,7 @@ module ActiveScaffold::Actions
   module ExportTool
     include ActiveScaffold::Actions::PrintBase
     def self.included(base)
-      base.before_filter :export_tool_authorized?, :only => [:export_tool]
-      base.before_filter :store_params_into_search_session_info
+      base.before_filter :export_tool_authorized_filter, :only => [:export_tool]
     end
     
     def show_export_tool
@@ -24,6 +23,8 @@ module ActiveScaffold::Actions
     def export_tool
       do_print_list(active_scaffold_config.export_tool)
       active_scaffold_config.export_tool.delimiter = params[:delimiter]
+      # fastercsv doesn't work with a nil delimiter
+      active_scaffold_config.export_tool.delimiter = ',' if active_scaffold_config.export_tool.delimiter.empty?
       active_scaffold_config.export_tool.skip_header = params[:skip_header]
       response.headers['Cache-Control'] = 'max-age=60' # IE 6 needs this!
       response.headers['Content-Disposition'] = "attachment; filename=\"#{self.controller_name}.csv\""
@@ -37,5 +38,12 @@ module ActiveScaffold::Actions
     def export_tool_authorized?
       authorized_for?(:action => :read)
     end
+
+    private
+
+    def export_tool_authorized_filter
+      raise ActiveScaffold::ActionNotAllowed unless export_tool_authorized?
+    end
+    
   end
 end

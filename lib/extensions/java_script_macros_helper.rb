@@ -81,7 +81,7 @@ module ActionView
       # end
 
       # Allow in_place_editor to pass along nested information so the update_column can call refresh_record properly.
-      def active_scaffold_inplace_edit(record, column, options = {})
+      def active_scaffold_inplace_edit_2(record, column, options = {})
         formatted_column = options[:formatted_column] || format_inplace_edit_column(record, column)
         id_options = {:id => record.id.to_s, :action => 'update_column', :name => column.name.to_s}
         tag_options = {:tag => "span", :id => element_cell_id(id_options), :class => "in_place_editor_field"}

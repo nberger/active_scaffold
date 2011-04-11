@@ -78,8 +78,6 @@ class ScaffoldingSandbox
       input_block = options[:input_block] || default_as_block
     elsif options[:sa_columns]
       input_block = options[:input_block] || default_sa_block
-    elsif options[:has_columns]
-      input_block = options[:input_block] || default_column_block
     elsif options[:show_columns]
       input_block = options[:input_block] || default_show_block
     else

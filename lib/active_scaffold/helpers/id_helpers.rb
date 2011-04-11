@@ -2,8 +2,12 @@ module ActiveScaffold
   module Helpers
     # A bunch of helper methods to produce the common view ids
     module IdHelpers
+      def id_from_controller(controller)
+        controller.gsub("/", "__")
+      end
+
       def controller_id
-        @controller_id ||= (params[:eid] || params[:parent_controller] || params[:controller]).gsub("/", "__")
+        @controller_id ||= 'as_' + id_from_controller(params[:eid] || params[:parent_controller] || params[:controller])
       end
 
       def active_scaffold_id
@@ -114,6 +118,7 @@ module ActiveScaffold
         "#{controller_id}-#{options[:action]}-#{options[:id]}-iframe"
       end
 
+      # AST Begin
       def customize_form_id
         "#{controller_id}-customize-form"
       end
@@ -134,7 +139,8 @@ module ActiveScaffold
       def field_error_id(column)
         "field_error_#{column.name}_#{params[:eid] || params[:id]}"
       end
-
+      # AST End
+      
       private
 
       # whitelists id-safe characters

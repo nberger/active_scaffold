@@ -29,8 +29,11 @@ module ActiveScaffold
       # TODO: this should reside on the column, not the controller
       def condition_for_column(column, value, like_pattern = '%?%')
         # we must check false or not blank because we want to search for false but false is blank
-        return unless column and column.search_sql and (not value.blank?)
+        return unless column and column.search_sql and not value.blank?
+        # AST Begin - TODO - is this still needed?
+        begin
         return if (value.is_a?(Array) and value.join.blank?)
+        # AST End
         search_ui = column.search_ui || column.column.type
         if self.respond_to?("condition_for_#{column.name}_column")
           self.send("condition_for_#{column.name}_column", column, value, like_pattern)
@@ -52,8 +55,13 @@ module ActiveScaffold
               end
           end
         end
+        rescue Exception => e
+          logger.error Time.now.to_s + "#{e.inspect} -- on the ActiveScaffold column = :#{column.name}, search_ui = #{search_ui} in #{@controller.class}"
+          raise e
+      end
       end
 
+      # AST why require like_pattern
       def condition_for_integer_type(column, value, like_pattern = nil)
         if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.include?(value['opt'])
           nil
@@ -65,8 +73,10 @@ module ActiveScaffold
       end
       alias_method :condition_for_decimal_type, :condition_for_integer_type
       alias_method :condition_for_float_type, :condition_for_integer_type
+      # AST condition_for_usa_money_type
       alias_method :condition_for_usa_money_type, :condition_for_integer_type
 
+      # AST condition_for_string_type
       def condition_for_string_type(column, value, like_pattern = '%?%')
         if !value.is_a?(Hash)
           ["LOWER(#{column.search_sql}) LIKE ?", like_pattern.sub('?', value.downcase)]
@@ -80,8 +90,10 @@ module ActiveScaffold
           ["#{column.search_sql} #{value['opt']} ?", value['from']]
         end
       end
+      alias_method :condition_for_email_type, :condition_for_string_type
       alias_method :condition_for_text_type, :condition_for_string_type
 
+      # AST why require like_pattern
       def condition_for_datetime_type(column, value, like_pattern = nil)
         conversion = value['from']['hour'].blank? && value['to']['hour'].blank? ? 'to_date' : 'to_time'
         from_value, to_value = ['from', 'to'].collect do |field|
@@ -102,21 +114,7 @@ module ActiveScaffold
       alias_method :condition_for_time_type, :condition_for_datetime_type
       alias_method :condition_for_timestamp_type, :condition_for_datetime_type
 
-      def condition_for_dhtml_calendar_type(column, value, like_pattern = nil)
-        return nil if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.include?(value['opt'])
-        tmp_model = column.active_record_class.new
-        time_from = time_to = ""
-        if column.column.type == :datetime
-          time_from = " 00:00:00"
-          time_to = " 23:59:59"
-        end
-        if value['opt'] == 'BETWEEN'
-          ["#{column.search_sql} BETWEEN ? AND ?", tmp_model.cast_to_date(value[:from]) + time_from, tmp_model.cast_to_date(value[:to]) + time_to]
-        else
-          ["#{column.search_sql} #{value['opt']} ?", tmp_model.cast_to_date(value[:from]) + time_from]
-        end
-      end
-
+      # AST Begin
       def condition_for_exact_type(column, value, like_pattern = nil)
         ["#{column.search_sql} = ?", value]
       end
@@ -138,8 +136,10 @@ module ActiveScaffold
         end
         ["#{column.search_sql} in (?)", values]
       end
+      alias_method :condition_for_usa_state_type, :condition_for_multi_select_type
+      # AST End
     end
-    
+
     NumericComparators = [
       '=',
       '>=',
@@ -149,7 +149,8 @@ module ActiveScaffold
       '!=',
       as_('is_between')
     ]
-
+    
+    # AST StringComparators
     StringComparators = [
       [as_('is_like'), '%?%'],
       [as_('begins_with'), '?%'],
@@ -189,14 +190,32 @@ module ActiveScaffold
         active_scaffold_session_storage[:conditions] # embedding conditions (weaker constraints)
       )
     end
-
+    
+    def model_with_named_scope(model = active_scaffold_config.model, scope_definitions = named_scopes_for_collection)
+      case scope_definitions
+      when String
+        model.instance_eval(scope_definitions)
+      when Symbol
+        model.send(scope_definitions)
+      when Array
+        if scope_definitions.any?{|element| element.is_a?(Array)}
+          scope_definitions.inject(model) {|records, scope_definition| records = model_with_named_scope(records, scope_definition)}
+        else
+          model.send(*scope_definitions)
+        end
+      else
+        model
+      end
+    end
+    
     # returns a single record (the given id) but only if it's allowed for the specified action.
     # accomplishes this by checking model.#{action}_authorized?
     # TODO: this should reside on the model, not the controller
     def find_if_allowed(id, action, klass = nil)
       klass ||= active_scaffold_config.model
       record = klass.find(id)
-      raise ActiveScaffold::RecordNotAllowed unless record.authorized_for?(:action => action.to_sym)
+      # AST - add some additional info
+      raise ActiveScaffold::RecordNotAllowed, "#{klass} with id = #{id}" unless record.authorized_for?(:action => action.to_sym)
       return record
     end
 
@@ -208,39 +227,41 @@ module ActiveScaffold
     # TODO: this should reside on the model, not the controller
     def find_page(options = {})
       options.assert_valid_keys :sorting, :per_page, :page, :count_includes
-      # The order of these local assignments is critical. all_conditions must come before joins_for_finder
-      full_includes = (active_scaffold_joins.empty? ? nil : active_scaffold_joins)      
+
+      full_includes = (active_scaffold_joins.blank? ? nil : active_scaffold_joins)
+      search_conditions = all_conditions
       options[:per_page] ||= 999999999
       options[:page] ||= 1
-      options[:count_includes] ||= full_includes
-      finder_conditions = all_conditions
-      joins = joins_for_finder
-      options[:count_includes].reject!{|k,v| joins.include? k} if options[:count_includes] and joins
-      full_includes.reject!{|k,v| joins.include? k} if full_includes and joins
+      options[:count_includes] ||= full_includes unless search_conditions.nil?
 
-      klass = active_scaffold_config.model
-      table_name = active_scaffold_config.model.quoted_table_name
-
+      klass = model_with_named_scope
+      
       # create a general-use options array that's compatible with Rails finders
-      finder_options = { :order => build_order_clause(options[:sorting]),
-                         :conditions => all_conditions,
+      finder_options = { :order => options[:sorting].try(:clause),
+                         :conditions => search_conditions,
                          :joins => joins_for_finder,
                          :include => options[:count_includes]}
+                         
+      finder_options.merge! custom_finder_options
 
       # NOTE: we must use :include in the count query, because some conditions may reference other tables
-      count = klass.count(finder_options.reject{|k,v| [:order].include? k})
+      count = klass.count(finder_options.reject{|k,v| [:select, :order].include? k})
+
+      # Converts count to an integer if ActiveRecord returned an OrderedHash
+      # that happens when finder_options contains a :group key
+      count = count.length if count.is_a? ActiveSupport::OrderedHash
 
       finder_options.merge! :include => full_includes
 
       # we build the paginator differently for method- and sql-based sorting
       if options[:sorting] and options[:sorting].sorts_by_method?
         pager = ::Paginator.new(count, options[:per_page]) do |offset, per_page|
-          sorted_collection = sort_collection_by_column(klass.find(:all, finder_options), *options[:sorting].first)
+          sorted_collection = sort_collection_by_column(klass.all(finder_options), *options[:sorting].first)
           sorted_collection.slice(offset, per_page)
         end
       else
         pager = ::Paginator.new(count, options[:per_page]) do |offset, per_page|
-          klass.find(:all, finder_options.merge(:offset => offset, :limit => per_page))
+          klass.all(finder_options.merge(:offset => offset, :limit => per_page))
         end
       end
 
@@ -249,16 +270,16 @@ module ActiveScaffold
 
     def joins_for_finder
       case joins_for_collection
-      when String
-        # If it is a string then the :joins_for_collection needs to include everything find_page needs including what may be in active_scaffold_habtm_joins
-        joins_for_collection
-      when Array
-        joins_for_collection + active_scaffold_habtm_joins
-      else
-        active_scaffold_habtm_joins
-      end
+        when String
+          [ joins_for_collection ]
+        when Array
+          joins_for_collection
+        else
+          []
+      end + active_scaffold_habtm_joins
     end
 
+    # AST find_page_by_sql
     def find_page_by_sql(options = {}, sql_options = {})
       options.assert_valid_keys :sorting, :per_page, :page
       sql_options.assert_valid_keys :select, :from, :where, :group_by, :order_by
@@ -291,31 +312,8 @@ module ActiveScaffold
       page = pager.page(options[:page])
     end
   
-    # TODO: this should reside on the model, not the controller
     def merge_conditions(*conditions)
-      c = conditions.find_all {|c| not c.nil? and not c.empty? }
-      c.empty? ? nil : c.collect{|c| active_scaffold_config.model.send(:sanitize_sql, c)}.join(' AND ')
-    end
-
-    # accepts a DataStructure::Sorting object and builds an order-by clause
-    # TODO: this should reside on the model, not the controller
-    def build_order_clause(sorting)
-      return nil if sorting.nil? or sorting.sorts_by_method?
-
-      # unless the sorting is by method, create the sql string
-      order = []
-      sorting.each do |clause|
-        sort_column, sort_direction = clause
-        sql = sort_column.sort[:sql]
-        next if sql.nil? or sql.empty?
-
-        order << "#{sql} #{sort_direction}"
-      end
-
-      order = order.join(', ')
-      order = nil if order.empty?
-
-      order
+      active_scaffold_config.model.merge_conditions(*conditions)
     end
 
     # TODO: this should reside on the column, not the controller

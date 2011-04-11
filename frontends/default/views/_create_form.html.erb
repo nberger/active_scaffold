@@ -1,12 +1,17 @@
 <% url_options = params_for(:action => :create) -%>
+<%# AST Begin -%>
 <% submit_options = {} -%>
+<%# AST End -%>  
 <%=
 if request.xhr?
   if active_scaffold_config.create.multipart? # file_uploads
+    # AST Begin
     submit_options = {:onclick => "$('#{loading_indicator_id(:action => :create, :id => params[:id])}').style.visibility = 'visible';this.form.submit();"}
+    # AST End  
     form_remote_upload_tag url_options.merge({:iframe => true}),
                            :onsubmit => onsubmit,
                            :id => element_form_id(:action => :create),
+                           :loading => "$('#{loading_indicator_id(:action => :create, :id => params[:id])}').style.visibility = 'visible';",
                            :class => 'create'
   else
     form_remote_tag :url => url_options,
@@ -28,20 +33,20 @@ else
            :class => 'create'
 end -%>
 
-  <h4><%= active_scaffold_config.create.label(@record.class.human_name(:count => 1)) -%></h4>
+  <h4><%= active_scaffold_config.create.label(active_scaffold_config.sti_create_links ? @record.class.human_name(:count => 1) : nil) -%></h4>
 
-  <% if request.xhr? -%>
-    <div id="<%= element_messages_id(:action => :create) %>" class="messages-container"><%= error_messages_for :record, :object_name => @record.class.human_name.downcase %></div>
-  <% else -%>
+  <div id="<%= element_messages_id(:action => :create) %>" class="messages-container">
+<% if request.xhr? -%>
+    <%= error_messages_for :record, :object_name => @record.class.human_name.downcase %>
+<% else -%>
     <%= render :partial => 'form_messages' %>
-  <% end -%>
+<% end -%>
+  </div>
 
-  <%= render :partial => @form_name || 'form', :locals => { :columns => active_scaffold_config.create.columns } %>
+  <%= render :partial => 'form', :locals => { :columns => active_scaffold_config.create.columns } %>
 
-  <% if request.xhr? -%>
-    <div id="footer_<%= element_messages_id(:action => :create) %>" class="messages-container"></div>
-  <% end -%>
   <p class="form-footer">
+    <%# AST create_form_submit -%>
 		<%= render :partial => 'create_form_submit', :locals => {:submit_options => submit_options} %>
     <%= loading_indicator_tag(:action => :create, :id => params[:id]) %>
   </p>

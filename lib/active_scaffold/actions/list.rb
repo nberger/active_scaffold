@@ -1,5 +1,6 @@
 module ActiveScaffold::Actions
   module List
+    # AST
     include ActiveScaffold::Search
     def self.included(base)
       base.before_filter :list_authorized_filter, :only => [:index, :table, :update_table, :row, :list]
@@ -27,9 +28,8 @@ module ActiveScaffold::Actions
 
     def list
       do_list
-      if active_scaffold_config.list.always_show_create
-        do_new
-      end
+      do_new if active_scaffold_config.list.always_show_create
+      @record ||= active_scaffold_config.model.new if active_scaffold_config.list.always_show_search
       respond_to_action(:list)
     end
     
@@ -71,13 +71,14 @@ module ActiveScaffold::Actions
       end
 
       page = find_page(options);
-      if page.items.empty?
+      if page.items.blank?
         page = page.pager.first
         active_scaffold_config.list.user.page = 1
       end
       @page, @records = page, page.items
     end
 
+    # AST do_list_by_sql
     def do_list_by_sql(sql_options)
       includes_for_list_columns = active_scaffold_config.list.columns.collect{ |c| c.includes }.flatten.uniq.compact
       self.active_scaffold_joins.concat includes_for_list_columns

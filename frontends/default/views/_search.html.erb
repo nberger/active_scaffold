@@ -1,4 +1,5 @@
 <% href = url_for(params_for(:action => :update_table, :escape => false).delete_if{|k,v| k == 'search'}) -%>
+<%# AST loading_indicator_id uses params[:id] -%>
 <%= form_remote_tag :url => href,
                     :method => :get,
                     :before => "addActiveScaffoldPageToHistory('#{href}', '#{params[:controller]}')",
@@ -15,7 +16,6 @@
 
 <script type="text/javascript">
 //<![CDATA[
-  new TextFieldWithExample('<%= search_input_id %>', '<%= as_(:search_terms) %>');
-  Form.focusFirstElement('<%= search_form_id -%>');
+  new TextFieldWithExample('<%= search_input_id %>', '<%= as_(:search_terms) %>', {focus: true});
 //]]>
 </script>

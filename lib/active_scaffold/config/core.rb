@@ -9,7 +9,7 @@ module ActiveScaffold::Config
     def self.actions=(val)
       @@actions = ActiveScaffold::DataStructures::Actions.new(*val)
     end
-    self.actions = [:refresh, :create, :list, :search, :update, :delete, :show, :nested, :subform]
+    self.actions = [:create, :list, :search, :update, :delete, :show, :nested, :subform]
 
     # configures where the ActiveScaffold plugin itself is located. there is no instance version of this.
     cattr_accessor :plugin_directory
@@ -23,11 +23,18 @@ module ActiveScaffold::Config
     cattr_accessor :theme
     @@theme = :default
 
+    # AST Begin
     cattr_accessor :left_handed
     @@left_handed = false
 
-		cattr_accessor :show_missing_translations
-		@@show_missing_translations = false
+    cattr_accessor :one_column_list
+    @@one_column_list = false
+
+    cattr_accessor :show_actions_column
+    @@show_actions_column = true
+
+    cattr_accessor :show_missing_translations
+    @@show_missing_translations = false
 
     # Secure download
     #  - requires encrypted_strings plugin
@@ -39,6 +46,7 @@ module ActiveScaffold::Config
 
     cattr_accessor :upper_case_form_fields
     @@upper_case_form_fields = false
+    # AST End
 
     # lets you disable the DHTML history
     def self.dhtml_history=(val)
@@ -91,6 +99,10 @@ module ActiveScaffold::Config
       @columns << val.collect {|c| c.to_sym unless @columns[c.to_sym]}.compact
     end
 
+    attr_accessor :left_handed
+    attr_accessor :one_column_list
+    attr_accessor :show_actions_column
+
     # lets you override the global ActiveScaffold frontend for a specific controller
     attr_accessor :frontend
 
@@ -109,9 +121,7 @@ module ActiveScaffold::Config
     # a generally-applicable name for this ActiveScaffold ... will be used for generating page/section headers
     attr_writer :label
     def label(options={})
-      # options[:default] ||= model.name.pluralize if options[:count].to_i == 1
-      # options[:default] ||= model.human_name(options)
-      # as_(@label, options)
+      # ActiveRecord supports I18 via :scope => activerecord.models
       as_(@label, options) || model.human_name(options.merge(options[:count].to_i == 1 ? {} : {:default => model.name.pluralize}))
     end
 
@@ -142,7 +152,10 @@ module ActiveScaffold::Config
       # inherit the global frontend
       @frontend = self.class.frontend
       @theme = self.class.theme
-      @sti_create_links = self.class.sti_create_links
+      @left_handed = self.class.left_handed
+      @one_column_list = self.class.one_column_list
+      @show_actions_column = self.class.show_actions_column
+	    @sti_create_links = self.class.sti_create_links
 
       # inherit from the global set of action links
       @action_links = self.class.action_links.clone
@@ -215,44 +228,6 @@ module ActiveScaffold::Config
     end
     # some utility methods
     # --------------------
-
-    def columns_by_key_value(*args)
-      val = args.collect {|a| a.collect {|value| value.is_a?(Array) ? value.first.keys.to_s.to_sym : value.to_sym}}
-      val.flatten!
-      locking_column_in_args = val.include?(@columns.active_record_class.locking_column.to_sym) 
-      model_has_locking_column = @columns.active_record_class.columns_hash.include?(@columns.active_record_class.locking_column)
-      # Optimistic locking doesn't work without it being included
-      val << @columns.active_record_class.locking_column unless locking_column_in_args or !model_has_locking_column
-      self.columns = val
-      [:field_search, :list, :live_search, :search, :show].each {|action| eval("#{action}.columns.exclude @columns.active_record_class.locking_column") if @actions.include?(action.to_sym)} unless locking_column_in_args
-      args.flatten!
-      args.each do |arg|
-        if arg.is_a?(Hash)
-          arg.each do |column_name, values|
-            if values.is_a?(Hash)
-              values.each do |attr, value|
-                attr = :form_ui if attr == :type
-                case attr
-                when :exclude, :except
-                  if value.is_a?(Array)
-                    value.each do |v| 
-                      eval("#{v}.columns.exclude column_name") if @actions.include?(v.to_sym)
-                    end
-                  else
-                    eval "#{value}.columns.exclude column_name" if @actions.include?(v.to_sym)
-                  end
-                when :reverse
-                  @columns[column_name].association.send "#{attr}=", value 
-                else
-                  @columns[column_name].send "#{attr}=", value
-                end
-              end
-            end
-          end
-        end
-      end
-    end
-    alias_method :has_columns, :columns_by_key_value
 
     def model_id
       @model_id

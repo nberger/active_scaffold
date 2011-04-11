@@ -4,8 +4,7 @@ module ActiveScaffold::Actions
     include ActiveScaffold::Actions::PrintBase
 
     def self.included(base)
-      base.before_filter :print_list_authorized?, :only => [:print_list]
-      base.before_filter :store_params_into_search_session_info
+      base.before_filter :print_list_authorized_filter, :only => [:print_list]
     end
 
     def print_list
@@ -15,11 +14,12 @@ module ActiveScaffold::Actions
         type.html {
           render(:partial => 'print_list', :layout => false)
         }
-        type.pdf {
-          @html = render_to_string(:partial => "print_list", :layout => false)
-          prawnto :prawn => {:page_layout => :landscape}, :inline => true
-          render :layout => false
-        }
+        # not working
+        # type.pdf {
+        #   @html = render_to_string(:partial => "print_list.html.erb", :layout => false)
+        #   prawnto :prawn => {:page_layout => :landscape}, :inline => true
+        #   render :layout => false
+        # }
         type.xml { render :xml => response_object.to_xml, :content_type => Mime::XML, :status => response_status }
         type.json { render :text => response_object.to_json, :content_type => Mime::JSON, :status => response_status }
         type.yaml { render :text => response_object.to_yaml, :content_type => Mime::YAML, :status => response_status }
@@ -32,6 +32,12 @@ module ActiveScaffold::Actions
     # You may override the method to customize.
     def print_list_authorized?
       authorized_for?(:action => :read)
+    end
+
+    private
+
+    def print_list_authorized_filter
+      raise ActiveScaffold::ActionNotAllowed unless print_list_authorized?
     end
     
   end

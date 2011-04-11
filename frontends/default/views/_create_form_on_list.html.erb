@@ -1,6 +1,12 @@
 <% url_options = params_for(:action => :create) -%>
+<%# AST Begin -%>
+<% submit_options = {} -%>
+<%# AST End -%>  
 <%=
 if active_scaffold_config.create.multipart? # file_uploads
+  # AST Begin
+  submit_options = {:onclick => "$('#{loading_indicator_id(:action => :create, :id => params[:id])}').style.visibility = 'visible';this.form.submit();"}
+  # AST End
   form_remote_upload_tag url_options.merge({:iframe => true}),
                          :onsubmit => onsubmit,
                          :id => element_form_id(:action => :create),
@@ -21,7 +27,7 @@ end -%>
   <h4><%= active_scaffold_config.create.label -%></h4>
 
   <% if request.xhr? -%>
-    <div id="<%= element_messages_id(:action => :create) %>" class="messages-container"><%= render :partial => 'messages' %><%= error_messages_for :record, :object_name => @record.class.human_name.downcase %></div>
+    <div id="<%= element_messages_id(:action => :create) %>" class="messages-container"><%= error_messages_for :record, :object_name => @record.class.human_name.downcase %></div>
   <% else -%>
     <%= render :partial => 'form_messages' %>
   <% end -%>
@@ -29,7 +35,8 @@ end -%>
   <%= render :partial => 'form', :locals => { :columns => active_scaffold_config.create.columns } %>
 
   <p class="form-footer">
-    <%= submit_tag as_(:create), :class => "submit" %>
+    <%# AST create_form_submit -%>  
+		<%= render :partial => 'create_form_submit', :locals => {:submit_options => submit_options} %>
     <%= loading_indicator_tag(:action => :create, :id => params[:id]) %>
   </p>
 </form>

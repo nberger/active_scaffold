@@ -23,10 +23,12 @@ module ActiveRecordPermissions
   def self.default_permission; @@default_permission; end
   @@default_permission = true
 
+  # AST Begin
   # Actions allowed. If you create a customized action add it to this list.
   def self.allowed_actions=(v); @@allowed_actions = v; end
   def self.allowed_actions; @@allowed_actions; end
   @@allowed_actions = [:create, :read, :update, :destroy, :print]
+  # AST End
 
   # This is a module aimed at making the current_user available to ActiveRecord models for permissions.
   module ModelUserAccess
@@ -74,9 +76,10 @@ module ActiveRecordPermissions
     # the actual permission methods can't be guaranteed to exist. And because we want to
     # intelligently combine multiple applicable methods.
     #
-    # options[:action] should be a CRUD verb (:create, :read, :update, :destroy, :print)
+    # options[:action] should be a CRUD verb (:create, :read, :update, :destroy)
     # options[:column] should be the name of a model attribute
     def authorized_for?(options = {})
+      # AST allowed_actions
       raise ArgumentError, "unknown action #{options[:action]}" if options[:action] and !ActiveRecordPermissions.allowed_actions.include?(options[:action])
 
       # column_authorized_for_action? has priority over other methods,

@@ -51,7 +51,7 @@
       :_to_  => ' to ',
       :update => 'Update',
       :update_model => 'Update {{model}}',
-      :udated_model => 'Updated {{model}}',
+      :updated_model => 'Updated {{model}}',
       :'=' => '=',
       :'>=' => '>=',
       :'<=' => '<=',
@@ -61,6 +61,7 @@
       :between => 'Between',
 
       # error_messages
+      :cant_destroy_record => "{{record}} can't be destroyed",
       :internal_error => 'Request Failed (code 500, Internal Error)',
       :version_inconsistency => 'Version inconsistency - this record has been modified since you started editing it.'
     }

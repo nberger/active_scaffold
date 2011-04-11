@@ -11,6 +11,7 @@ module ActiveScaffold
       include ActiveScaffold::Helpers::FormColumnHelpers
       include ActiveScaffold::Helpers::CountryHelpers
       include ActiveScaffold::Helpers::SearchColumnHelpers
+      # AST
       include ActiveScaffold::Helpers::NumberHelpers
 
       ##
@@ -91,16 +92,20 @@ module ActiveScaffold
       
       # Provides stylesheets to include with +stylesheet_link_tag+
       def active_scaffold_stylesheets(frontend = :default)
+        # AST Begin
         css = [ActiveScaffold::Config::Core.asset_path("stylesheet.css", frontend)]
         css << ActiveScaffold::Config::Core.asset_path('tools-left-handed-stylesheet.css', frontend) if ActiveScaffold::Config::Core.left_handed
         css
+        # AST End
       end
 
       # Provides stylesheets for IE to include with +stylesheet_link_tag+ 
       def active_scaffold_ie_stylesheets(frontend = :default)
+        # AST Begin
         css = [ActiveScaffold::Config::Core.asset_path("stylesheet-ie.css", frontend)]
         css << ActiveScaffold::Config::Core.asset_path('tools-left-handed-stylesheet-ie.css', frontend) if ActiveScaffold::Config::Core.left_handed
         css
+        # AST End
       end
 
       # easy way to include ActiveScaffold assets
@@ -110,6 +115,8 @@ module ActiveScaffold
         js = javascript_include_tag(*active_scaffold_javascripts(frontend).push(options))
 
         css = stylesheet_link_tag(*active_scaffold_stylesheets(frontend).push(options))
+        options[:cache] += '_ie' if options[:cache].is_a? String
+        options[:concat] += '_ie' if options[:concat].is_a? String
         ie_css = stylesheet_link_tag(*active_scaffold_ie_stylesheets(frontend).push(options))
 
         js + "\n" + css + "\n<!--[if IE]>" + ie_css + "<![endif]-->\n"
@@ -131,14 +138,20 @@ module ActiveScaffold
         link_to_function link_text, "e = #{options[:of]}; e.toggle(); this.innerHTML = (e.style.display == 'none') ? '#{as_(:show)}' : '#{as_(:hide)}'", :class => 'visibility-toggle'
       end
 
-      def render_action_link(link, url_options)
+      def skip_action_link(link)
+        (link.security_method_set? or controller.respond_to? link.security_method) and !controller.send(link.security_method)
+      end
+
+      # AST link_html_options = {}
+      def render_action_link(link, url_options, link_html_options = {})
         url_options = url_options.clone
         url_options[:action] = link.action
         url_options[:controller] = link.controller if link.controller
         url_options.delete(:search) if link.controller and link.controller.to_s != params[:controller]
         url_options.merge! link.parameters if link.parameters
 
-        html_options = link.html_options.merge({:class => link.action})
+        # AST link_html_options
+        html_options = link.html_options.merge({:class => link.action}).merge(link_html_options)
         if link.inline?
           # NOTE this is in url_options instead of html_options on purpose. the reason is that the client-side
           # action link javascript needs to submit the proper method, but the normal html_options[:method]
@@ -156,11 +169,11 @@ module ActiveScaffold
           html_options[:method] = link.method
         end
 
-        html_options[:confirm] = link.confirm if link.confirm?
+        html_options[:confirm] = as_(link.confirm) if link.confirm?
         html_options[:position] = link.position if link.position and link.inline?
         html_options[:class] += ' action' if link.inline?
         html_options[:popup] = true if link.popup?
-        html_options[:id] = action_link_id(url_options[:action],url_options[:id] || url_options[:parent_id])
+        html_options[:id] = action_link_id("#{id_from_controller(url_options[:controller]) + '-' if url_options[:parent_controller]}" + "#{url_options[:associations].to_s + '-' if url_options[:associations]}" + url_options[:action],url_options[:id] || url_options[:parent_id])
 
         if link.dhtml_confirm?
           html_options[:class] += ' action' if !link.inline?
@@ -181,15 +194,15 @@ module ActiveScaffold
         classes << column.css_class unless column.css_class.nil?
         classes << 'empty' if column_empty? column_value
         classes << 'sorted' if active_scaffold_config.list.user.sorting.sorts_on?(column)
-        classes << 'numeric' if column.column and [:decimal, :float, :integer].include?(column.column.type)
+        # AST - allow format of column to be specified via Column#list_ui
+        classes << 'numeric' if [:number].include?(column.list_ui) or (column.column and [:decimal, :float, :integer].include?(column.column.type))
         classes.join(' ')
       end
 
       def column_empty?(column_value)
         empty = column_value.nil?
         empty ||= column_value.empty? if column_value.respond_to? :empty?
-        empty ||= (column_value == '&nbsp;')
-        empty ||= (column_value == active_scaffold_config.list.empty_field_text)
+        empty ||= ['&nbsp;', active_scaffold_config.list.empty_field_text].include? column_value if String === column_value
         return empty
       end
 
@@ -197,6 +210,18 @@ module ActiveScaffold
         calculation = active_scaffold_config.model.calculate(column.calculate, column.name, :conditions => controller.send(:all_conditions),
          :joins => controller.send(:joins_for_collection), :include => controller.send(:active_scaffold_joins))
       end
+      
+      # AST Begin
+      def column_show_add_existing(column)
+        (column.allow_add_existing and !column.through_association? and options_for_association_count(column.association) > 0)
+      end
+      
+      def column_show_add_new(column, associated, action)
+        value = !column.through_association? and (column.plural_association? or (column.singular_association? and not associated.empty?))
+        value = false unless @record.class.authorized_for?(:action => action)
+        value
+      end
+      # AST End
     end
   end
 end
