@@ -11,7 +11,7 @@
   <div class="columns checkbox-list"> 
   <% active_scaffold_config.customize.columns.sort {|column_a, column_b| column_a.label <=> column_b.label}.each do |column| -%>
     <div class="column checkbox-wrapper">
-      <%= content_tag(:label, check_box_tag("custom_columns[#{column.name}]", 1, (active_scaffold_tools_list_columns.include?(column.name))) + "&nbsp;#{column.label}") %>
+      <%= content_tag(:label, check_box_tag("custom_columns[#{column.name}]", 1, (active_scaffold_tools_list_columns.include?(column.name))) + "&nbsp;#{column.label}".html_safe) %>
     </div>
   <% end -%>  
   &nbsp;
