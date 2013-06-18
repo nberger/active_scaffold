@@ -260,7 +260,7 @@ module ActiveScaffold
       end
       
       def list_action_authorized?(link, record)
-       !(controller.respond_to?(link.security_method) and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, link)))) and record.authorized_for?(:action => link.crud_type)
+       !(controller.respond_to?(link.security_method) and ((controller.method(link.security_method).arity == 0 and !controller.send(link.security_method)) or (controller.method(link.security_method).arity == 1 and !controller.send(link.security_method, record)))) and record.authorized_for?(:action => link.crud_type)
       end
       
       def active_scaffold_column_percentage(column, record)
