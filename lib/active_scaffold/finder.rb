@@ -55,7 +55,7 @@ module ActiveScaffold
       end
 
       def condition_for_integer_type(column, value, like_pattern = nil)
-        if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.include?(value['opt'])
+        if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.map(&:second).include?(value['opt'])
           nil
         elsif value['opt'] == 'BETWEEN'
           ["#{column.search_sql} BETWEEN ? AND ?", value['from'].to_f, value['to'].to_f]
@@ -104,7 +104,7 @@ module ActiveScaffold
       alias_method :condition_for_timestamp_type, :condition_for_datetime_type
 
       def condition_for_calendar_date_select_type(column, value, like_pattern = nil)
-        return nil if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.include?(value['opt'])
+        return nil if value['from'].blank? or not ActiveScaffold::Finder::NumericComparators.map(&:second).include?(value['opt'])
         if value['opt'] == 'BETWEEN'
           ["#{column.search_sql} BETWEEN ? AND ?", value[:from].to_date, value[:to].to_date]
         else
@@ -136,13 +136,13 @@ module ActiveScaffold
     end
     
     NumericComparators = [
-      '=',
-      '>=',
-      '<=',
-      '>',
-      '<',
-      '!=',
-      as_('is_between')
+      ['=', '='],
+      ['>=', '>='],
+      ['<=', '<='],
+      ['>', '>'],
+      ['<', '<'],
+      ['!=', '!='],
+      [as_('is_between'), 'BETWEEN']
     ]
 
     StringComparators = [
