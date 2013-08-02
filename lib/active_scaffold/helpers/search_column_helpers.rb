@@ -165,7 +165,8 @@ module ActiveScaffold
       def active_scaffold_search_range(column, options)
         opt_value, from_value, to_value = search_session_column_range_values(column)
         html = []
-        select_options = ([:string, :text].include?(column.column.type) || [:text].include?(column.search_ui)) ? ActiveScaffold::Finder::StringComparators : ActiveScaffold::Finder::NumericComparators.collect {|comp| [as_(comp.titleize), comp]}
+        string_or_text = ([:string, :text].include?(column.column.type) || [:text].include?(column.search_ui))
+        select_options = string_or_text ? ActiveScaffold::Finder::StringComparators : ActiveScaffold::Finder::NumericComparators
         html << select_tag("#{options[:name]}[opt]",
               options_for_select(select_options, opt_value),
               :id => "#{options[:id]}_opt",
@@ -205,7 +206,7 @@ module ActiveScaffold
         id_name = options[:id]
         html = []
         html << select_tag("#{options[:name]}[opt]",
-              options_for_select(ActiveScaffold::Finder::NumericComparators.collect {|comp| [as_(comp.titleize), comp]}, opt_value),
+              options_for_select(ActiveScaffold::Finder::NumericComparators, opt_value),
               :id => "#{id_name}_opt",
               :onchange => "Element[this.value == 'BETWEEN' ? 'show' : 'hide']('#{id_name}_between');")
         options = {:name => "#{options[:name]}[from]", :help_string => "", :class => "range-input"}.merge(active_scaffold_input_text_options(:id => "#{id_name}_from", :size => 10))
