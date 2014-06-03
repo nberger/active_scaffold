@@ -119,11 +119,16 @@ module ActiveScaffold
       def number_to_human_size(size)
         return "" if size.nil?
         case 
-          when size < 1.kilobyte: '%d Bytes' % size
-          when size < 1.megabyte: '%.1f KB'  % (size / 1.0.kilobyte)
-          when size < 1.gigabyte: '%.1f MB'  % (size / 1.0.megabyte)
-          when size < 1.terabyte: '%.1f GB'  % (size / 1.0.gigabyte)
-          else                    '%.1f TB'  % (size / 1.0.terabyte)
+          when size < 1.kilobyte
+            '%d Bytes' % size
+          when size < 1.megabyte
+            '%.1f KB'  % (size / 1.0.kilobyte)
+          when size < 1.gigabyte
+            '%.1f MB'  % (size / 1.0.megabyte)
+          when size < 1.terabyte
+            '%.1f GB'  % (size / 1.0.gigabyte)
+          else
+            '%.1f TB'  % (size / 1.0.terabyte)
         end.sub('.0', '')
       rescue
         ""
